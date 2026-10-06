@@ -2,9 +2,43 @@
 Cập nhật: 06/10/2026.
 
 ## Hiện tại
-TASK-000 **done**, TASK-001 **done**. Đã có khung Next.js 16.3 + TypeScript strict + Tailwind 4 với đủ 6 scripts kiểm tra. Chưa có Supabase, auth, schema hay chức năng học tập.
+TASK-000, 001, 002 **done**; TASK-003 done cùng 002. Đã có schema 14 bảng + RLS trên Supabase local, client Supabase server/browser và bộ integration test quyền. Chưa có giao diện auth hay chức năng học tập.
 
-## Lần cập nhật gần nhất — TASK-001 (06/10/2026)
+## Lần cập nhật gần nhất — TASK-002 (06/10/2026)
+- **Status**: done. Theo yêu cầu người dùng, gộp phần schema/RLS của TASK-003 và tạo Supabase client sớm (vốn thuộc 005).
+- **Thay đổi chính**:
+  - `supabase/config.toml` (tắt realtime/edge/analytics, Storage tắt tới 021), 4 migration trong `supabase/migrations/`: bảng nội dung; danh tính + học viên + trigger đăng ký; bất biến publish/cấu trúc; hàm `private.*` + 28 policy + grant theo cột.
+  - `src/lib/supabase/{env,server,client}.ts`, `src/lib/supabase/env.test.ts`, `src/types/database.ts`.
+  - `scripts/supabase-status.mjs`, `scripts/write-env-local.mjs`; scripts `db:start|stop|reset|lint|types|env`.
+  - `tests/integration/helpers/*`, `tests/integration/schema.test.ts`, `tests/integration/rls.test.ts`.
+  - Tài liệu: ADR-005 (mới), ADR-002/003 accepted, DATA_MODEL implemented, OPEN_QUESTIONS (chốt mặc định, thêm Q16), README, `.env.example`, task 002–005, BACKLOG.
+- **Lệnh đã chạy và kết quả**:
+  | Lệnh | Kết quả |
+  |---|---|
+  | `dockerd` (khởi động thủ công trong môi trường cloud) + `npm run db:start` | Postgres 17.11, GoTrue 2.197, PostgREST 16.4 chạy |
+  | `npm run db:reset` | 4 migration áp dụng trên DB trống, không lỗi |
+  | `npm run db:lint` | No schema errors |
+  | `npm run test:integration` | **48/48 pass** (schema 18, rls 30) |
+  | Mutation check (làm hỏng 3 policy trực tiếp) | 4 test fail đúng chỗ → `db:reset` → 48/48 pass |
+  | `npm run lint`, `npm run typecheck`, `npm run build` | exit 0 |
+  | `npm run test` | 8/8 pass |
+  | `npm run test:e2e` (với `PLAYWRIGHT_CHROMIUM_EXECUTABLE`) | 2/2 pass |
+  | Quét secret trong repo và `.next/static` | Không có khóa; `.env.local` bị ignore |
+- **Ca phân quyền đã kiểm chứng ở tầng DB**: P-1 → P-15 (ACCESS_CONTROL §4), cộng: preview cho người chưa enroll (R01), chương rỗng bị ẩn, admin không đọc dữ liệu học viên (Q09), không sửa `tried_at`, không xóa dữ liệu học viên, chỉ sửa được `display_name`.
+- **Hạn chế / chưa xác minh**:
+  - **Không tạo "nhật ký hệ thống"**: không có trong DATA_MODEL; ảnh hưởng tối thiểu hóa dữ liệu trẻ em → Q16 chờ quyết định.
+  - Chưa có proxy làm mới session, chưa có trang auth (TASK-005). Client server/browser chưa được dùng ở trang nào nên chỉ kiểm tra qua typecheck/build và unit test cấu hình env.
+  - Chưa có seed demo và hướng dẫn provision admin (TASK-004).
+  - Q01, Q02, Q11, Q13 vẫn mở (cần quyết định pháp lý/thương hiệu trước khi public).
+  - Supabase CLI cảnh báo type sinh ra chưa được format; giữ nguyên đầu ra của CLI.
+- **Giả định**: Q04–Q10, Q12, Q14, Q15 theo mặc định (người dùng đồng ý 06/10/2026); Q03 giữ bảng lộ trình.
+
+## Bước tiếp
+1. Trả lời Q16 (có cần audit log không).
+2. TASK-004: seed demo `[Demo]` + tài liệu provision admin.
+3. TASK-005: đăng ký/đăng nhập, proxy làm mới session.
+
+## Lịch sử — TASK-001 (06/10/2026)
 - **Status**: done.
 - **Thay đổi chính**:
   - Khung từ `create-next-app@16.3.8`: `package.json`, `package-lock.json`, `tsconfig.json` (strict), `next.config.ts`, `eslint.config.mjs`, `postcss.config.mjs`, `AGENTS.md`.
@@ -29,10 +63,6 @@ TASK-000 **done**, TASK-001 **done**. Đã có khung Next.js 16.3 + TypeScript s
   - 5 cảnh báo high của `npm audit` trong chuỗi dev ESLint (chi tiết ADR-004), chưa có bản vá không phá vỡ.
   - Kiểm tra thủ công trên trình duyệt thật ở 768/1280px chưa thực hiện (chỉ có trang khởi tạo).
 - **Giả định**: TASK-001 không phụ thuộc câu hỏi mở; Q12: môi trường hiện có Docker Engine 29.8 (chưa kiểm chứng Supabase CLI chạy được).
-
-## Bước tiếp
-1. Chốt Q03 (lộ trình), Q04 (archived), Q12 (DB local) trước TASK-002.
-2. Giao TASK-002 (schema nội dung + RLS) bằng `prompts/03-implement-task.md`.
 
 ## Lịch sử — TASK-000
 - **Status**: done.

@@ -1,8 +1,8 @@
 import { fileURLToPath } from "node:url";
 import { defineConfig } from "vitest/config";
 
-// Integration tests: query/mutation và RLS với Supabase local (bắt đầu từ TASK-002).
-// passWithNoTests: tới TASK-002 mới có test; script vẫn tồn tại để quy trình ổn định.
+// Integration tests: query/mutation và RLS với Supabase local (`npm run db:start`).
+// Mỗi file tự dựng và dọn dữ liệu với hậu tố ngẫu nhiên nên có thể chạy song song.
 export default defineConfig({
   resolve: {
     alias: { "@": fileURLToPath(new URL("./src", import.meta.url)) },
@@ -10,6 +10,7 @@ export default defineConfig({
   test: {
     environment: "node",
     include: ["tests/integration/**/*.test.ts"],
-    passWithNoTests: true,
+    testTimeout: 30_000,
+    hookTimeout: 120_000,
   },
 });

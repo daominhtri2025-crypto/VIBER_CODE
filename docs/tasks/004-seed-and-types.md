@@ -13,7 +13,7 @@ PRODUCT_BRIEF (nội dung khởi đầu), DATA_MODEL
 ## Phạm vi
 - `supabase/seed.sql`: 2 khóa (Scratch, Python) × 2 chương × 2 bài + 2 bài tập/khóa; có bài preview, 1 khóa draft, 1 bài draft trong khóa published; mọi tiêu đề gắn nhãn "[Demo]".
 - Tài khoản demo local (student A, student B, admin) với mật khẩu chỉ dùng local, ghi trong tài liệu dev, không dùng ở môi trường khác.
-- Sinh TypeScript DB types vào `src/types`; script cập nhật types.
+- ~~Sinh TypeScript DB types~~ — đã làm ở TASK-002 (`npm run db:types`).
 - Tài liệu `docs/operations/ADMIN_PROVISIONING.md`: câu lệnh SQL nâng/hạ quyền admin.
 
 ## Ngoài phạm vi

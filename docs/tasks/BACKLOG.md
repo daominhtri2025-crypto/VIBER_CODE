@@ -5,8 +5,8 @@ Triển khai theo thứ tự; mỗi task có status riêng. PROJECT_STATUS là �
 |---|---|---|---|---|
 | [000](000-review-spec.md) | Rà soát đặc tả | Không | — | done |
 | [001](001-bootstrap.md) | Khởi tạo dự án | 000 | — | done |
-| [002](002-schema-content.md) | Schema nội dung và RLS nội dung | 001 | Q03, Q04, Q12 | pending |
-| [003](003-schema-learner.md) | Schema học viên, role và RLS cá nhân | 002 | — | pending |
+| [002](002-schema-content.md) | Schema nội dung và RLS nội dung | 001 | Q03, Q04, Q12 | done |
+| [003](003-schema-learner.md) | Schema học viên, role và RLS cá nhân | 002 | — | done (cùng 002) |
 | [004](004-seed-and-types.md) | Seed demo, DB types và provision admin | 003 | — | pending |
 | [005](005-auth-signup-login.md) | Đăng ký, đăng nhập, đăng xuất | 003, 004 | Q01, Q02, Q08 | pending |
 | [006](006-auth-recovery.md) | Khôi phục mật khẩu | 005 | — | pending |

@@ -1,5 +1,5 @@
 # Coding Academy
-Website học lập trình Scratch và Python bằng tiếng Việt cho học sinh tiểu học và THCS. Trạng thái: đã khởi tạo khung Next.js (TASK-001); chưa có auth, database hay chức năng học tập. Xem docs/PROJECT_STATUS.md.
+Website học lập trình Scratch và Python bằng tiếng Việt cho học sinh tiểu học và THCS. Trạng thái: đã có khung Next.js (TASK-001) và schema + RLS Supabase (TASK-002); chưa có giao diện auth hay chức năng học tập. Xem docs/PROJECT_STATUS.md.
 
 ## Phát triển
 Yêu cầu: Node.js `^22.12.0 || >=24`, npm. Version đã khóa: docs/decisions/004-bootstrap-versions.md.
@@ -14,9 +14,22 @@ npm run dev       # http://localhost:3000
 | `npm run lint` | ESLint |
 | `npm run typecheck` | Sinh route types (`next typegen`) rồi `tsc --noEmit` |
 | `npm run test` | Unit test (Vitest), file `src/**/*.test.ts(x)` |
-| `npm run test:integration` | Query/RLS với Supabase local (từ TASK-002; hiện chưa có test) |
+| `npm run test:integration` | RLS và toàn vẹn dữ liệu với Supabase local (cần `db:start`) |
 | `npm run test:e2e` | Playwright trên bản build production, thư mục `tests/e2e` |
 | `npm run build` / `npm run start` | Build và chạy production local |
+
+### Database local (Supabase)
+Yêu cầu Docker đang chạy. Khóa local do CLI sinh, không commit.
+
+```bash
+npm run db:start          # khởi động Supabase local (Postgres, Auth, Data API, Mailpit)
+npm run db:env            # ghi NEXT_PUBLIC_SUPABASE_URL/PUBLISHABLE_KEY vào .env.local
+npm run db:reset          # tạo lại DB từ supabase/migrations
+npm run db:lint           # kiểm tra schema/hàm
+npm run db:types          # sinh src/types/database.ts sau khi đổi schema
+npm run test:integration  # RLS/toàn vẹn dữ liệu (cần db:start)
+npm run db:stop
+```
 
 E2E cần Chromium cho Playwright: `npx playwright install chromium`. Nếu môi trường đã có sẵn Chromium khác version, đặt `PLAYWRIGHT_CHROMIUM_EXECUTABLE=/đường/dẫn/chrome`.
 

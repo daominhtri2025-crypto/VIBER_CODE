@@ -1,5 +1,5 @@
 # TASK-003: Schema học viên, role và RLS cá nhân
-Status: pending
+Status: done (06/10/2026; thực hiện cùng TASK-002 — xem kết quả ở [002](002-schema-content.md))
 
 ## Mục tiêu
 Dữ liệu học viên được tách biệt theo người dùng; không ai tự nâng quyền.

@@ -1,5 +1,7 @@
 # Data model (baseline tối thiểu)
-Trạng thái: **proposed**. Task 002–004 xác minh khi viết migration. Bảng dưới đây là đặc tả, không phải SQL đã chạy.
+Trạng thái: **implemented** (TASK-002, 06/10/2026) — migration trong `supabase/migrations/`, type sinh ở `src/types/database.ts`. Khi tài liệu và migration khác nhau, migration là nguồn sự thật về chi tiết kỹ thuật; cập nhật tài liệu này cùng migration mới.
+
+Chi tiết triển khai: slug là domain `public.slug`; enum `learning_language`, `skill_level`, `content_status`, `app_role`; `video_url` chỉ nhận `https://www.youtube-nocookie.com/embed/<id 11 ký tự>` (Q07); unique vị trí là `deferrable` để sắp thứ tự trong transaction; hàm kiểm tra nằm ở schema `private` ([ADR-005](../decisions/005-supabase-local-and-rls-testing.md)). Không có bảng nhật ký hệ thống (Q16).
 
 ## 1. Quy ước chung
 - PK là `uuid` (trừ bảng nối dùng PK ghép); thời gian dùng `timestamptz`; bảng nội dung có `created_at`, `updated_at`.

@@ -1,5 +1,5 @@
 # ADR-002 — Thực thi phân quyền nội dung public/private
-Status: proposed (06/10/2026). Xác nhận ở task 002.
+Status: accepted (06/10/2026, TASK-002) — triển khai đúng phương án A; P-2, P-4, P-5 pass với client thật.
 
 ## Bối cảnh
 Metadata bài học/bài tập là public, còn nội dung (body, đề, gợi ý, lời giải) chỉ dành cho người đủ điều kiện. RLS của PostgreSQL lọc theo **hàng**, không theo **cột**: nếu anon có SELECT trên `lessons` chứa `body_md`, body có thể bị đọc trực tiếp qua Data API.

@@ -1,5 +1,5 @@
 # ADR-003 — Danh tính, vai trò và provision admin
-Status: proposed (06/10/2026). Xác nhận ở task 003.
+Status: accepted (06/10/2026, TASK-002) — trigger `on_auth_user_created`, hàm `private.is_admin()`; P-9, P-10 pass. Hàm kiểm tra đặt ở schema `private` thay vì `public` (ADR-005).
 
 ## Bối cảnh
 Cần phân biệt student/admin mà không để client tự nâng quyền. `user_metadata` trong Supabase Auth do client gửi lúc đăng ký, nên không đáng tin cho phân quyền.

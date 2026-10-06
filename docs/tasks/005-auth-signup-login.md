@@ -11,7 +11,7 @@ Người dùng tạo tài khoản và duy trì phiên đăng nhập an toàn.
 SITEMAP, USER_FLOWS §2, ADR-003
 
 ## Phạm vi
-- Supabase client server/browser theo SDK đã chọn; xử lý refresh session.
+- Supabase client server/browser đã có (TASK-002, `src/lib/supabase`); bổ sung làm mới session ở proxy theo tài liệu Next 16.
 - `/register`, `/login`, đăng xuất, `/auth/callback` (xác thực email nếu bật).
 - Header hiển thị trạng thái đăng nhập; redirect `next` an toàn (chỉ đường dẫn nội bộ).
 

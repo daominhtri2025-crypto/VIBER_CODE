@@ -42,6 +42,7 @@ Không ai có DELETE trên bảng học viên trong MVP. Không ai có UPDATE tr
 - Storage: chỉ một bucket public cho ảnh bài học/đề; không chứa đáp án bị khóa (Q06).
 
 ## 4. Ca kiểm thử bắt buộc (dùng lại ở task 002, 003, 014, 015, 017, 022)
+Đã hiện thực ở tầng DB tại `tests/integration/rls.test.ts` (TASK-002). P-13 ở tầng DB kiểm tra ghi nội dung trực tiếp; tầng server action kiểm tra lại ở 017.
 | # | Chủ thể | Hành vi | Kỳ vọng |
 |---|---|---|---|
 | P-1 | K | SELECT courses/lessons draft hoặc archived | 0 dòng |
