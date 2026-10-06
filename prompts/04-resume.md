@@ -1,0 +1,1 @@
+Tiếp tục dự án. Đọc CLAUDE.md, docs/PROJECT_STATUS.md và task đang in_progress/blocked. Khảo sát git diff và code liên quan, giữ thay đổi của người dùng. Tóm tắt tình trạng và tiếp tục task đã được giao nếu không bị chặn. Không tự chọn mở rộng scope hoặc deploy. Báo kết quả kiểm tra và bước tiếp khi hoàn tất.

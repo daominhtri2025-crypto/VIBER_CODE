@@ -1,0 +1,1 @@
+Rà soát task vừa hoàn thành theo tiêu chí nghiệm thu: hành vi người dùng, phân quyền trực tiếp qua dữ liệu/API, trạng thái lỗi, responsive và checks. Chỉ báo bằng chứng quan sát được. Sửa lỗi trong scope nếu có và chạy lại kiểm tra liên quan. Không mở rộng chức năng; cập nhật PROJECT_STATUS.md và nêu các mục chưa xác minh.

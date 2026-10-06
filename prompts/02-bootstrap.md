@@ -1,0 +1,1 @@
+Đọc CLAUDE.md, PROJECT_STATUS.md và task 001. Thực hiện bootstrap trong dự án hiện tại, giữ bộ tài liệu. Kiểm tra version từ tài liệu chính thức, ghi ADR, cài dependency tối thiểu và lockfile. Thiết lập lint/typecheck/test/build. Chỉ làm phạm vi task 001, không triển khai auth/data hay deploy. Chạy checks, cập nhật trạng thái và báo kết quả thật.

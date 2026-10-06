@@ -1,0 +1,1 @@
+Đọc CLAUDE.md, docs/PROJECT_STATUS.md và task 000. Rà soát bộ đặc tả, phát hiện mâu thuẫn, thiếu dữ liệu/phân quyền và chỗ chưa rõ. Sửa các chi tiết tài liệu nhỏ, ghi giả định; hỏi khi thay đổi phạm vi hoặc quyền. Chỉ làm tài liệu, chưa khởi tạo app, cài dependency hoặc tạo database. Cập nhật trạng thái và báo các điểm cần chốt.
