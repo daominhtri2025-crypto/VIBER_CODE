@@ -12,7 +12,9 @@ Website học lập trình tiếng Việt cho học sinh tiểu học và THCS: 
 Yêu cầu hiện tại của người dùng xác định phạm vi được giao. Nếu nó thay đổi đặc tả, cập nhật tài liệu bị ảnh hưởng. ADR ghi quyết định kỹ thuật; task ghi nghiệm thu; ACCESS_CONTROL là nguồn duy nhất về quyền. Nếu tài liệu mâu thuẫn ở phạm vi, dữ liệu hoặc quyền, nêu mâu thuẫn và hỏi trước phần phụ thuộc. Tự giải quyết chi tiết nhỏ, dễ sửa và ghi giả định.
 
 ## Stack dự kiến
-Next.js App Router, TypeScript strict, Tailwind CSS, Supabase PostgreSQL/Auth/Storage; npm. Kiểm tra tài liệu chính thức và version tương thích ở bootstrap, ghi vào ADR và lockfile. Không tự đổi stack hoặc thêm dịch vụ trả phí.
+Next.js App Router, TypeScript strict, Tailwind CSS, Supabase PostgreSQL/Auth/Storage; npm. Kiểm tra tài liệu chính thức và version tương thích ở bootstrap, ghi vào ADR và lockfile. Không tự đổi stack hoặc thêm dịch vụ trả phí. Version đã khóa: docs/decisions/004-bootstrap-versions.md.
+Next.js 16 có thay đổi API so với dữ liệu huấn luyện; trước khi viết mã Next.js, tra tài liệu trong node_modules/next/dist/docs (xem AGENTS.md):
+@AGENTS.md
 
 ## Cấu trúc
 src/app: route và layout. src/features: nghiệp vụ. src/components: UI dùng chung. src/lib: tích hợp/tiện ích. supabase/migrations: thay đổi schema. Chỉ tạo file/thư mục khi cần; không tạo abstraction dư thừa.

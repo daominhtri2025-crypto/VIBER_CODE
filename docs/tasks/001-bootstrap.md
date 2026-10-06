@@ -1,5 +1,5 @@
 # TASK-001: Khởi tạo dự án
-Status: pending
+Status: done
 
 ## Mục tiêu
 Có khung Next.js chạy local, đủ công cụ kiểm tra để các task sau dùng.
@@ -12,7 +12,7 @@ ARCHITECTURE, FOLDER_STRUCTURE, ADR-001, .claude/rules/coding.md
 
 ## Phạm vi
 - Khởi tạo Next.js App Router + TypeScript strict + Tailwind trong thư mục gốc, giữ nguyên docs.
-- Xác minh version stable/tương thích từ tài liệu chính thức; ghi ADR-004 (versions, công cụ test); commit lockfile.
+- Xác minh version stable/tương thích từ tài liệu chính thức; ghi [ADR-004](../decisions/004-bootstrap-versions.md) (versions, công cụ test); commit lockfile.
 - Scripts: `lint`, `typecheck`, `test`, `test:integration`, `test:e2e`, `build` (D14). `test:integration`/`test:e2e` được phép chỉ có 1 smoke test.
 - Trang chủ tạm tiếng Việt có nhãn rõ là trang khởi tạo; `.env.example` đúng tên biến của SDK đã chọn.
 - README: yêu cầu môi trường, cách cài, chạy, kiểm tra.

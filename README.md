@@ -1,7 +1,29 @@
-# Coding Academy — Bộ hướng dẫn Claude Code
-Phiên bản 1.0 · 06/10/2026 · Ngôn ngữ: tiếng Việt.
+# Coding Academy
+Website học lập trình Scratch và Python bằng tiếng Việt cho học sinh tiểu học và THCS. Trạng thái: đã khởi tạo khung Next.js (TASK-001); chưa có auth, database hay chức năng học tập. Xem docs/PROJECT_STATUS.md.
 
-Đây là bộ đặc tả và hướng dẫn, chưa phải ứng dụng chạy được. Không có dependency, database hay tài khoản được tạo sẵn.
+## Phát triển
+Yêu cầu: Node.js `^22.12.0 || >=24`, npm. Version đã khóa: docs/decisions/004-bootstrap-versions.md.
+
+```bash
+npm ci            # cài đúng lockfile
+npm run dev       # http://localhost:3000
+```
+
+| Script | Mục đích |
+|---|---|
+| `npm run lint` | ESLint |
+| `npm run typecheck` | Sinh route types (`next typegen`) rồi `tsc --noEmit` |
+| `npm run test` | Unit test (Vitest), file `src/**/*.test.ts(x)` |
+| `npm run test:integration` | Query/RLS với Supabase local (từ TASK-002; hiện chưa có test) |
+| `npm run test:e2e` | Playwright trên bản build production, thư mục `tests/e2e` |
+| `npm run build` / `npm run start` | Build và chạy production local |
+
+E2E cần Chromium cho Playwright: `npx playwright install chromium`. Nếu môi trường đã có sẵn Chromium khác version, đặt `PLAYWRIGHT_CHROMIUM_EXECUTABLE=/đường/dẫn/chrome`.
+
+---
+
+# Bộ hướng dẫn Claude Code
+Phiên bản 1.0 · 06/10/2026 · Ngôn ngữ: tiếng Việt.
 
 ## Bắt đầu
 1. Clone repo VIBER_CODE và mở terminal tại thư mục gốc repo.
@@ -17,7 +39,7 @@ CLAUDE.md là điểm vào. Quy tắc chuyên biệt nằm trong .claude/rules; 
 Thương hiệu Coding Academy là tên tạm. MVP miễn phí, chỉ admin và student; chưa có marketplace, thanh toán, lớp học hay chạy code. Stack dự kiến: Next.js App Router, TypeScript, Tailwind CSS, Supabase. Version cụ thể được kiểm tra và khóa khi bootstrap.
 
 ## Kiểm tra
-Bộ tài liệu không có npm scripts. Task 001 sẽ thiết lập lint, typecheck, test và build. Đừng chạy npm install trước khi đã giao nhiệm vụ bootstrap.
+Xem mục Phát triển ở trên. Dùng `npm ci` (không đổi package manager).
 
 ## Tham khảo
 - https://code.claude.com/docs/en/memory

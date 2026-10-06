@@ -1,6 +1,6 @@
 # Architecture
 ## Stack baseline
-Next.js App Router + TypeScript strict + Tailwind; Supabase Auth/Postgres/Storage; npm. Bootstrap kiểm tra version stable và tương thích từ nguồn chính thức, ghi ADR, commit lockfile. Không ghi version đoán trong tài liệu.
+Next.js App Router + TypeScript strict + Tailwind; Supabase Auth/Postgres/Storage; npm. Version đã xác minh và khóa ở ADR-004 (Next.js 16.3, React 19.2, TypeScript 5.9, Tailwind 4.3); lockfile được commit. Không ghi version đoán trong tài liệu.
 ## Luồng dữ liệu
 UI → server component/query hoặc server action → validation + quyền → Supabase client theo session → RLS → database.
 Browser client chỉ dùng ở phần cần tương tác/auth. Secret không vào client. Route/API không mở endpoint trùng server action nếu không có nhu cầu.

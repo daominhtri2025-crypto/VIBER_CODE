@@ -4,7 +4,7 @@ Triển khai theo thứ tự; mỗi task có status riêng. PROJECT_STATUS là �
 | Task | Nhiệm vụ | Phụ thuộc | Câu hỏi liên quan | Status |
 |---|---|---|---|---|
 | [000](000-review-spec.md) | Rà soát đặc tả | Không | — | done |
-| [001](001-bootstrap.md) | Khởi tạo dự án | 000 | — | pending |
+| [001](001-bootstrap.md) | Khởi tạo dự án | 000 | — | done |
 | [002](002-schema-content.md) | Schema nội dung và RLS nội dung | 001 | Q03, Q04, Q12 | pending |
 | [003](003-schema-learner.md) | Schema học viên, role và RLS cá nhân | 002 | — | pending |
 | [004](004-seed-and-types.md) | Seed demo, DB types và provision admin | 003 | — | pending |
