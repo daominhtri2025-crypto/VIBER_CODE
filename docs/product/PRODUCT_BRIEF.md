@@ -3,6 +3,7 @@
 Học viện lập trình tiếng Việt cho học sinh: thư viện kiến thức kết hợp khóa học có cấu trúc, luyện tập và tiến độ.
 ## Đối tượng
 Tiểu học học Scratch; THCS học Python. Phụ huynh không có role riêng trong MVP. Giáo viên vận hành qua role admin; chức năng quản lý lớp để sau.
+Vì người dùng chủ yếu là trẻ vị thành niên, MVP chỉ thu thập email, mật khẩu và tên hiển thị; không thu thập ngày sinh, trường, lớp, số điện thoại hay ảnh. Cơ chế đồng ý của cha mẹ/người giám hộ phải được chốt trước khi phát hành public (Q01, Q02).
 ## Giá trị
 Mục tiêu học rõ, ví dụ dễ hiểu, gợi ý nhiều mức, liên kết bài học–bài tập, ghi nhớ bài đang học.
 ## Nội dung khởi đầu

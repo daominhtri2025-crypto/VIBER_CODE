@@ -9,7 +9,7 @@
 Khởi động tại thư mục gốc. Yêu cầu đọc CLAUDE.md, PROJECT_STATUS.md và task hiện tại. Kiểm tra các hướng dẫn đã nạp bằng /memory theo phiên bản Claude Code đang dùng. Nếu rule theo đường dẫn chưa được nạp, yêu cầu đọc file rule liên quan trực tiếp.
 
 ## Thứ tự
-Rà soát đặc tả → bootstrap → schema/RLS → auth → catalog → learning → exercises → progress → admin → nghiệm thu.
+Rà soát đặc tả (000, đã xong) → bootstrap (001) → schema/RLS/seed (002–004) → tài khoản (005–007) → trang học viên (008–016) → quản trị (017–021) → nghiệm thu (022). Chi tiết: docs/tasks/BACKLOG.md; câu hỏi cần chốt: docs/OPEN_QUESTIONS.md.
 
 ## Chốt trước khi public
 Tên thương hiệu, nội dung thật, video và quyền sử dụng, tên miền, môi trường triển khai, chính sách riêng tư. Không chặn việc lập trình local vì các mục này chưa chốt.

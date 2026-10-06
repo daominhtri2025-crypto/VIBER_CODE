@@ -1,28 +1,67 @@
-# Data model (baseline)
-Tất cả PK UUID; timestamp timestamptz; FK có hành vi delete rõ trong migration. Mặc định không cascade xóa tiến độ khi xóa nội dung; ưu tiên archive hoặc chặn xóa được tham chiếu.
+# Data model (baseline tối thiểu)
+Trạng thái: **proposed**. Task 002–004 xác minh khi viết migration. Bảng dưới đây là đặc tả, không phải SQL đã chạy.
 
-| Table | Trường chính | Ràng buộc |
+## 1. Quy ước chung
+- PK là `uuid` (trừ bảng nối dùng PK ghép); thời gian dùng `timestamptz`; bảng nội dung có `created_at`, `updated_at`.
+- `slug`: chữ thường ASCII, số, dấu `-`; độ dài 3–80; sinh từ tiêu đề tiếng Việt bằng cách bỏ dấu, admin có thể sửa.
+- Enum (dạng `check` hoặc Postgres enum, chốt ở task 002):
+  - `language` ∈ {scratch, python}
+  - `level`, `difficulty` ∈ {beginner, intermediate, advanced}
+  - `content_status` ∈ {draft, published, archived}
+  - `role` ∈ {student, admin}
+- Không xóa dây chuyền (cascade) dữ liệu học viên khi xóa nội dung: FK từ bảng học viên tới nội dung dùng `on delete restrict`; nội dung đã được tham chiếu thì chuyển draft/archived. Riêng bảng nội dung tách (`*_contents`, `exercise_solutions`) cascade theo bản ghi cha.
+- Nội dung public/private được tách bảng để RLS thực thi theo hàng ([ADR-002](../decisions/002-content-projection.md)).
+
+## 2. Bảng
+### Danh tính và vai trò ([ADR-003](../decisions/003-identity-and-roles.md))
+| Bảng | Trường | Ràng buộc |
 |---|---|---|
-| profiles | id → auth.users, display_name, created_at | id unique; không chứa role |
-| user_roles | user_id → auth.users, role | PK user_id; role student/admin; không cho user tự ghi |
-| learning_paths | id, slug, title, language, status | slug unique; draft/published |
-| path_courses | path_id, course_id, position | PK(path_id,course_id); thứ tự unique trong path |
-| courses | id, slug, title, summary, language, level, status | slug unique; draft/published/archived |
-| chapters | id, course_id, title, position | unique(course_id,position) |
-| lessons | id, chapter_id, slug, title, body_md, video_url, is_preview, status, position | slug global unique; unique(chapter_id,position) |
-| enrollments | user_id, course_id, created_at | PK(user_id,course_id) |
-| lesson_progress | user_id, lesson_id, completed_at, last_viewed_at | PK(user_id,lesson_id) |
-| exercises | id, course_id, lesson_id nullable, slug, title, statement_md, hint1_md, hint2_md, language, difficulty, status | slug unique; lesson nếu có phải thuộc cùng course |
-| exercise_solutions | exercise_id, solution_md | PK exercise_id; riêng để khóa nội dung |
-| exercise_attempts | user_id, exercise_id, tried_at | PK(user_id,exercise_id); chỉ ghi own |
+| profiles | id → auth.users, display_name, created_at, updated_at | PK id, cascade khi xóa user; display_name 1–50 ký tự sau trim; không chứa role |
+| user_roles | user_id → auth.users, role, granted_at | PK user_id (mỗi user một role); mặc định student; user không có quyền ghi |
 
-## Quy tắc
-- language: scratch/python; level và difficulty: beginner/intermediate/advanced.
-- lesson_id thuộc course kiểm tra tại server và constraint/trigger phù hợp.
-- Enrollment miễn phí chỉ cho published course. Bài published trong draft course vẫn bị ẩn public.
-- Publish trạng thái chỉ qua admin; kiểm tra dữ liệu đầy đủ tại server.
-- Tiến độ = số bài published đã hoàn thành / tổng bài published; 0 bài = 0%; không tính preview riêng hai lần.
-- Nếu thêm bài mới, phần trăm có thể giảm; giữ lịch sử hoàn thành cũ.
-- last_viewed dùng cho học tiếp; fallback bài chưa hoàn thành đầu tiên.
-- Role admin đầu tiên provision bằng thao tác quản trị server/manual được ghi hướng dẫn; không có 'tự trở thành admin'.
-- Schema migration phải xác minh chi tiết triển khai và index, không coi bảng này là SQL đã chạy.
+### Nội dung
+| Bảng | Trường | Ràng buộc |
+|---|---|---|
+| learning_paths (Q03) | id, slug, title, description, language, status, position | slug unique |
+| path_courses (Q03) | path_id, course_id, position | PK(path_id, course_id); unique(path_id, position) |
+| courses | id, slug, title, summary, objectives_md, requirements_md, cover_image_path, language, level, status, is_featured, position | slug unique; summary ≤ 300 ký tự |
+| chapters | id, course_id, title, position | unique(course_id, position); không có status riêng |
+| lessons | id, chapter_id, slug, title, summary, is_preview, status, position | slug unique toàn cục; unique(chapter_id, position) |
+| lesson_contents | lesson_id (PK, FK), body_md, video_url | cascade theo lesson; video_url null hoặc HTTPS thuộc allowlist (Q07) |
+| exercises | id, course_id, lesson_id (nullable), slug, title, difficulty, status, position | slug unique; unique(course_id, position); lesson (nếu có) phải thuộc cùng course (trigger) |
+| exercise_contents | exercise_id (PK, FK), statement_md, hint1_md, hint2_md (nullable) | cascade theo exercise |
+| exercise_solutions | exercise_id (PK, FK), solution_md | cascade theo exercise; MVP chỉ văn bản/mã (Q06) |
+
+`language` của bài tập suy ra từ khóa, không lưu lặp lại.
+
+### Dữ liệu học viên
+| Bảng | Trường | Ràng buộc |
+|---|---|---|
+| enrollments | user_id, course_id, created_at | PK(user_id, course_id) |
+| lesson_progress | user_id, lesson_id, last_viewed_at, completed_at (nullable) | PK(user_id, lesson_id) |
+| exercise_attempts | user_id, exercise_id, tried_at | PK(user_id, exercise_id); chỉ insert, không sửa |
+
+Index tối thiểu (xác minh theo truy vấn thực tế ở task 002/003): `chapters(course_id)`, `lessons(chapter_id)`, `exercises(course_id)`, `exercises(lesson_id)`, `lesson_progress(user_id, last_viewed_at desc)`, `enrollments(course_id)`.
+
+## 3. Vị từ hiển thị (dùng chung cho RLS và truy vấn server)
+- `course_live(c)` := `c.status = 'published'`
+- `lesson_live(l)` := `l.status = 'published'` ∧ `course_live(course of l)`
+- `exercise_live(x)` := `x.status = 'published'` ∧ `course_live(x.course)`
+- `enrolled(u, c)` := ∃ enrollments(u, c)
+- Chương chỉ hiển thị cho người không phải admin khi khóa live và chương có ít nhất một bài live.
+- Bài tập gắn với bài học draft vẫn hiển thị nếu bài tập live; liên kết tới bài học bị ẩn.
+- Archived: ẩn với mọi chủ thể trừ admin; dữ liệu học viên được giữ (Q04).
+
+## 4. Quy tắc nghiệp vụ
+- **Enrollment**: chỉ khi `course_live`; insert idempotent (`on conflict do nothing`).
+- **Tiến độ khóa** = |{bài live của khóa có `completed_at` không null của user}| / |{bài live của khóa}|; mẫu số 0 → 0%. Bài preview tính như bài thường. Thêm bài mới có thể làm % giảm; lịch sử hoàn thành giữ nguyên.
+- **Ghi tiến độ**: chỉ khi `enrolled` ∧ `lesson_live`. Xem bài → upsert `last_viewed_at`; đánh dấu → set `completed_at = now()` nếu đang null; bỏ đánh dấu → set `completed_at = null`.
+- **Học tiếp** (theo khóa): bài live có `last_viewed_at` lớn nhất → nếu không có, bài live chưa hoàn thành đầu tiên theo (chapter.position, lesson.position) → nếu đã hoàn thành hết, bài live đầu tiên.
+- **Attempt**: chỉ khi `enrolled` ∧ `exercise_live`; insert idempotent.
+- **Publish** (kiểm tra tại server, nên có thêm trigger):
+  - Bài: tiêu đề và `body_md` không rỗng.
+  - Bài tập: `statement_md`, `hint1_md`, `solution_md` không rỗng (D11).
+  - Khóa: có ít nhất một bài published.
+  - Không cho unpublish/archive bài published cuối cùng của khóa đang published (D10).
+- **Sắp thứ tự**: đổi vị trí thực hiện trong một transaction (RPC) để không vi phạm unique tạm thời; dùng constraint `deferrable` hoặc đánh số lại.
+- **Provision admin**: chỉ qua SQL do chủ database chạy (hướng dẫn ở task 004); không có UI hoặc API tự nâng quyền.

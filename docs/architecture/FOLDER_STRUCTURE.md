@@ -5,7 +5,7 @@
 | src/app/(auth) | Auth screens |
 | src/app/(student) | Dashboard, learn, profile |
 | src/app/(admin)/admin | Admin URLs và layout |
-| src/features/auth,courses,lessons,exercises,progress | Nghiệp vụ |
+| src/features/auth, profile, paths, courses, lessons, exercises, progress, admin | Nghiệp vụ (paths phụ thuộc Q03) |
 | src/components/ui | UI tái sử dụng |
 | src/components/layout | Header, sidebar, footer |
 | src/lib/supabase | Browser/server clients |
