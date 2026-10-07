@@ -24,6 +24,7 @@ Yêu cầu Docker đang chạy. Khóa local do CLI sinh, không commit.
 ```bash
 npm run db:start          # khởi động Supabase local (Postgres, Auth, Data API, Mailpit)
 npm run db:env            # ghi NEXT_PUBLIC_SUPABASE_URL/PUBLISHABLE_KEY vào .env.local
+npm run db:setup          # reset + seed demo + tài khoản demo + .env.local (docs/operations/LOCAL_DEMO_ACCOUNTS.md)
 npm run db:reset          # tạo lại DB từ supabase/migrations
 npm run db:lint           # kiểm tra schema/hàm
 npm run db:types          # sinh src/types/database.ts sau khi đổi schema

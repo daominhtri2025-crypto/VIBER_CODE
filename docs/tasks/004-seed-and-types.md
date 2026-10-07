@@ -1,5 +1,5 @@
 # TASK-004: Seed demo, DB types và provision admin
-Status: pending
+Status: done (07/10/2026)
 
 ## Mục tiêu
 Có dữ liệu demo nhất quán để phát triển UI và hướng dẫn tạo admin.
@@ -32,6 +32,12 @@ PRODUCT_BRIEF (nội dung khởi đầu), DATA_MODEL
 | Lệnh | `npm run typecheck` | Pass |
 
 Mọi task sau 001: chạy `npm run lint`, `npm run typecheck`, `npm run test`, `npm run build` theo thay đổi.
+
+## Kết quả
+- `supabase/seed.sql` (nạp tự động khi `db:reset`), `scripts/seed-demo-users.mjs` (`npm run db:seed-users`, chỉ chạy local), `npm run db:setup`.
+- Tài liệu: `docs/operations/ADMIN_PROVISIONING.md`, `docs/operations/LOCAL_DEMO_ACCOUNTS.md`.
+- Test: `tests/integration/seed.test.ts` (7 ca); toàn bộ integration 55/55 pass.
+- Lệch so với phạm vi gốc: khóa Scratch có thêm 1 bài draft (5 bài) để phủ trường hợp "bài draft trong khóa published"; tài khoản demo tạo qua Admin API thay vì insert trực tiếp `auth.users` (tránh phụ thuộc cấu trúc nội bộ của GoTrue).
 
 ## Quy tắc hoàn thành
 Cập nhật PROJECT_STATUS: file chính, lệnh đã chạy và kết quả thật, hạn chế/blocked, giả định theo Qxx. Không làm task tiếp nếu chưa được giao.

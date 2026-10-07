@@ -22,6 +22,8 @@ docs/decisions/003-identity-and-roles.md
 docs/decisions/004-bootstrap-versions.md
 docs/decisions/005-supabase-local-and-rls-testing.md
 docs/design/UI_GUIDELINES.md
+docs/operations/ADMIN_PROVISIONING.md
+docs/operations/LOCAL_DEMO_ACCOUNTS.md
 docs/product/MVP_SCOPE.md
 docs/product/PRODUCT_BRIEF.md
 docs/product/SITEMAP.md
@@ -64,6 +66,7 @@ prompts/02-bootstrap.md
 prompts/03-implement-task.md
 prompts/04-resume.md
 prompts/05-review.md
+scripts/seed-demo-users.mjs
 scripts/supabase-status.mjs
 scripts/write-env-local.mjs
 src/app/favicon.ico
@@ -83,12 +86,14 @@ supabase/migrations/20261006090000_content_schema.sql
 supabase/migrations/20261006090100_identity_and_learner.sql
 supabase/migrations/20261006090200_content_invariants.sql
 supabase/migrations/20261006090300_rls_policies.sql
+supabase/seed.sql
 tests/e2e/smoke.spec.ts
 tests/integration/README.md
 tests/integration/helpers/fixtures.ts
 tests/integration/helpers/supabase.ts
 tests/integration/rls.test.ts
 tests/integration/schema.test.ts
+tests/integration/seed.test.ts
 tsconfig.json
 tsconfig.tsbuildinfo
 vitest.config.mts

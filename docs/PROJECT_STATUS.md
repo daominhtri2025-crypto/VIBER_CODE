@@ -2,9 +2,27 @@
 Cập nhật: 06/10/2026.
 
 ## Hiện tại
-TASK-000, 001, 002 **done**; TASK-003 done cùng 002. Đã có schema 14 bảng + RLS trên Supabase local, client Supabase server/browser và bộ integration test quyền. Chưa có giao diện auth hay chức năng học tập.
+TASK-000 → 004 **done** (003 làm cùng 002). Có schema 14 bảng + RLS, dữ liệu demo, tài khoản demo local và hướng dẫn cấp quyền admin. Chưa có giao diện auth hay chức năng học tập.
 
-## Lần cập nhật gần nhất — TASK-002 (06/10/2026)
+## Lần cập nhật gần nhất — TASK-004 (07/10/2026)
+- **Status**: done.
+- **Xác minh lại TASK-002 trên container mới** (Docker khởi động lại): `db:reset` 4 migration OK, type sinh lại khớp bản commit, 14/14 bảng bật RLS, integration 48/48, unit 8/8, lint/typecheck/build OK.
+- **Thay đổi chính**: `supabase/seed.sql`; `scripts/seed-demo-users.mjs`; `assertLocalUrl` trong `scripts/supabase-status.mjs`; scripts `db:seed-users`, `db:setup`; `tests/integration/seed.test.ts`; `docs/operations/ADMIN_PROVISIONING.md`, `docs/operations/LOCAL_DEMO_ACCOUNTS.md`; README; task 004, BACKLOG.
+- **Lệnh đã chạy và kết quả**:
+  | Lệnh | Kết quả |
+  |---|---|
+  | `npm run db:setup` | reset + seed + 3 tài khoản demo + `.env.local`, exit 0 |
+  | `npm run db:seed-users` chạy lần 2 | Idempotent, không lỗi |
+  | Đăng nhập thử học viên A và admin bằng publishable key | OK; role student/admin đúng; A có 1 enrollment |
+  | `npm run test:integration` | **55/55** pass (schema 18, rls 30, seed 7) |
+  | `npm run lint`, `typecheck`, `test`, `build`, `db:lint` | exit 0 |
+- **Hạn chế**: mật khẩu demo ghi trong tài liệu (chỉ local, script chặn môi trường khác). Q16 (audit log) vẫn mở.
+
+## Bước tiếp
+1. Trả lời Q16 trước TASK-017.
+2. TASK-005: đăng ký/đăng nhập/đăng xuất, proxy làm mới session.
+
+## Lịch sử — TASK-002 (06/10/2026)
 - **Status**: done. Theo yêu cầu người dùng, gộp phần schema/RLS của TASK-003 và tạo Supabase client sớm (vốn thuộc 005).
 - **Thay đổi chính**:
   - `supabase/config.toml` (tắt realtime/edge/analytics, Storage tắt tới 021), 4 migration trong `supabase/migrations/`: bảng nội dung; danh tính + học viên + trigger đăng ký; bất biến publish/cấu trúc; hàm `private.*` + 28 policy + grant theo cột.
@@ -32,11 +50,6 @@ TASK-000, 001, 002 **done**; TASK-003 done cùng 002. Đã có schema 14 bảng 
   - Q01, Q02, Q11, Q13 vẫn mở (cần quyết định pháp lý/thương hiệu trước khi public).
   - Supabase CLI cảnh báo type sinh ra chưa được format; giữ nguyên đầu ra của CLI.
 - **Giả định**: Q04–Q10, Q12, Q14, Q15 theo mặc định (người dùng đồng ý 06/10/2026); Q03 giữ bảng lộ trình.
-
-## Bước tiếp
-1. Trả lời Q16 (có cần audit log không).
-2. TASK-004: seed demo `[Demo]` + tài liệu provision admin.
-3. TASK-005: đăng ký/đăng nhập, proxy làm mới session.
 
 ## Lịch sử — TASK-001 (06/10/2026)
 - **Status**: done.

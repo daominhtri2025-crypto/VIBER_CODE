@@ -17,3 +17,11 @@ export function readLocalSupabaseStatus() {
   }
   return JSON.parse(output.slice(start));
 }
+
+/** Chặn thao tác chỉ dành cho local (tài khoản demo, mật khẩu demo) trên môi trường khác. */
+export function assertLocalUrl(url) {
+  const { hostname } = new URL(url);
+  if (!["127.0.0.1", "localhost", "[::1]"].includes(hostname)) {
+    throw new Error(`Từ chối thao tác chỉ dành cho local trên máy chủ: ${hostname}`);
+  }
+}

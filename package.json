@@ -20,7 +20,9 @@
     "db:reset": "supabase db reset",
     "db:lint": "supabase db lint --level warning --fail-on warning",
     "db:types": "supabase gen types typescript --local > src/types/database.ts",
-    "db:env": "node scripts/write-env-local.mjs"
+    "db:env": "node scripts/write-env-local.mjs",
+    "db:seed-users": "node scripts/seed-demo-users.mjs",
+    "db:setup": "npm run db:reset && npm run db:seed-users && npm run db:env"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.7",
