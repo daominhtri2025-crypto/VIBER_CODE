@@ -18,7 +18,15 @@ export async function SiteHeader() {
         <nav aria-label="Tài khoản" className="flex flex-wrap items-center gap-1">
           {user ? (
             <>
+              {user.isAdmin ? (
+                <Link href="/admin" className={linkClass}>
+                  Quản trị
+                </Link>
+              ) : null}
               <Link href="/dashboard" className={linkClass}>
+                Trang của tôi
+              </Link>
+              <Link href="/profile" className={linkClass} aria-label={`Hồ sơ: ${user.displayName}`}>
                 {user.displayName}
               </Link>
               <form action={signOut}>

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { hasFreshRecovery } from "./recovery";
-import { parseEmailOnly, parseNewPassword } from "./validation";
+import { parseChangePassword, parseDisplayName, parseEmailOnly, parseNewPassword } from "./validation";
 
 const NOW = 1_800_000_000;
 
@@ -41,5 +41,35 @@ describe("parseEmailOnly / parseNewPassword", () => {
       ok: false,
       fieldErrors: { password: "Mật khẩu cần ít nhất 8 ký tự.", confirmPassword: "Mật khẩu nhập lại không khớp." },
     });
+  });
+});
+
+describe("parseDisplayName / parseChangePassword", () => {
+  const form = (values: Record<string, string>) => {
+    const data = new FormData();
+    for (const [key, value] of Object.entries(values)) data.set(key, value);
+    return data;
+  };
+
+  it("tên hiển thị bắt buộc, 1–50 ký tự, được chuẩn hóa khoảng trắng", () => {
+    expect(parseDisplayName(form({ displayName: "  Bé   Na " }))).toEqual({ ok: true, data: { displayName: "Bé Na" } });
+    expect(parseDisplayName(form({ displayName: "   " }))).toEqual({
+      ok: false,
+      fieldErrors: { displayName: "Nhập tên hiển thị." },
+    });
+    expect(parseDisplayName(form({ displayName: "x".repeat(51) })).ok).toBe(false);
+  });
+
+  it("đổi mật khẩu cần mật khẩu hiện tại và mật khẩu mới khác mật khẩu cũ", () => {
+    expect(parseChangePassword(form({ currentPassword: "", password: "moi-12345", confirmPassword: "moi-12345" }))).toEqual({
+      ok: false,
+      fieldErrors: { currentPassword: "Nhập mật khẩu hiện tại." },
+    });
+    expect(
+      parseChangePassword(form({ currentPassword: "cu-12345", password: "cu-12345", confirmPassword: "cu-12345" })),
+    ).toEqual({ ok: false, fieldErrors: { password: "Mật khẩu mới cần khác mật khẩu hiện tại." } });
+    expect(
+      parseChangePassword(form({ currentPassword: "cu-12345", password: "moi-12345", confirmPassword: "moi-12345" })),
+    ).toEqual({ ok: true, data: { currentPassword: "cu-12345", password: "moi-12345" } });
   });
 });

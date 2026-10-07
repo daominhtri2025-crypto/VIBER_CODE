@@ -47,3 +47,9 @@ export async function waitForAuthLink(to: string, timeoutMs = 15_000): Promise<s
   }
   throw new Error(`Không thấy email xác thực gửi tới ${to}`);
 }
+
+/** Provision admin cho dữ liệu kiểm thử (tương đương SQL trong ADMIN_PROVISIONING.md). */
+export async function promoteToAdmin(userId: string): Promise<void> {
+  const { error } = await serviceClient().from("user_roles").update({ role: "admin" }).eq("user_id", userId);
+  if (error) throw new Error(`promoteToAdmin: ${error.message}`);
+}

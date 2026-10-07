@@ -36,8 +36,13 @@ function passwordError(password: string): string | undefined {
   return undefined;
 }
 
+/** Chuẩn hóa tên hiển thị: NFC, bỏ khoảng trắng thừa. */
+export function normalizeDisplayName(raw: string): string {
+  return raw.normalize("NFC").trim().replace(/\s+/g, " ");
+}
+
 export function parseSignUp(formData: FormData): ParseResult<SignUpInput, SignUpField> {
-  const displayName = readText(formData, "displayName").normalize("NFC").trim().replace(/\s+/g, " ");
+  const displayName = normalizeDisplayName(readText(formData, "displayName"));
   const email = normalizeEmail(readText(formData, "email"));
   const password = readText(formData, "password");
   const confirmPassword = readText(formData, "confirmPassword");
@@ -88,4 +93,32 @@ export function parseNewPassword(formData: FormData): ParseResult<{ password: st
   if (confirmPassword !== password) fieldErrors.confirmPassword = "Mật khẩu nhập lại không khớp.";
   if (Object.keys(fieldErrors).length > 0) return { ok: false, fieldErrors };
   return { ok: true, data: { password } };
+}
+
+export type DisplayNameField = "displayName";
+
+/** Sửa hồ sơ: tên hiển thị bắt buộc 1–50 ký tự (khớp ràng buộc DB). */
+export function parseDisplayName(formData: FormData): ParseResult<{ displayName: string }, DisplayNameField> {
+  const displayName = normalizeDisplayName(readText(formData, "displayName"));
+  if (displayName === "") return { ok: false, fieldErrors: { displayName: "Nhập tên hiển thị." } };
+  if (displayName.length > DISPLAY_NAME_MAX_LENGTH) {
+    return { ok: false, fieldErrors: { displayName: `Tên hiển thị tối đa ${DISPLAY_NAME_MAX_LENGTH} ký tự.` } };
+  }
+  return { ok: true, data: { displayName } };
+}
+
+export type ChangePasswordField = "currentPassword" | NewPasswordField;
+
+export function parseChangePassword(
+  formData: FormData,
+): ParseResult<{ currentPassword: string; password: string }, ChangePasswordField> {
+  const currentPassword = readText(formData, "currentPassword");
+  const next = parseNewPassword(formData);
+  const fieldErrors: FieldErrors<ChangePasswordField> = next.ok ? {} : { ...next.fieldErrors };
+  if (currentPassword === "") fieldErrors.currentPassword = "Nhập mật khẩu hiện tại.";
+  if (next.ok && currentPassword === next.data.password) {
+    fieldErrors.password = "Mật khẩu mới cần khác mật khẩu hiện tại.";
+  }
+  if (Object.keys(fieldErrors).length > 0 || !next.ok) return { ok: false, fieldErrors };
+  return { ok: true, data: { currentPassword, password: next.data.password } };
 }

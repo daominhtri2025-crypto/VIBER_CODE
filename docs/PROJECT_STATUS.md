@@ -2,9 +2,26 @@
 Cập nhật: 06/10/2026.
 
 ## Hiện tại
-TASK-000 → 006 **done** (003 làm cùng 002). Có đăng ký (xác thực email), đăng nhập, đăng xuất, khôi phục mật khẩu. Chưa có hồ sơ, trang học.
+TASK-000 → 007 **done** (003 làm cùng 002). Hoàn tất nhóm Nền tảng và Tài khoản: schema + RLS, dữ liệu demo, đăng ký/đăng nhập/đăng xuất, khôi phục mật khẩu, hồ sơ, bảo vệ route học viên/admin. Chưa có trang học (từ TASK-008).
 
-## Lần cập nhật gần nhất — TASK-006 (07/10/2026)
+## Lần cập nhật gần nhất — TASK-007 (07/10/2026)
+- **Status**: done.
+- **Thay đổi chính**: helper `requireUser`/`requireAdmin`; DAL có `isAdmin`; `/profile` (sửa tên, đổi mật khẩu có xác thực lại); `/admin` tối thiểu; header theo vai trò.
+- **Lệnh đã chạy và kết quả**:
+  | Lệnh | Kết quả |
+  |---|---|
+  | `npm run test` | 35/35 |
+  | `npm run test:integration` | 55/55 |
+  | `npx playwright test --retries=0` (×2) | 25/25 cả hai lần |
+  | `npm run lint`, `typecheck`, `build` | exit 0 |
+- **Lỗi phát hiện khi kiểm thử** (thuộc test, đã sửa): locator mơ hồ do tên hiển thị chứa "Quản trị" và section có accessible name trùng nhãn ô nhập.
+- **Hạn chế**: `/dashboard`, `/admin` vẫn là bản tối thiểu (016, 017).
+
+## Bước tiếp
+1. TASK-008: layout chung và trang chủ.
+2. Trả lời Q16 trước TASK-017.
+
+## Lịch sử — TASK-006 (07/10/2026)
 - **Status**: done.
 - **Thay đổi chính**: `/forgot-password`, `/reset-password`; actions `requestPasswordReset`, `updatePassword`; `hasFreshRecovery` (claim `amr`); callback phân nhánh link lỗi; liên kết "Quên mật khẩu?".
 - **Kiểm chứng thiết kế**: probe thực nghiệm trên Supabase local cho thấy `amr` = `password` (đăng nhập thường) và `recovery` (sau link khôi phục) → dùng làm điều kiện cho AC4.
@@ -17,10 +34,6 @@ TASK-000 → 006 **done** (003 làm cùng 002). Có đăng ký (xác thực emai
   | `npm run lint`, `typecheck`, `build` | exit 0 |
 - **Lỗi phát hiện khi kiểm thử** (thuộc test, đã sửa): chưa chờ đăng xuất hoàn tất trước khi mở `/login`.
 - **Hạn chế**: đổi mật khẩu khi đang đăng nhập (cần xác thực lại) thuộc TASK-007; SMTP production chưa cấu hình.
-
-## Bước tiếp
-1. TASK-007: hồ sơ và helper bảo vệ route dùng chung.
-2. Trả lời Q16 trước TASK-017.
 
 ## Lịch sử — TASK-005 (07/10/2026)
 - **Status**: done.

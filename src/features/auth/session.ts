@@ -6,6 +6,7 @@ export type CurrentUser = {
   id: string;
   email: string | null;
   displayName: string;
+  isAdmin: boolean;
 };
 
 /**
@@ -19,12 +20,17 @@ export const getCurrentUser = cache(async (): Promise<CurrentUser | null> => {
   if (error || !data?.claims?.sub) return null;
 
   const id = data.claims.sub;
-  const { data: profile } = await supabase.from("profiles").select("display_name").eq("id", id).maybeSingle();
+  // RLS chỉ cho đọc profile/role của chính mình.
+  const [{ data: profile }, { data: role }] = await Promise.all([
+    supabase.from("profiles").select("display_name").eq("id", id).maybeSingle(),
+    supabase.from("user_roles").select("role").eq("user_id", id).maybeSingle(),
+  ]);
 
   return {
     id,
     email: typeof data.claims.email === "string" ? data.claims.email : null,
     displayName: profile?.display_name ?? "Học viên",
+    isAdmin: role?.role === "admin",
   };
 });
 
