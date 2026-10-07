@@ -14,6 +14,8 @@ Next.js 16 đổi `middleware` thành `proxy` và khuyến nghị chỉ dùng pr
 7. **Mật khẩu**: tối thiểu 8 ký tự, tối đa 72 byte UTF-8 (giới hạn bcrypt); `minimum_password_length = 8` trong `supabase/config.toml` phải khớp cấu hình project production.
 8. **Log**: chỉ ghi mã lỗi/status, không ghi email hay mật khẩu.
 
+9. **Khôi phục mật khẩu** (TASK-006): `resetPasswordForEmail` → `/auth/callback?next=/reset-password`; chỉ session có `amr.method = recovery` trong 1 giờ mới đổi được mật khẩu ở `/reset-password`; phản hồi gửi email luôn trung tính. Đổi mật khẩu khi đang đăng nhập thường thuộc TASK-007 (cần xác thực lại).
+
 ## Hệ quả
 - Mọi trang có header trở thành dynamic (đọc cookie) — chấp nhận ở MVP.
 - E2E auth cần Supabase local + Mailpit; rate limit email/sign-in được nới **chỉ trong config local**.

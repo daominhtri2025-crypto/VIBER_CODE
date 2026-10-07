@@ -68,3 +68,24 @@ export function parseSignIn(formData: FormData): ParseResult<SignInInput, SignIn
   if (Object.keys(fieldErrors).length > 0) return { ok: false, fieldErrors };
   return { ok: true, data: { email, password } };
 }
+
+export type EmailOnlyField = "email";
+export type NewPasswordField = "password" | "confirmPassword";
+
+export function parseEmailOnly(formData: FormData): ParseResult<{ email: string }, EmailOnlyField> {
+  const email = normalizeEmail(readText(formData, "email"));
+  const emailIssue = emailError(email);
+  if (emailIssue) return { ok: false, fieldErrors: { email: emailIssue } };
+  return { ok: true, data: { email } };
+}
+
+export function parseNewPassword(formData: FormData): ParseResult<{ password: string }, NewPasswordField> {
+  const password = readText(formData, "password");
+  const confirmPassword = readText(formData, "confirmPassword");
+  const fieldErrors: FieldErrors<NewPasswordField> = {};
+  const passwordIssue = passwordError(password);
+  if (passwordIssue) fieldErrors.password = passwordIssue;
+  if (confirmPassword !== password) fieldErrors.confirmPassword = "Mật khẩu nhập lại không khớp.";
+  if (Object.keys(fieldErrors).length > 0) return { ok: false, fieldErrors };
+  return { ok: true, data: { password } };
+}

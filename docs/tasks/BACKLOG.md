@@ -9,7 +9,7 @@ Triển khai theo thứ tự; mỗi task có status riêng. PROJECT_STATUS là �
 | [003](003-schema-learner.md) | Schema học viên, role và RLS cá nhân | 002 | — | done (cùng 002) |
 | [004](004-seed-and-types.md) | Seed demo, DB types và provision admin | 003 | — | done |
 | [005](005-auth-signup-login.md) | Đăng ký, đăng nhập, đăng xuất | 003, 004 | Q01, Q02, Q08 | done |
-| [006](006-auth-recovery.md) | Khôi phục mật khẩu | 005 | — | pending |
+| [006](006-auth-recovery.md) | Khôi phục mật khẩu | 005 | — | done |
 | [007](007-profile-guards.md) | Hồ sơ và bảo vệ route | 005 | — | pending |
 | [008](008-layout-home.md) | Layout chung và trang chủ | 001, 004 | — | pending |
 | [009](009-paths.md) | Lộ trình học (phụ thuộc Q03) | 008 | Q03 | pending |

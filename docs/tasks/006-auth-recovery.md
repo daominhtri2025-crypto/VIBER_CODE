@@ -1,5 +1,5 @@
 # TASK-006: Khôi phục mật khẩu
-Status: pending
+Status: done (07/10/2026)
 
 ## Mục tiêu
 Người dùng quên mật khẩu đặt lại được bằng email.
@@ -29,6 +29,12 @@ USER_FLOWS §5
 | E2E | Link sai/hết hạn | Trang hướng dẫn |
 
 Mọi task sau 001: chạy `npm run lint`, `npm run typecheck`, `npm run test`, `npm run build` theo thay đổi.
+
+## Kết quả
+- Mã: `src/app/(auth)/{forgot-password,reset-password}/page.tsx`, `src/features/auth/recovery.ts`, actions `requestPasswordReset`, `updatePassword`, `hasRecoverySession` (DAL), form `ForgotPasswordForm`, `ResetPasswordForm`; callback chuyển link khôi phục lỗi về `/forgot-password?error=link`; liên kết "Quên mật khẩu?" ở trang đăng nhập.
+- **Recovery session** xác định bằng claim `amr.method = "recovery"` còn trong 1 giờ (đã kiểm chứng thực nghiệm: đăng nhập thường có `amr = password`). Kiểm tra ở cả trang và server action → người đang đăng nhập thường không đổi được mật khẩu tại đây (AC4).
+- Test: unit `src/features/auth/recovery.test.ts` (4 ca); E2E `tests/e2e/recovery.spec.ts` (6 ca, gồm link dùng lại lần 2 bị từ chối).
+- AC 1–4 đạt.
 
 ## Quy tắc hoàn thành
 Cập nhật PROJECT_STATUS: file chính, lệnh đã chạy và kết quả thật, hạn chế/blocked, giả định theo Qxx. Không làm task tiếp nếu chưa được giao.

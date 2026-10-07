@@ -3,9 +3,18 @@
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { authErrorMessage, isExistingAccountError } from "./errors";
+import { AUTH_MESSAGES, authErrorMessage, isExistingAccountError } from "./errors";
 import { safeNextPath } from "./redirect";
-import { parseSignIn, parseSignUp, type SignInField, type SignUpField } from "./validation";
+import { hasRecoverySession } from "./session";
+import {
+  parseEmailOnly,
+  parseNewPassword,
+  parseSignIn,
+  parseSignUp,
+  type NewPasswordField,
+  type SignInField,
+  type SignUpField,
+} from "./validation";
 
 export type SignUpState =
   | { status: "idle" }
@@ -25,6 +34,16 @@ export type SignInState =
       fieldErrors?: Partial<Record<SignInField, string>>;
       values: { email: string };
     };
+
+export type ResetRequestState =
+  | { status: "idle" }
+  | { status: "error"; message?: string; fieldErrors?: { email?: string }; values: { email: string } }
+  | { status: "sent" };
+
+export type NewPasswordState =
+  | { status: "idle" }
+  | { status: "error"; message?: string; fieldErrors?: Partial<Record<NewPasswordField, string>> }
+  | { status: "updated" };
 
 function formText(formData: FormData, key: string): string {
   const value = formData.get(key);
@@ -93,3 +112,47 @@ export async function signOut(): Promise<void> {
   redirect("/");
 }
 
+
+/** Gửi email khôi phục; luôn trả cùng kết quả để không tiết lộ email có tài khoản hay không. */
+export async function requestPasswordReset(
+  _previous: ResetRequestState,
+  formData: FormData,
+): Promise<ResetRequestState> {
+  const values = { email: formText(formData, "email") };
+  const parsed = parseEmailOnly(formData);
+  if (!parsed.ok) return { status: "error", fieldErrors: parsed.fieldErrors, values };
+
+  const callback = new URL("/auth/callback", await requestOrigin());
+  callback.searchParams.set("next", "/reset-password");
+
+  const supabase = await createSupabaseServerClient();
+  const { error } = await supabase.auth.resetPasswordForEmail(parsed.data.email, {
+    redirectTo: callback.toString(),
+  });
+  if (error) {
+    const message = authErrorMessage(error);
+    if (message === AUTH_MESSAGES.rateLimited) return { status: "error", message, values };
+    console.error("auth.resetPasswordForEmail failed", { code: error.code, status: error.status });
+  }
+  return { status: "sent" };
+}
+
+/** Đặt mật khẩu mới; chỉ cho phép với session tạo từ link khôi phục còn hiệu lực. */
+export async function updatePassword(_previous: NewPasswordState, formData: FormData): Promise<NewPasswordState> {
+  if (!(await hasRecoverySession())) {
+    return { status: "error", message: "Liên kết khôi phục đã hết hạn. Hãy yêu cầu liên kết mới." };
+  }
+  const parsed = parseNewPassword(formData);
+  if (!parsed.ok) return { status: "error", fieldErrors: parsed.fieldErrors };
+
+  const supabase = await createSupabaseServerClient();
+  const { error } = await supabase.auth.updateUser({ password: parsed.data.password });
+  if (error) {
+    if (error.code === "same_password") {
+      return { status: "error", fieldErrors: { password: "Mật khẩu mới cần khác mật khẩu cũ." } };
+    }
+    console.error("auth.updatePassword failed", { code: error.code, status: error.status });
+    return { status: "error", message: authErrorMessage(error) };
+  }
+  return { status: "updated" };
+}

@@ -70,8 +70,10 @@ prompts/05-review.md
 scripts/seed-demo-users.mjs
 scripts/supabase-status.mjs
 scripts/write-env-local.mjs
+src/app/(auth)/forgot-password/page.tsx
 src/app/(auth)/login/page.tsx
 src/app/(auth)/register/page.tsx
+src/app/(auth)/reset-password/page.tsx
 src/app/(student)/dashboard/page.tsx
 src/app/auth/callback/route.ts
 src/app/favicon.ico
@@ -82,10 +84,14 @@ src/app/page.tsx
 src/components/layout/SiteHeader.tsx
 src/features/auth/actions.ts
 src/features/auth/auth.test.ts
+src/features/auth/components/ForgotPasswordForm.tsx
 src/features/auth/components/FormField.tsx
+src/features/auth/components/ResetPasswordForm.tsx
 src/features/auth/components/SignInForm.tsx
 src/features/auth/components/SignUpForm.tsx
 src/features/auth/errors.ts
+src/features/auth/recovery.test.ts
+src/features/auth/recovery.ts
 src/features/auth/redirect.ts
 src/features/auth/session.ts
 src/features/auth/validation.ts
@@ -106,6 +112,7 @@ supabase/migrations/20261006090300_rls_policies.sql
 supabase/seed.sql
 tests/e2e/auth.spec.ts
 tests/e2e/helpers/auth.ts
+tests/e2e/recovery.spec.ts
 tests/e2e/smoke.spec.ts
 tests/integration/README.md
 tests/integration/helpers/fixtures.ts

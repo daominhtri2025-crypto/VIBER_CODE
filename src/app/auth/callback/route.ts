@@ -18,5 +18,7 @@ export async function GET(request: NextRequest) {
     console.error("auth.callback exchange failed", { code: error.code, status: error.status });
   }
 
-  return NextResponse.redirect(new URL("/login?error=link", origin));
+  // Link khôi phục lỗi → trang yêu cầu link mới; link xác thực email lỗi → trang đăng nhập.
+  const fallback = next === "/reset-password" ? "/forgot-password?error=link" : "/login?error=link";
+  return NextResponse.redirect(new URL(fallback, origin));
 }

@@ -28,6 +28,11 @@ export default async function LoginPage(props: PageProps<"/login">) {
       ) : null}
       <SignInForm next={next} />
       <p>
+        <Link href="/forgot-password" className="font-medium text-primary underline">
+          Quên mật khẩu?
+        </Link>
+      </p>
+      <p>
         Chưa có tài khoản?{" "}
         <Link href={{ pathname: "/register", query: { next } }} className="font-medium text-primary underline">
           Đăng ký

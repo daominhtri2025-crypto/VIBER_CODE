@@ -2,9 +2,27 @@
 Cập nhật: 06/10/2026.
 
 ## Hiện tại
-TASK-000 → 005 **done** (003 làm cùng 002). Người dùng đăng ký (có xác thực email), đăng nhập, đăng xuất được; session làm mới qua proxy. Chưa có khôi phục mật khẩu, hồ sơ, trang học.
+TASK-000 → 006 **done** (003 làm cùng 002). Có đăng ký (xác thực email), đăng nhập, đăng xuất, khôi phục mật khẩu. Chưa có hồ sơ, trang học.
 
-## Lần cập nhật gần nhất — TASK-005 (07/10/2026)
+## Lần cập nhật gần nhất — TASK-006 (07/10/2026)
+- **Status**: done.
+- **Thay đổi chính**: `/forgot-password`, `/reset-password`; actions `requestPasswordReset`, `updatePassword`; `hasFreshRecovery` (claim `amr`); callback phân nhánh link lỗi; liên kết "Quên mật khẩu?".
+- **Kiểm chứng thiết kế**: probe thực nghiệm trên Supabase local cho thấy `amr` = `password` (đăng nhập thường) và `recovery` (sau link khôi phục) → dùng làm điều kiện cho AC4.
+- **Lệnh đã chạy và kết quả**:
+  | Lệnh | Kết quả |
+  |---|---|
+  | `npm run test` | 33/33 |
+  | `npm run test:integration` | 55/55 |
+  | `npx playwright test --retries=0` (×2) | 16/16 cả hai lần (auth 8, recovery 6, smoke 2) |
+  | `npm run lint`, `typecheck`, `build` | exit 0 |
+- **Lỗi phát hiện khi kiểm thử** (thuộc test, đã sửa): chưa chờ đăng xuất hoàn tất trước khi mở `/login`.
+- **Hạn chế**: đổi mật khẩu khi đang đăng nhập (cần xác thực lại) thuộc TASK-007; SMTP production chưa cấu hình.
+
+## Bước tiếp
+1. TASK-007: hồ sơ và helper bảo vệ route dùng chung.
+2. Trả lời Q16 trước TASK-017.
+
+## Lịch sử — TASK-005 (07/10/2026)
 - **Status**: done.
 - **Thay đổi chính**: proxy làm mới session; DAL `getCurrentUser`; server actions `signUp/signIn/signOut`; trang `/login`, `/register`, `/auth/callback`, `/dashboard` (tối thiểu, có nhãn); header trạng thái đăng nhập; config Auth local (xác thực email, mật khẩu ≥ 8, redirect URL, rate limit local); ADR-006.
 - **Lệnh đã chạy và kết quả**:
@@ -17,11 +35,6 @@ TASK-000 → 005 **done** (003 làm cùng 002). Người dùng đăng ký (có x
   | Quét `sb_secret_`/`SERVICE_ROLE` trong `.next/static` | Không có |
 - **Lỗi phát hiện khi kiểm thử** (đã sửa, thuộc test): regex URL chỉ nhận `%2F`; Next.js route announcer cũng có `role="alert"`.
 - **Hạn chế**: email production (SMTP) chưa cấu hình (Q08/Q11); trang `/dashboard` là bản tối thiểu; chưa có liên kết "Quên mật khẩu" (TASK-006). Q01/Q02 (đồng ý của phụ huynh, cách tạo tài khoản) vẫn mở trước khi public.
-
-## Bước tiếp
-1. TASK-006: khôi phục mật khẩu.
-2. TASK-007: hồ sơ và helper bảo vệ route dùng chung.
-3. Trả lời Q16 trước TASK-017.
 
 ## Lịch sử — TASK-004 (07/10/2026)
 - **Status**: done.
