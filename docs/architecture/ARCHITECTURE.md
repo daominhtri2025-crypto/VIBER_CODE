@@ -7,7 +7,7 @@ Browser client chỉ dùng ở phần cần tương tác/auth. Secret không và
 ## Phân vùng
 src/app cho route/layout, src/features cho nghiệp vụ, components/ui cho UI dùng chung. lib/supabase có server/browser client; giải quyết session theo SDK đã chọn. Không áp đặt tên middleware/proxy trước khi chọn Next.js version.
 ## Phân quyền
-Metadata public và nội dung private tách bảng (ADR-002); role và trigger đăng ký theo ADR-003; Supabase local, client và kiểm thử RLS theo ADR-005. Chi tiết trong ACCESS_CONTROL.md.
+Metadata public và nội dung private tách bảng (ADR-002); role và trigger đăng ký theo ADR-003; Supabase local, client và kiểm thử RLS theo ADR-005; luồng xác thực theo ADR-006. Chi tiết trong ACCESS_CONTROL.md.
 ## Nội dung
 Bài học Markdown được sanitize, có code block và ảnh; video optional, provider allowlist (Q07) và CSP phù hợp. Upload ảnh của admin vào Storage, policy storage và kiểm tra file thuộc task 021. Không cho HTML/script tùy ý. Lời giải MVP chỉ văn bản/mã (Q06).
 ## Triển khai

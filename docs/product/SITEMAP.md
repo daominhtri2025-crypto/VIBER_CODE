@@ -14,7 +14,7 @@ Chủ thể: **K** = khách (anon); **U** = đã đăng nhập, chưa đăng ký
 | `/exercises` | ✓ | ✓ | ✓ | ✓ | Metadata bài tập published thuộc khóa published; lọc ngôn ngữ, độ khó, khóa | 013 |
 | `/exercises/[slug]` | CTA | CTA | ✓ | ✓ | Đề + gợi ý; lời giải lấy qua server action riêng | 013, 014 |
 | `/login`, `/register`, `/forgot-password` | ✓ | → `/dashboard` | → `/dashboard` | → `/dashboard` | Màn hình auth | 005, 006 |
-| `/auth/callback` (hoặc tương đương SDK) | — | — | — | — | Xử lý xác thực email/recovery; tên route chốt ở 005 | 005, 006 |
+| `/auth/callback` | — | — | — | — | Đổi `code` (PKCE) lấy session rồi chuyển tới `next` nội bộ; lỗi → `/login?error=link` (ADR-006) | 005, 006 |
 | `/reset-password` | Chỉ khi có recovery session | ✓ | ✓ | ✓ | Đổi mật khẩu; link hết hạn → hướng dẫn gửi lại | 006 |
 | `/dashboard` | →L | ✓ | ✓ | ✓ | Khóa đã đăng ký, %, "Học tiếp" | 016 |
 | `/profile` | →L | ✓ | ✓ | ✓ | Tên hiển thị, email (chỉ đọc), đổi mật khẩu | 007 |

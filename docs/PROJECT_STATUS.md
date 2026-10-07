@@ -2,9 +2,28 @@
 Cập nhật: 06/10/2026.
 
 ## Hiện tại
-TASK-000 → 004 **done** (003 làm cùng 002). Có schema 14 bảng + RLS, dữ liệu demo, tài khoản demo local và hướng dẫn cấp quyền admin. Chưa có giao diện auth hay chức năng học tập.
+TASK-000 → 005 **done** (003 làm cùng 002). Người dùng đăng ký (có xác thực email), đăng nhập, đăng xuất được; session làm mới qua proxy. Chưa có khôi phục mật khẩu, hồ sơ, trang học.
 
-## Lần cập nhật gần nhất — TASK-004 (07/10/2026)
+## Lần cập nhật gần nhất — TASK-005 (07/10/2026)
+- **Status**: done.
+- **Thay đổi chính**: proxy làm mới session; DAL `getCurrentUser`; server actions `signUp/signIn/signOut`; trang `/login`, `/register`, `/auth/callback`, `/dashboard` (tối thiểu, có nhãn); header trạng thái đăng nhập; config Auth local (xác thực email, mật khẩu ≥ 8, redirect URL, rate limit local); ADR-006.
+- **Lệnh đã chạy và kết quả**:
+  | Lệnh | Kết quả |
+  |---|---|
+  | `npm run test` | 29/29 (21 ca auth mới) |
+  | `npm run test:integration` | 55/55 (P-10 điều chỉnh: xác thực email bật → kiểm tra trigger bằng đọc service) |
+  | `npm run test:e2e` (cần Supabase local + `PLAYWRIGHT_CHROMIUM_EXECUTABLE`) | 10/10; chạy lại 2 lần với `--retries=0`: 10/10 cả hai |
+  | `npm run lint`, `typecheck`, `build`, `db:lint` | exit 0 |
+  | Quét `sb_secret_`/`SERVICE_ROLE` trong `.next/static` | Không có |
+- **Lỗi phát hiện khi kiểm thử** (đã sửa, thuộc test): regex URL chỉ nhận `%2F`; Next.js route announcer cũng có `role="alert"`.
+- **Hạn chế**: email production (SMTP) chưa cấu hình (Q08/Q11); trang `/dashboard` là bản tối thiểu; chưa có liên kết "Quên mật khẩu" (TASK-006). Q01/Q02 (đồng ý của phụ huynh, cách tạo tài khoản) vẫn mở trước khi public.
+
+## Bước tiếp
+1. TASK-006: khôi phục mật khẩu.
+2. TASK-007: hồ sơ và helper bảo vệ route dùng chung.
+3. Trả lời Q16 trước TASK-017.
+
+## Lịch sử — TASK-004 (07/10/2026)
 - **Status**: done.
 - **Xác minh lại TASK-002 trên container mới** (Docker khởi động lại): `db:reset` 4 migration OK, type sinh lại khớp bản commit, 14/14 bảng bật RLS, integration 48/48, unit 8/8, lint/typecheck/build OK.
 - **Thay đổi chính**: `supabase/seed.sql`; `scripts/seed-demo-users.mjs`; `assertLocalUrl` trong `scripts/supabase-status.mjs`; scripts `db:seed-users`, `db:setup`; `tests/integration/seed.test.ts`; `docs/operations/ADMIN_PROVISIONING.md`, `docs/operations/LOCAL_DEMO_ACCOUNTS.md`; README; task 004, BACKLOG.
@@ -17,10 +36,6 @@ TASK-000 → 004 **done** (003 làm cùng 002). Có schema 14 bảng + RLS, dữ
   | `npm run test:integration` | **55/55** pass (schema 18, rls 30, seed 7) |
   | `npm run lint`, `typecheck`, `test`, `build`, `db:lint` | exit 0 |
 - **Hạn chế**: mật khẩu demo ghi trong tài liệu (chỉ local, script chặn môi trường khác). Q16 (audit log) vẫn mở.
-
-## Bước tiếp
-1. Trả lời Q16 trước TASK-017.
-2. TASK-005: đăng ký/đăng nhập/đăng xuất, proxy làm mới session.
 
 ## Lịch sử — TASK-002 (06/10/2026)
 - **Status**: done. Theo yêu cầu người dùng, gộp phần schema/RLS của TASK-003 và tạo Supabase client sớm (vốn thuộc 005).

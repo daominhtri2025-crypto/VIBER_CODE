@@ -32,7 +32,7 @@ npm run test:integration  # RLS/toàn vẹn dữ liệu (cần db:start)
 npm run db:stop
 ```
 
-E2E cần Chromium cho Playwright: `npx playwright install chromium`. Nếu môi trường đã có sẵn Chromium khác version, đặt `PLAYWRIGHT_CHROMIUM_EXECUTABLE=/đường/dẫn/chrome`.
+E2E cần Supabase local đang chạy (`npm run db:start && npm run db:env`) và Chromium cho Playwright: `npx playwright install chromium`. Nếu môi trường đã có sẵn Chromium khác version, đặt `PLAYWRIGHT_CHROMIUM_EXECUTABLE=/đường/dẫn/chrome`.
 
 ---
 

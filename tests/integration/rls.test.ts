@@ -356,10 +356,13 @@ describe("Đăng ký tài khoản", () => {
     expect(error).toBeNull();
     const userId = data.user?.id;
     expect(userId).toBeDefined();
+    // Q08: bật xác thực email → chưa có session cho tới khi bấm link xác thực.
+    expect(data.session).toBeNull();
     try {
-      const role = await client.from("user_roles").select("role").eq("user_id", userId!);
+      // Kiểm tra kết quả của trigger (không phải RLS) nên đọc bằng service client.
+      const role = await w.svc.from("user_roles").select("role").eq("user_id", userId!);
       expect(role.data).toEqual([{ role: "student" }]);
-      const profile = await client.from("profiles").select("display_name").eq("id", userId!);
+      const profile = await w.svc.from("profiles").select("display_name").eq("id", userId!);
       expect(profile.data).toEqual([{ display_name: "Bé Na" }]);
     } finally {
       await w.svc.auth.admin.deleteUser(userId!);

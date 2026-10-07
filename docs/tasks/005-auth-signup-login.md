@@ -1,5 +1,5 @@
 # TASK-005: Đăng ký, đăng nhập, đăng xuất
-Status: pending
+Status: done (07/10/2026)
 
 ## Mục tiêu
 Người dùng tạo tài khoản và duy trì phiên đăng nhập an toàn.
@@ -35,6 +35,12 @@ SITEMAP, USER_FLOWS §2, ADR-003
 | Thủ công | Email xác thực qua mail catcher local | Ghi kết quả hoặc blocked |
 
 Mọi task sau 001: chạy `npm run lint`, `npm run typecheck`, `npm run test`, `npm run build` theo thay đổi.
+
+## Kết quả
+- Mã: `src/proxy.ts`, `src/lib/supabase/proxy.ts`, `src/features/auth/{validation,redirect,errors,session,actions}.ts`, `src/features/auth/components/*`, `src/app/(auth)/{login,register}/page.tsx`, `src/app/auth/callback/route.ts`, `src/app/(student)/dashboard/page.tsx` (bản tối thiểu có nhãn, đầy đủ ở 016), `src/components/layout/SiteHeader.tsx`.
+- Cấu hình: `supabase/config.toml` (xác thực email, mật khẩu ≥ 8, redirect URL local, rate limit local). Quyết định: ADR-006.
+- AC 1–6 đạt: unit 21 ca auth (`src/features/auth/auth.test.ts`); E2E 8 ca (`tests/e2e/auth.spec.ts`) gồm luồng email thật qua Mailpit.
+- Ghi chú: bảo vệ `/dashboard` đã có ở mức trang; helper dùng chung `requireUser/requireAdmin` vẫn thuộc 007.
 
 ## Quy tắc hoàn thành
 Cập nhật PROJECT_STATUS: file chính, lệnh đã chạy và kết quả thật, hạn chế/blocked, giả định theo Qxx. Không làm task tiếp nếu chưa được giao.
