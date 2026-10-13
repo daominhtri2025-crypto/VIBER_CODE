@@ -1,0 +1,14 @@
+[project]
+name = "math-tutor-api"
+version = "0.1.0"
+description = "Trợ lý AI học Toán THCS — backend (Phase 1: database & repositories)"
+requires-python = ">=3.11"
+dependencies = []  # Phase 1 uses only the standard library (sqlite3)
+
+[project.optional-dependencies]
+dev = ["pytest==8.3.3"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+addopts = "-q"

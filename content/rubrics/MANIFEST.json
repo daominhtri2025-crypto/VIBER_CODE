@@ -1,0 +1,13 @@
+{
+  "rubrics": [
+    {
+      "rubric_version": "rubric-v1",
+      "file": "explanation-rubric-v1.json",
+      "sha256": "f77aba19b2869b61becf80039410031653522ffa19042808e95df4e6a3db210e",
+      "approval_status": "pending_teacher_approval",
+      "approved_by": null,
+      "approved_at": null
+    }
+  ],
+  "note": "Checksum được kiểm tra bởi api/tests/test_content_rubrics.py. Trạng thái duyệt nằm ở manifest để việc duyệt không làm đổi checksum nội dung."
+}

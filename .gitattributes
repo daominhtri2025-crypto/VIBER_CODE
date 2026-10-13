@@ -1,0 +1,4 @@
+# Checksummed artefacts must be byte-identical on every OS (Windows autocrlf would break SHA-256).
+*.sql            text eol=lf
+content/**       text eol=lf
+*.db             binary

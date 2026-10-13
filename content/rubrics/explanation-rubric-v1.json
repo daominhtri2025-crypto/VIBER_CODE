@@ -1,0 +1,25 @@
+{
+  "rubric_version": "rubric-v1",
+  "source": "docs/PROJECT_HANDOFF.md §9.2 (gợi ý rubric giải thích)",
+  "applies_to": "item_responses.explanation_score",
+  "max_score": 3,
+  "levels": [
+    {
+      "score": 0,
+      "descriptor": "Không có giải thích hoặc giải thích sai."
+    },
+    {
+      "score": 1,
+      "descriptor": "Nêu thao tác nhưng chưa rõ căn cứ."
+    },
+    {
+      "score": 2,
+      "descriptor": "Đúng phần lớn, còn thiếu chi tiết."
+    },
+    {
+      "score": 3,
+      "descriptor": "Đúng thao tác, nêu căn cứ và điều kiện."
+    }
+  ],
+  "immutability": "Không sửa nội dung dưới cùng rubric_version. Thay đổi phải tạo rubric-v2 và ghi checksum mới vào MANIFEST.json."
+}
