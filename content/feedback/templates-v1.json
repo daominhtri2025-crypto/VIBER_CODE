@@ -1,0 +1,165 @@
+{
+  "template_version": "feedback-templates-v1",
+  "policy": "Không chứa nghiệm hay lời giải. Placeholder cho phép: {value} (hạng tử/hệ số của phương trình hiện tại), {side}.",
+  "state_questions": {
+    "READ_PROBLEM": "Đề bài yêu cầu em làm gì? Em hãy nói lại bằng lời của mình.",
+    "IDENTIFY_KNOWLEDGE": "Để giải bài này, em cần dùng kiến thức nào?",
+    "PROPOSE_PLAN": "Bước đầu tiên em định làm gì?",
+    "SOLVE_STEP": "Em hãy viết phép biến đổi tiếp theo và giải thích vì sao.",
+    "VERIFY_RESULT": "Em hãy thay giá trị vừa tìm được vào phương trình ban đầu để kiểm tra.",
+    "VERIFY_RESULT_CONCLUDE": "Phương trình không còn x. Em kết luận phương trình có bao nhiêu nghiệm?",
+    "INDEPENDENT_PRACTICE": "Em hãy tự giải bài tương tự, không có gợi ý.",
+    "COMPLETED": "Em đã hoàn thành bài này."
+  },
+  "read_problem": {
+    "accepted": "Em đã nắm được yêu cầu của đề.",
+    "too_short": "Em hãy viết rõ hơn một chút: đề bài yêu cầu tìm gì?"
+  },
+  "knowledge": {
+    "accepted": "Đúng rồi, đây là kiến thức em cần dùng.",
+    "rejected": "Kiến thức này chưa phù hợp với bài. Em đọc lại xem phương trình có dạng gì nhé.",
+    "advanced_with_support": "Kiến thức cần dùng là: {value}. Mình cùng chuyển sang bước lập kế hoạch nhé."
+  },
+  "plan": {
+    "accepted": "Hướng làm này hợp lý.",
+    "rejected": "Thao tác này chưa giúp em tiến gần tới việc tìm x. Em thử nghĩ cách khác nhé.",
+    "advanced_with_support": "Một hướng hợp lý là: {value}. Em hãy thực hiện bước đó.",
+    "unknown_option": "Em hãy chọn một trong các phương án đã cho."
+  },
+  "step": {
+    "valid": {
+      "feedback": "Bước biến đổi này đúng.",
+      "question": "Bước tiếp theo em sẽ làm gì?"
+    },
+    "valid_needs_simplify": {
+      "feedback": "Bước biến đổi này đúng.",
+      "question": "Em hãy rút gọn kết quả cho gọn nhất."
+    },
+    "valid_final_single": {
+      "feedback": "Bước biến đổi này đúng.",
+      "question": "Em hãy thay giá trị vừa tìm được vào phương trình ban đầu để kiểm tra."
+    },
+    "valid_final_x_free": {
+      "feedback": "Bước biến đổi này đúng. Phương trình không còn x.",
+      "question": "Em kết luận gì về số nghiệm của phương trình?"
+    },
+    "invalid": {
+      "SIGN_ERROR": {
+        "feedback": "Có một dấu chưa đúng trong bước này.",
+        "question": "Khi chuyển một hạng tử sang vế kia hoặc bỏ ngoặc sau dấu trừ, dấu của nó thay đổi thế nào?"
+      },
+      "ARITHMETIC_ERROR": {
+        "feedback": "Hướng làm đúng, nhưng phép tính ở vế {side} chưa đúng.",
+        "question": "Em tính lại vế {side} cẩn thận nhé?"
+      },
+      "OPERATION_MISMATCH": {
+        "feedback": "Kết quả chưa khớp với thao tác em đã chọn.",
+        "question": "Em đã làm đúng một thao tác thôi chưa? Hãy viết từng bước một."
+      },
+      "NON_EQUIVALENT": {
+        "feedback": "Phương trình mới không còn tương đương với phương trình trước.",
+        "question": "Em đã thực hiện cùng một phép toán ở cả hai vế chưa?"
+      },
+      "DIVISION_BY_ZERO": {
+        "feedback": "Không được chia cho 0.",
+        "question": "Em thử chọn một số khác 0 nhé?"
+      }
+    },
+    "unknown": {
+      "PARSE_UNKNOWN": {
+        "feedback": "Mình chưa đọc được phương trình em nhập.",
+        "question": "Em viết lại giúp mình, ví dụ: 2x + 3 = 7 (số thập phân dùng dấu phẩy)."
+      },
+      "OUT_OF_SCOPE": {
+        "feedback": "Phần này nằm ngoài dạng phương trình bậc nhất một ẩn x.",
+        "question": "Em kiểm tra lại cách viết, chỉ dùng ẩn x và các phép + − × :."
+      }
+    }
+  },
+  "verify": {
+    "ok": {
+      "feedback": "Hai vế bằng nhau, giá trị em tìm được thỏa mãn phương trình.",
+      "question": "Giờ em hãy tự giải một bài tương tự."
+    },
+    "fail": {
+      "feedback": "Phép thay chưa đúng với phương trình ban đầu.",
+      "question": "Em hãy viết lại phương trình ban đầu, thay mỗi x bằng giá trị em tìm được."
+    },
+    "conclusion_ok": {
+      "feedback": "Kết luận của em đúng.",
+      "question": "Giờ em hãy tự giải một bài tương tự."
+    },
+    "conclusion_fail": {
+      "feedback": "Kết luận chưa khớp với phương trình em vừa biến đổi.",
+      "question": "Khi phương trình còn dạng 0x = c, c bằng 0 hay khác 0 thì có nghiệm nào?"
+    }
+  },
+  "hints": {
+    "IDENTIFY_KNOWLEDGE": [
+      "Phương trình này có ẩn x với số mũ bằng mấy?",
+      "Phương trình bậc nhất một ẩn được giải bằng các phép biến đổi tương đương.",
+      "Em hãy nhớ lại quy tắc chuyển vế và quy tắc nhân với một số."
+    ],
+    "PROPOSE_PLAN": [
+      "Mục tiêu là để x đứng một mình ở một vế. Hạng tử nào đang cản trở?",
+      "Muốn loại bỏ một hạng tử ở một vế, em có thể chuyển vế (đổi dấu) hoặc cộng/trừ cùng một số ở hai vế.",
+      "Em thử bắt đầu với hạng tử {value}."
+    ],
+    "VERIFY_RESULT": [
+      "Em lấy phương trình ban đầu nào để thay vào?",
+      "Thay mỗi chữ x bằng giá trị em tìm được, rồi tính từng vế.",
+      "Viết lại đề bài, chỗ nào có x thì viết số em tìm được vào đó (nhớ dùng dấu ×)."
+    ],
+    "strategy": {
+      "expand": [
+        "Có dấu ngoặc nào cần bỏ trước không?",
+        "Nhân số ở trước ngoặc với từng hạng tử trong ngoặc; trước ngoặc có dấu trừ thì đổi dấu mọi hạng tử bên trong.",
+        "Em thử bỏ ngoặc trước, chú ý dấu của từng hạng tử."
+      ],
+      "collect_like_terms": [
+        "Ở mỗi vế có hạng tử nào cùng loại có thể gộp lại không?",
+        "Gộp các hạng tử chứa x với nhau và các số với nhau.",
+        "Em thử thu gọn từng vế trước."
+      ],
+      "move_x_terms": [
+        "Các hạng tử chứa x đang nằm ở những vế nào?",
+        "Đưa các hạng tử chứa x về cùng một vế bằng quy tắc chuyển vế.",
+        "Em thử chuyển hạng tử {value} sang vế kia (nhớ đổi dấu)."
+      ],
+      "move_constants": [
+        "Ở vế có x, còn hạng tử nào không chứa x?",
+        "Chuyển hạng tử đó sang vế kia và đổi dấu nó.",
+        "Em thử chuyển hạng tử {value} sang vế kia rồi tự tính."
+      ],
+      "divide_coefficient": [
+        "x đang được nhân với số nào?",
+        "Chia cả hai vế cho cùng một số khác 0.",
+        "Em thử chia cả hai vế cho {value} rồi tự tính."
+      ],
+      "simplify": [
+        "Kết quả của em đã gọn nhất chưa?",
+        "Rút gọn phân số hoặc thực hiện phép tính còn lại.",
+        "Em thử thực hiện phép tính còn lại ở vế không có x."
+      ],
+      "conclude": [
+        "Phương trình còn chứa x không?",
+        "Dạng 0x = c: nếu c khác 0 thì không có giá trị nào của x thỏa mãn.",
+        "Em xét xem c có bằng 0 không rồi kết luận."
+      ],
+      "verify": [
+        "Em đã tìm được x chưa?",
+        "Hãy kiểm tra bằng cách thay vào phương trình ban đầu.",
+        "Thay x vào phương trình ban đầu và tính hai vế."
+      ]
+    }
+  },
+  "hint_denied": {
+    "blocked": "Ở phần này em tự làm, không có gợi ý.",
+    "max_level": "Em đã nhận đủ gợi ý cho bước này. Thầy/cô sẽ hỗ trợ em thêm."
+  },
+  "needs_teacher": "Bước này đang khó với em. Mình đã báo để thầy/cô hỗ trợ; em có thể thử một bài cơ bản hơn.",
+  "independent": {
+    "saved": "Đã lưu bước của em.",
+    "submitted": "Em đã nộp bài luyện tập."
+  }
+}

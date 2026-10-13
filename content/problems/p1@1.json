@@ -1,0 +1,79 @@
+{
+  "problem_id": "p1",
+  "version": 1,
+  "content_version": "problem-content-v1",
+  "read_problem": {
+    "prompt": "Đề bài yêu cầu em làm gì? Em hãy nói lại bằng lời của mình.",
+    "min_chars": 5
+  },
+  "knowledge": {
+    "prompt": "Để giải bài này, em cần dùng kiến thức nào?",
+    "options": [
+      {
+        "id": "k-transpose",
+        "label": "Quy tắc chuyển vế (đổi dấu hạng tử khi chuyển sang vế kia)",
+        "correct": true
+      },
+      {
+        "id": "k-equal-ops",
+        "label": "Cộng, trừ, nhân, chia cùng một số khác 0 vào hai vế",
+        "correct": true
+      },
+      {
+        "id": "k-quadratic",
+        "label": "Công thức nghiệm của phương trình bậc hai",
+        "correct": false
+      },
+      {
+        "id": "k-pythagoras",
+        "label": "Định lý Py-ta-go",
+        "correct": false
+      },
+      {
+        "id": "k-area",
+        "label": "Công thức tính diện tích hình chữ nhật",
+        "correct": false
+      }
+    ]
+  },
+  "plan": {
+    "prompt": "Bước đầu tiên em định làm gì?",
+    "options": [
+      {
+        "id": "pl-transpose-5",
+        "label": "Chuyển +5 sang vế phải",
+        "operation": "transpose_term",
+        "value": "+5",
+        "acceptable": true
+      },
+      {
+        "id": "pl-sub-5",
+        "label": "Trừ 5 ở cả hai vế",
+        "operation": "subtract_both_sides",
+        "value": "5",
+        "acceptable": true
+      },
+      {
+        "id": "pl-div-2",
+        "label": "Chia cả hai vế cho 2",
+        "operation": "divide_both_sides",
+        "value": "2",
+        "acceptable": true
+      },
+      {
+        "id": "pl-add-5",
+        "label": "Cộng 5 vào cả hai vế",
+        "operation": "add_both_sides",
+        "value": "5",
+        "acceptable": false
+      },
+      {
+        "id": "pl-mul-0",
+        "label": "Nhân cả hai vế với 0",
+        "operation": "multiply_both_sides",
+        "value": "0",
+        "acceptable": false
+      }
+    ]
+  }
+}

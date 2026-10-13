@@ -91,8 +91,11 @@ def test_total_is_null_until_graded_then_counts_zero(conn, attempt):
 def test_grading_policy_and_maximum(conn, attempt):
     rid = _submitted_response(conn, attempt)
     repo = AssessmentRepository(conn)
-    with pytest.raises(PermissionDenied):  # researcher only, not teacher
-        repo.grade_response(grader_id="researcher-demo", response_id=rid, solution_score=1, explanation_score=1)
+    # D6: a researcher of the study may grade without holding the teacher role.
+    assert repo.grade_response(grader_id="researcher-demo", response_id=rid,
+                               solution_score=1, explanation_score=1)["grader_id"] == "researcher-demo"
+    with pytest.raises(PermissionDenied):  # account without the researcher role cannot grade
+        repo.grade_response(grader_id="student-a", response_id=rid, solution_score=1, explanation_score=1)
     with pytest.raises(IntegrityViolation, match="maximum"):
         repo.grade_response(grader_id="teacher-demo", response_id=rid, solution_score=8, explanation_score=0)
     raw_exec(conn, "DELETE FROM study_researchers WHERE researcher_id='teacher-demo'")

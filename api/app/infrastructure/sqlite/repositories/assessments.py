@@ -6,8 +6,9 @@ Lifecycle enforced jointly with migration 0002 triggers::
 
 * Students only see ``statement`` of the fixed problem version — never
   ``teacher_solution`` or ``hints`` — and no scores before publication.
-* Grading policy (MVP, handoff §2.2): grader holds BOTH ``teacher`` and
-  ``researcher`` roles and is listed in ``study_researchers`` (DB-checked).
+* Grading policy (decision D6, 13/10/2026): grader holds the ``researcher``
+  role and is listed in ``study_researchers`` of the attempt's study
+  (repository + DB trigger). The ``teacher`` role is NOT required.
 """
 from __future__ import annotations
 
@@ -118,7 +119,7 @@ class AssessmentRepository:
     # -------------------------------------------------------------- grading
     def grade_response(self, *, grader_id: str, response_id: str,
                        solution_score: float, explanation_score: float) -> dict:
-        require_active_role(self.conn, grader_id, Role.TEACHER, Role.RESEARCHER)
+        require_active_role(self.conn, grader_id, Role.RESEARCHER)
         try:
             scores = (round(float(solution_score), SCORE_DECIMALS), round(float(explanation_score), SCORE_DECIMALS))
         except (TypeError, ValueError) as exc:

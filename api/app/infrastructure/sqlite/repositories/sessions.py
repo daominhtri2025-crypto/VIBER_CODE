@@ -22,6 +22,7 @@ from __future__ import annotations
 import json
 import sqlite3
 from datetime import datetime
+from typing import Sequence
 
 from app.domain.constants import LearningMode, MathStatus, Role, SessionState
 from app.domain.errors import (
@@ -36,6 +37,8 @@ from app.infrastructure.sqlite.repositories.assignments import AssignmentReposit
 MAX_EQUATION_LEN = 200
 MAX_EXPLANATION_LEN = 2000
 MAX_REQUEST_ID_LEN = 64
+# Steps that record checking, not transforming: never become the base equation.
+CHECK_OPERATIONS = ("verify_substitution", "conclude")
 STEP_PAYLOAD_FIELDS = ("previous_equation", "submitted_equation", "operation", "operation_value",
                        "explanation", "math_status", "error_code")
 
@@ -77,7 +80,8 @@ class SessionRepository:
         """Server-side base equation for the next step (never from payload)."""
         last_valid = self.conn.execute(
             "SELECT submitted_equation FROM solution_steps WHERE session_id=? AND math_status='valid'"
-            " ORDER BY step_index DESC LIMIT 1", (session_id,)).fetchone()
+            " AND operation NOT IN (?,?) ORDER BY step_index DESC LIMIT 1",
+            (session_id, *CHECK_OPERATIONS)).fetchone()
         if last_valid:
             return last_valid[0]
         spec = self.conn.execute(
@@ -128,8 +132,17 @@ class SessionRepository:
     def submit_step(self, *, actor_id: str, session_id: str, expected_version: int, request_id: str,
                     previous_equation: str, submitted_equation: str, operation: str, explanation: str,
                     math_status: MathStatus | str, operation_value: str | None = None,
-                    error_code: str | None = None) -> dict:
-        """Persist one attempt atomically. Returns the step row (+ ``replayed`` flag)."""
+                    error_code: str | None = None,
+                    accept_states: Sequence[str] = (SessionState.SOLVE_STEP,),
+                    transition_to: str | None = None,
+                    messages: Sequence[tuple[str, str]] = ()) -> dict:
+        """Persist one attempt atomically. Returns the step row (+ ``replayed`` flag).
+
+        ``transition_to`` (decided by the state machine) and ``messages``
+        (sender_type, content) are written in the SAME transaction, with a
+        single version bump, so a crash can never leave a step without its
+        state change or feedback record.
+        """
         request_id = require_text("request_id", request_id, max_len=MAX_REQUEST_ID_LEN)
         payload = {
             "previous_equation": require_text("previous_equation", previous_equation, max_len=MAX_EQUATION_LEN),
@@ -161,8 +174,8 @@ class SessionRepository:
                     raise IdempotencyConflict("request_id reused with a different payload")
                 return {**dict(prior), "replayed": True}
 
-            if s["state"] != SessionState.SOLVE_STEP:
-                raise StateConflict(f"Session state {s['state']} does not accept solution steps")
+            if s["state"] not in {str(x) for x in accept_states}:
+                raise StateConflict(f"Session state {s['state']} does not accept this step")
             if s["version"] != expected_version:
                 raise VersionConflict("Session version is stale",
                                       detail={"expected": expected_version, "actual": s["version"]})
@@ -181,6 +194,9 @@ class SessionRepository:
                 " submitted_equation, operation, operation_value, explanation, math_status, error_code)"
                 " VALUES(?,?,?,?,?,?,?,?,?,?,?)",
                 (step_id, session_id, step_index, request_id, *(payload[k] for k in STEP_PAYLOAD_FIELDS)))
+            self._insert_messages(session_id, messages)
+            if transition_to is not None:
+                self._set_state(actor_id, s, transition_to, reason=f"step:{step_id}")
             self._bump_version(session_id, expected_version)
             self.conn.execute("INSERT INTO activity_events(id, session_id, event_type) VALUES(?,?,'submit')",
                               (new_id(), session_id))
@@ -237,3 +253,119 @@ class SessionRepository:
         if cur.rowcount != 1:  # defensive: cannot happen under BEGIN IMMEDIATE
             raise VersionConflict("Concurrent update detected")
 
+    # ----------------------------------------------------- Phase 2 additions
+    def _insert_messages(self, session_id: str, messages: Sequence[tuple[str, str]]) -> None:
+        for sender, content in messages:
+            self.conn.execute("INSERT INTO messages(id, session_id, sender_type, content) VALUES(?,?,?,?)",
+                              (new_id(), session_id, sender, content))
+
+    def _set_state(self, actor_id: str, s: sqlite3.Row, to_state: str, *, reason: str) -> None:
+        to_state = str(to_state)
+        if s["state"] == SessionState.COMPLETED:
+            raise StateConflict("Session already completed")
+        completed_at = iso(self.clock()) if to_state == SessionState.COMPLETED else None
+        self.conn.execute("UPDATE learning_sessions SET state=?, completed_at=? WHERE id=?",
+                          (to_state, completed_at, s["id"]))
+        if to_state == SessionState.COMPLETED:
+            self.conn.execute("INSERT INTO activity_events(id, session_id, event_type) VALUES(?,?,'finish')",
+                              (new_id(), s["id"]))
+        audit(self.conn, actor_id=actor_id, action="session.transition", entity_type="learning_session",
+              entity_id=s["id"], details={"from": s["state"], "to": to_state, "reason": reason[:200]})
+
+    def list_messages(self, session_id: str) -> list[dict]:
+        """Chronological (rowid) message log; JSON envelopes are decoded when present."""
+        out = []
+        for r in self.conn.execute(
+                "SELECT rowid AS seq, id, sender_type, content, created_at FROM messages WHERE session_id=?"
+                " ORDER BY rowid", (session_id,)):
+            d = dict(r)
+            try:
+                env = json.loads(d["content"])
+                if isinstance(env, dict) and env.get("v") == 1:
+                    d["text"], d["meta"] = env.get("text", ""), env.get("meta", {})
+                else:
+                    raise ValueError
+            except ValueError:
+                d["text"], d["meta"] = d["content"], {}
+            out.append(d)
+        return out
+
+    def find_interaction(self, session_id: str, request_id: str) -> dict | None:
+        """Student message previously recorded under ``request_id`` (idempotent replay)."""
+        return row(self.conn.execute(
+            "SELECT * FROM messages WHERE session_id=? AND sender_type='student' AND"
+            " CASE WHEN json_valid(content) THEN json_extract(content,'$.meta.request_id') END = ?",
+            (session_id, request_id)).fetchone())
+
+    def record_interaction(self, *, actor_id: str, session_id: str, expected_version: int, request_id: str,
+                           messages: Sequence[tuple[str, str]], transition_to: str | None = None,
+                           accept_states: Sequence[str]) -> dict:
+        """Knowledge/plan/read answers: messages + optional state change, one version bump.
+
+        Idempotent through ``meta.request_id`` of the student message: a replay
+        returns ``{"replayed": True}`` without writing.
+        """
+        require_text("request_id", request_id, max_len=MAX_REQUEST_ID_LEN)
+        with transaction(self.conn):
+            s = self._load(session_id)
+            if s["student_id"] != actor_id:
+                raise NotFound("Session not found")
+            require_active_role(self.conn, actor_id, Role.STUDENT)
+            if self.find_interaction(session_id, request_id) is not None:
+                return {**dict(s), "replayed": True}
+            if s["state"] not in {str(x) for x in accept_states}:
+                raise StateConflict(f"Session state {s['state']} does not accept this answer")
+            if s["version"] != expected_version:
+                raise VersionConflict("Session version is stale",
+                                      detail={"expected": expected_version, "actual": s["version"]})
+            self._insert_messages(session_id, messages)
+            if transition_to is not None:
+                self._set_state(actor_id, s, transition_to, reason=f"interaction:{request_id}")
+            self._bump_version(session_id, expected_version)
+            return {**dict(self._load(session_id)), "replayed": False}
+
+    def complete_independent(self, *, actor_id: str, session_id: str, expected_version: int) -> dict:
+        """Close an independent child session AND its parent in one transaction."""
+        with transaction(self.conn):
+            s = self._load(session_id)
+            if s["student_id"] != actor_id:
+                raise NotFound("Session not found")
+            if s["learning_mode"] != LearningMode.INDEPENDENT:
+                raise StateConflict("Only independent sessions are submitted")
+            if s["state"] == SessionState.COMPLETED:
+                return {**dict(s), "replayed": True}
+            if s["version"] != expected_version:
+                raise VersionConflict("Session version is stale",
+                                      detail={"expected": expected_version, "actual": s["version"]})
+            self._set_state(actor_id, s, SessionState.COMPLETED, reason="independent_submitted")
+            self._bump_version(session_id, expected_version)
+            if s["parent_session_id"]:
+                p = self._load(s["parent_session_id"])
+                if p["state"] == SessionState.INDEPENDENT_PRACTICE:
+                    self._set_state(actor_id, p, SessionState.COMPLETED, reason=f"child:{session_id}")
+                    self._bump_version(p["id"], p["version"])
+            return {**dict(self._load(session_id)), "replayed": False}
+
+    def find_child(self, parent_session_id: str) -> dict | None:
+        return row(self.conn.execute(
+            "SELECT * FROM learning_sessions WHERE parent_session_id=? ORDER BY started_at LIMIT 1",
+            (parent_session_id,)).fetchone())
+
+    def find_similar_problem(self, *, student_id: str, problem_id: str, problem_version: int) -> tuple[str, int] | None:
+        """Q9: approved problem, same topic & difficulty, never attempted by this student.
+
+        Deterministic choice (lowest problem_id, latest approved version) so that
+        every participant gets the same transfer item — comparable research data.
+        """
+        r = self.conn.execute(
+            "WITH ref AS (SELECT p.topic_id, v.difficulty FROM problems p JOIN problem_versions v"
+            "   ON v.problem_id=p.id WHERE p.id=? AND v.version=?),"
+            " cand AS (SELECT v.problem_id, max(v.version) AS version FROM problem_versions v"
+            "   JOIN problems p ON p.id=v.problem_id JOIN ref ON ref.topic_id=p.topic_id"
+            "   WHERE v.approval_status='approved' AND v.difficulty=ref.difficulty AND v.problem_id<>?"
+            "   GROUP BY v.problem_id)"
+            " SELECT c.problem_id, c.version FROM cand c WHERE NOT EXISTS("
+            "   SELECT 1 FROM learning_sessions s WHERE s.student_id=? AND s.problem_id=c.problem_id)"
+            " ORDER BY c.problem_id LIMIT 1",
+            (problem_id, problem_version, problem_id, student_id)).fetchone()
+        return (r[0], r[1]) if r else None

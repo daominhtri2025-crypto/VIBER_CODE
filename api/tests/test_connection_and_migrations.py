@@ -12,6 +12,8 @@ from app.infrastructure.sqlite import migrations as mig
 from app.infrastructure.sqlite.connection import backup, connect, health_check, transaction
 from tests.conftest import raw_exec
 
+LATEST = max(m.version for m in mig.discover())
+
 # Tables whose content is research history and must survive migration byte-for-byte.
 HISTORY_QUERIES = {
     "solution_steps": "SELECT * FROM solution_steps ORDER BY id",
@@ -79,7 +81,7 @@ def test_backup_refuses_overwrite(db_path, tmp_path):
 
 # ---------------------------------------------------------------- migrations
 def test_new_database_is_latest_and_has_v2_objects(conn):
-    assert mig.status(conn) == {"current_version": 2, "latest_version": 2, "pending": []}
+    assert mig.status(conn) == {"current_version": LATEST, "latest_version": LATEST, "pending": []}
     cols = {r["name"] for r in conn.execute("PRAGMA table_info(learning_sessions)")}
     assert {"parent_session_id", "study_id"} <= cols
     assert "request_id" in {r["name"] for r in conn.execute("PRAGMA table_info(hint_events)")}
@@ -94,10 +96,12 @@ def test_init_never_overwrites(db_path):
 def test_migrating_shipped_v1_preserves_history_and_scores(legacy_db, tmp_path):
     before = snapshot(legacy_db)
     result = mig.migrate(legacy_db, backup_dir=tmp_path / "bk")
-    assert result["from_version"] == 1 and result["to_version"] == 2 and result["applied"] == [2]
+    assert result["from_version"] == 1 and result["to_version"] == LATEST
+    assert result["applied"] == list(range(2, LATEST + 1))
     after = snapshot(legacy_db)
-    assert {k: v for k, v in after.items() if k != "count:audit_log"} == before
-    assert after["count:audit_log"] == 0
+    new_tables = {"count:audit_log", "count:erasure_requests"}  # created by 0002/0003, empty
+    assert {k: v for k, v in after.items() if k not in new_tables} == before
+    assert all(after[k] == 0 for k in new_tables)
     c = connect(legacy_db)
     try:
         assert health_check(c)["ok"]
@@ -136,7 +140,7 @@ def _copy_migrations(tmp_path: Path) -> Path:
 def test_tampered_applied_migration_is_detected(legacy_db, tmp_path):
     d = _copy_migrations(tmp_path)
     mig.migrate(legacy_db, backup_dir=tmp_path / "bk", migrations=mig.discover(d))
-    f = next(d.glob("0002_*.sql"))
+    f = next(d.glob("0003_*.sql"))
     f.write_text(f.read_text(encoding="utf-8") + "\n-- edited later\n", encoding="utf-8")
     with pytest.raises(mig.MigrationError, match="modified"):
         mig.migrate(legacy_db, migrations=mig.discover(d))
@@ -144,14 +148,14 @@ def test_tampered_applied_migration_is_detected(legacy_db, tmp_path):
 
 def test_failing_migration_rolls_back_completely(legacy_db, tmp_path):
     d = _copy_migrations(tmp_path)
-    (d / "0003_broken.sql").write_text(
+    (d / f"{LATEST + 1:04d}_broken.sql").write_text(
         "ALTER TABLE users ADD COLUMN nickname TEXT;\nINSERT INTO no_such_table VALUES(1);\n", encoding="utf-8")
     with pytest.raises(sqlite3.OperationalError):
         mig.migrate(legacy_db, backup_dir=tmp_path / "bk", migrations=mig.discover(d))
     c = connect(legacy_db)
     try:
-        # 0002 committed on its own; 0003 left no trace.
-        assert mig.current_version(c) == 2
+        # every real migration committed on its own; the broken one left no trace.
+        assert mig.current_version(c) == LATEST
         assert "nickname" not in {r["name"] for r in c.execute("PRAGMA table_info(users)")}
     finally:
         c.close()
@@ -166,4 +170,4 @@ def test_database_newer_than_code_is_refused(db_path):
 
 
 def test_migration_files_are_contiguous():
-    assert [m.version for m in mig.discover()] == [2]
+    assert [m.version for m in mig.discover()] == [2, 3, 4]

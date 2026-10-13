@@ -1,0 +1,72 @@
+{
+  "problem_id": "p2",
+  "version": 1,
+  "content_version": "problem-content-v1",
+  "read_problem": {
+    "prompt": "Đề bài yêu cầu em làm gì? Em hãy nói lại bằng lời của mình.",
+    "min_chars": 5
+  },
+  "knowledge": {
+    "prompt": "Để giải bài này, em cần dùng kiến thức nào?",
+    "options": [
+      {
+        "id": "k-transpose",
+        "label": "Quy tắc chuyển vế (đổi dấu hạng tử khi chuyển sang vế kia)",
+        "correct": true
+      },
+      {
+        "id": "k-equal-ops",
+        "label": "Cộng, trừ, nhân, chia cùng một số khác 0 vào hai vế",
+        "correct": true
+      },
+      {
+        "id": "k-quadratic",
+        "label": "Công thức nghiệm của phương trình bậc hai",
+        "correct": false
+      },
+      {
+        "id": "k-pythagoras",
+        "label": "Định lý Py-ta-go",
+        "correct": false
+      },
+      {
+        "id": "k-area",
+        "label": "Công thức tính diện tích hình chữ nhật",
+        "correct": false
+      }
+    ]
+  },
+  "plan": {
+    "prompt": "Bước đầu tiên em định làm gì?",
+    "options": [
+      {
+        "id": "pl-transpose-4",
+        "label": "Chuyển -4 sang vế phải",
+        "operation": "transpose_term",
+        "value": "-4",
+        "acceptable": true
+      },
+      {
+        "id": "pl-add-4",
+        "label": "Cộng 4 vào cả hai vế",
+        "operation": "add_both_sides",
+        "value": "4",
+        "acceptable": true
+      },
+      {
+        "id": "pl-sub-4",
+        "label": "Trừ 4 ở cả hai vế",
+        "operation": "subtract_both_sides",
+        "value": "4",
+        "acceptable": false
+      },
+      {
+        "id": "pl-transpose-11",
+        "label": "Chuyển 11 sang vế trái",
+        "operation": "transpose_term",
+        "value": "+11",
+        "acceptable": false
+      }
+    ]
+  }
+}

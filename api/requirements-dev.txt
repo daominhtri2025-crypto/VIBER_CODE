@@ -1,1 +1,2 @@
 pytest==8.3.3
+sympy==1.13.3  # test-only oracle for MathChecker; never imported by app/

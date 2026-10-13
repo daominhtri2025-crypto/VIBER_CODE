@@ -41,7 +41,8 @@ class HintRepository:
         return int(self.conn.execute(sql, args).fetchone()[0])
 
     def record(self, *, actor_id: str, session_id: str, request_id: str, hint_level: int,
-               trigger: HintTrigger | str, content: str, step_id: str | None = None) -> dict:
+               trigger: HintTrigger | str, content: str, step_id: str | None = None,
+               scope: str | None = None, messages: list[tuple[str, str]] | None = None) -> dict:
         request_id = require_text("request_id", request_id, max_len=64)
         content = require_text("content", content, max_len=1000)
         if not (isinstance(hint_level, int) and 1 <= hint_level <= MAX_HINT_LEVEL):
@@ -62,7 +63,11 @@ class HintRepository:
                 raise StateConflict("Hints are disabled for this session")
             hid = new_id()
             self.conn.execute(
-                "INSERT INTO hint_events(id, session_id, step_id, hint_level, trigger, content, request_id)"
-                " VALUES(?,?,?,?,?,?,?)", (hid, session_id, step_id, hint_level, str(trigger), content, request_id))
+                "INSERT INTO hint_events(id, session_id, step_id, hint_level, trigger, content, request_id, scope)"
+                " VALUES(?,?,?,?,?,?,?,?)",
+                (hid, session_id, step_id, hint_level, str(trigger), content, request_id, scope))
+            for sender, body in messages or ():
+                self.conn.execute("INSERT INTO messages(id, session_id, sender_type, content) VALUES(?,?,?,?)",
+                                  (new_id(), session_id, sender, body.replace("{hint_id}", hid)))
             h = dict(self.conn.execute("SELECT * FROM hint_events WHERE id=?", (hid,)).fetchone())
         return {**h, "replayed": False}

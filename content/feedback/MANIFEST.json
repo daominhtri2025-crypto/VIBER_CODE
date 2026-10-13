@@ -1,0 +1,12 @@
+{
+  "approval_status": "pending_teacher_approval",
+  "approved_by": null,
+  "approved_at": null,
+  "files": [
+    {
+      "file": "templates-v1.json",
+      "sha256": "2b0fd43da47077cbb926692229c1e4b9e5f9c9564a4765f64367775c52da8237"
+    }
+  ],
+  "note": "ContentStore từ chối nạp file có checksum không khớp. Sửa nội dung = file/version mới + checksum mới."
+}

@@ -78,3 +78,8 @@ def audit(conn: sqlite3.Connection, *, actor_id: str | None, action: str, entity
         " VALUES(?,?,?,?,?,?,?)",
         (new_id(), actor_id, action, entity_type, entity_id, request_id, dumps(details or {})),
     )
+
+
+def envelope(text: str, **meta: Any) -> str:
+    """messages.content format v1: {"v":1,"text":...,"meta":{...}} (legacy rows are plain text)."""
+    return dumps({"v": 1, "text": text, "meta": meta})

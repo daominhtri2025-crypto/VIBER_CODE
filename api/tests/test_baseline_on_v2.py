@@ -35,4 +35,4 @@ class TestBaselineOnV2(_baseline.DatabaseTests):
         self.path = Path(self.tmp.name) / "test.db"
         initialize(self.path, demo=True)  # v1 baseline + seed -> migrate to v2
         self.c = _baseline_db.connect(self.path)  # legacy connection style the shipped tests expect
-        assert self.c.execute("SELECT max(version) FROM schema_migrations").fetchone()[0] == 2
+        assert self.c.execute("SELECT max(version) FROM schema_migrations").fetchone()[0] >= 2

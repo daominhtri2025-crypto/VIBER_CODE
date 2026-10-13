@@ -3,7 +3,7 @@
 Đọc trước khi viết mã:
 
 1. `docs/PROJECT_HANDOFF.md` — nguồn chuẩn (Handoff v1.0). Nếu mâu thuẫn với prompt ngắn, Handoff thắng.
-2. `docs/PHASE1_REPORT.md` — trạng thái hiện tại, các quyết định D1–D8 và phần còn thiếu.
+2. `docs/PHASE1_REPORT.md`, `docs/PHASE2_REPORT.md` — trạng thái, quyết định (D*, Q*, E*) và phần còn thiếu.
 3. `database/math_tutor_db/schema.sql` (baseline v1, **không sửa**) và `database/migrations/` (v2+).
 
 ## Quy tắc bất biến
@@ -16,6 +16,8 @@
 - Học sinh không bao giờ nhận `teacher_solution`/`hints` nội bộ.
 - Không thực thi biểu thức từ input; không nối chuỗi SQL từ input (chỉ tham số `?`).
 - Tests không cần API key; không làm yếu test để báo đạt.
+- MathChecker là nơi DUY NHẤT quyết định đúng/sai; không dùng `eval`/`sympify` trên input học sinh (SymPy chỉ là oracle trong test).
+- Nội dung trong `content/` chỉ nạp qua `ContentStore` (kiểm checksum); sửa nội dung = file/version mới + cập nhật MANIFEST.
 
 ## Lệnh
 
