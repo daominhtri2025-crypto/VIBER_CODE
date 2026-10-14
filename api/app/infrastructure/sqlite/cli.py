@@ -8,6 +8,8 @@
     python -m app.infrastructure.sqlite.cli backup-encrypted --db data/app.db   # uses BACKUP_DIR/BACKUP_KEY
     python -m app.infrastructure.sqlite.cli prune-backups                        # BACKUP_RETENTION_DAYS (30)
     python -m app.infrastructure.sqlite.cli restore --from FILE.db.enc --to data/restored.db
+    python -m app.infrastructure.sqlite.cli create-admin --db data/app.db --username qt.admin --name "Quản trị"
+        (password from ADMIN_PASSWORD or an interactive prompt; first account on a fresh install)
 
 Run from the ``api/`` directory. ``init`` refuses to overwrite a file;
 ``migrate`` always backs up first.
@@ -41,7 +43,36 @@ def main(argv: list[str] | None = None) -> int:
     pr = sub.add_parser("restore")
     pr.add_argument("--from", dest="source", required=True)
     pr.add_argument("--to", dest="target", required=True)
+    ca = sub.add_parser("create-admin")
+    ca.add_argument("--db", required=True)
+    ca.add_argument("--username", required=True)
+    ca.add_argument("--name", required=True)
     a = ap.parse_args(argv)
+
+    if a.cmd == "create-admin":
+        import getpass
+        import os
+
+        from app.infrastructure.auth import hash_password
+        from app.infrastructure.sqlite.connection import transaction
+        from app.infrastructure.sqlite.repositories._common import audit, new_id
+        password = os.environ.get("ADMIN_PASSWORD") or getpass.getpass("Mật khẩu admin (>= 12 ký tự): ")
+        if len(password) < 12:
+            print("Mật khẩu admin phải có ít nhất 12 ký tự")
+            return 2
+        conn = connect(a.db)
+        try:
+            uid = new_id()
+            with transaction(conn):
+                conn.execute("INSERT INTO users(id, display_name, auth_subject) VALUES(?,?,?)", (uid, a.name, f"local:{uid}"))
+                conn.execute("INSERT INTO user_roles(user_id, role_code) VALUES(?, 'admin')", (uid,))
+                conn.execute("INSERT INTO user_credentials(user_id, username, password_hash) VALUES(?,?,?)",
+                             (uid, a.username.lower(), hash_password(password)))
+                audit(conn, actor_id=None, action="account.bootstrap_admin", entity_type="user", entity_id=uid)
+        finally:
+            conn.close()
+        print(json.dumps({"created_admin": a.username.lower(), "id": uid}, ensure_ascii=False))
+        return 0
 
     if a.cmd in ("backup-encrypted", "prune-backups", "restore"):
         from pathlib import Path

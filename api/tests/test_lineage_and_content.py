@@ -100,6 +100,8 @@ def test_version_lifecycle_and_student_view(conn):
 
 @pytest.mark.parametrize("over", [
     dict(math_spec={"variable": "x"}), dict(hints=["a", "b"]), dict(difficulty="trivial"),
+    dict(math_spec={"variable": "x", "domain": "R", "lhs": "x^2", "rhs": "4"}),       # not linear
+    dict(math_spec={"variable": "x", "domain": "R", "lhs": "2x+", "rhs": "4"}),       # unparsable
 ])
 def test_version_validation(conn, over):
     repo = ContentRepository(conn)

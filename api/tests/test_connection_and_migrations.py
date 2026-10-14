@@ -172,3 +172,18 @@ def test_database_newer_than_code_is_refused(db_path):
 
 def test_migration_files_are_contiguous():
     assert [m.version for m in mig.discover()] == list(range(2, LATEST + 1)) and LATEST >= 5
+
+
+def test_bootstrap_admin_cli(db_path, monkeypatch):
+    from app.infrastructure.sqlite import cli
+    monkeypatch.setenv("ADMIN_PASSWORD", "short")
+    assert cli.main(["create-admin", "--db", str(db_path), "--username", "Qt.Admin", "--name", "QT"]) == 2
+    monkeypatch.setenv("ADMIN_PASSWORD", "Admin-pass-2026")
+    assert cli.main(["create-admin", "--db", str(db_path), "--username", "Qt.Admin", "--name", "QT"]) == 0
+    c = connect(db_path)
+    try:
+        row = c.execute("SELECT u.id FROM user_credentials c JOIN users u ON u.id=c.user_id JOIN user_roles r"
+                        " ON r.user_id=u.id AND r.role_code='admin' WHERE c.username='qt.admin'").fetchone()
+        assert row is not None
+    finally:
+        c.close()

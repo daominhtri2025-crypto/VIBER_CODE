@@ -8,7 +8,7 @@ Stack: FastAPI + SQLite (backend), Claude Haiku 5.5 (AI, tùy chọn), Next.js +
 | 1 | Database, migration, repository | **Hoàn thành** — xem `docs/PHASE1_REPORT.md` |
 | 2 | MathChecker, LearningStateMachine, HintPolicy, phản hồi mẫu, xóa dữ liệu D5 | **Hoàn thành** — xem `docs/PHASE2_REPORT.md` |
 | 3 | FastAPI (60 endpoint), xác thực lai JWT + Google, TutorAI (Claude Haiku 5.5) + guard/quota/fallback, nghiên cứu/export, backup mã hóa | **Hoàn thành** — xem `docs/PHASE3_REPORT.md` |
-| 4 | Giao diện Next.js, E2E | Chưa bắt đầu |
+| 4 | Giao diện Next.js "vở ô li" cho 4 vai trò, bàn phím ký hiệu + KaTeX, BFF cookie httpOnly, Docker | **Hoàn thành** — xem `docs/PHASE4_REPORT.md`, triển khai: `docs/DEPLOYMENT.md` |
 
 ## Cấu trúc
 
@@ -19,11 +19,14 @@ api/app/api/                         FastAPI: routers auth/student/teacher/resea
 api/app/infrastructure/sqlite/       connection factory, migration runner, CLI
 api/app/infrastructure/sqlite/repositories/   users, classes, content, assignments,
                                      sessions, hints, assessments, reports
-api/tests/                           pytest (887 test)
+api/tests/                           pytest (892 test)
+web/                                 Next.js App Router (vitest 16, Playwright 7 E2E)
+scripts/e2e.sh                       E2E trên DB demo mới
+docker-compose.yml                   api + web + backup hằng ngày
 database/math_tutor_db/              gói SQLite baseline v1 (giữ nguyên)
 database/migrations/                 0002 integrity, 0003 erasure, 0004 hint scope, 0005 auth/AI/idempotency
 content/                             rubrics/, problems/, feedback/, prompts/ — bất biến theo version, MANIFEST checksum
-docs/                                PROJECT_HANDOFF.md, PHASE1–3_REPORT.md, openapi.json
+docs/                                PROJECT_HANDOFF.md, PHASE1–4_REPORT.md, DEPLOYMENT.md, openapi.json
 ```
 
 ## Chạy nhanh

@@ -5,7 +5,8 @@ from __future__ import annotations
 from fastapi import APIRouter, Depends
 from fastapi.responses import Response
 
-from app.api.deps import db, require
+from app.api.deps import AppContext, ctx, db, require
+from app.domain.errors import NotFound, ValidationFailed
 from app.api.schemas import AssignmentIn, ClassIn, DraftPatchIn, FeedbackResolveIn, MemberIn, ProblemIn, VersionIn
 from app.application.auth_service import Actor
 from app.domain.constants import Role
@@ -64,7 +65,20 @@ def get_version(problem_id: str, version: int, actor: Actor = Depends(teacher), 
 
 
 @router.post("/assignments", status_code=201)
-def create_assignment(body: AssignmentIn, actor: Actor = Depends(teacher), conn=Depends(db)) -> dict:
+def create_assignment(body: AssignmentIn, actor: Actor = Depends(teacher), conn=Depends(db),
+                      c: AppContext = Depends(ctx)) -> dict:
+    if body.learning_mode == "guided":
+        # Guided mode needs the teacher-approved knowledge/plan catalogue (content/problems, Q6).
+        missing = []
+        for p in body.problems:
+            try:
+                c.content.problem(p.problem_id, p.problem_version)
+            except NotFound:
+                missing.append(f"{p.problem_id}@{p.problem_version}")
+        if missing:
+            raise ValidationFailed("Chế độ có hướng dẫn cần danh mục kiến thức/hướng giải cho mọi bài. "
+                                   "Hãy dùng chế độ luyện tập cho bài mới, hoặc bổ sung danh mục.",
+                                   detail={"missing_catalogue": missing})
     aid = AssignmentRepository(conn).create(
         teacher_id=actor.id, class_id=body.class_id, title=body.title, learning_mode=body.learning_mode,
         problems=[(p.problem_id, p.problem_version) for p in body.problems], due_at=body.due_at)

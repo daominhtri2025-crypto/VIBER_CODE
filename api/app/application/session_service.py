@@ -178,9 +178,16 @@ class SessionService:
 
     def view(self, *, student_id: str, session_id: str) -> TutorReply:
         s = self._load(student_id, session_id)
+        current = self.sessions.current_equation(s["id"])
+        kind, _ = final_form(Equation.parse(current))
         return self._reply(s, extra={
             "statement": self._problem(s)["statement"],
-            "current_equation": self.sessions.current_equation(s["id"]),
+            "current_equation": current,
+            # VERIFY_RESULT input type: write a substitution, or pick a conclusion for x-free forms
+            "learning_mode": s["learning_mode"],
+            "verify_mode": "conclusion" if kind in (SolutionKind.NONE, SolutionKind.INFINITE) else "substitution",
+            "parent_session_id": s["parent_session_id"],
+            "child_session_id": (self.sessions.find_child(s["id"]) or {}).get("id"),
             "steps": [{k: st[k] for k in ("step_index", "submitted_equation", "operation", "operation_value",
                                           "explanation")}
                       | ({} if s["learning_mode"] == LearningMode.INDEPENDENT and s["state"] != SessionState.COMPLETED

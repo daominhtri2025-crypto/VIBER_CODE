@@ -172,6 +172,12 @@ def start_attempt(assessment_id: str, actor: Actor = Depends(student), conn=Depe
     return {k: a[k] for k in ("id", "assessment_id", "attempt_no", "started_at", "submitted_at")}
 
 
+@router.get("/attempts/{attempt_id}")
+def attempt_status(attempt_id: str, actor: Actor = Depends(student), conn=Depends(db)) -> dict:
+    a = AssessmentRepository(conn)._attempt_for_owner(attempt_id, actor.id)
+    return {"id": a["id"], "assessment_id": a["assessment_id"], "submitted_at": a["submitted_at"]}
+
+
 @router.get("/attempts/{attempt_id}/items")
 def attempt_items(attempt_id: str, actor: Actor = Depends(student), conn=Depends(db)) -> list[dict]:
     return AssessmentRepository(conn).items_for_attempt(student_id=actor.id, attempt_id=attempt_id)

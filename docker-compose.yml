@@ -1,0 +1,50 @@
+# Pilot deployment: docker compose up -d --build
+# Put secrets in .env next to this file (see .env.docker.example). Only the web port is published;
+# the API is reachable only inside the compose network (browser → Next.js BFF → API).
+services:
+  api:
+    build: { context: ., dockerfile: api/Dockerfile }
+    env_file: .env
+    environment:
+      CORS_ORIGINS: ""
+    volumes:
+      - db:/data
+      - backups:/backups
+      - ops:/ops
+    restart: unless-stopped
+
+  web:
+    build:
+      context: .
+      dockerfile: web/Dockerfile
+      args:
+        NEXT_PUBLIC_BRAND_NAME: ${NEXT_PUBLIC_BRAND_NAME:-Toán từng bước}
+        NEXT_PUBLIC_ORG_NAME: ${NEXT_PUBLIC_ORG_NAME:-Minh Trí Academy}
+        NEXT_PUBLIC_LOGO_URL: ${NEXT_PUBLIC_LOGO_URL:-}
+        NEXT_PUBLIC_GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+    environment:
+      API_INTERNAL_URL: http://api:8000
+      COOKIE_SECURE: ${COOKIE_SECURE:-false}
+    ports:
+      - "${WEB_PORT:-3000}:3000"
+    depends_on:
+      api: { condition: service_healthy }
+    restart: unless-stopped
+
+  # Daily encrypted backup + 30-day pruning (decision 14/10/2026)
+  backup:
+    build: { context: ., dockerfile: api/Dockerfile }
+    env_file: .env
+    volumes:
+      - db:/data
+      - backups:/backups
+      - ops:/ops
+    entrypoint: ["sh", "-c", "while true; do python -m app.infrastructure.sqlite.cli backup-encrypted --db /data/app.db && python -m app.infrastructure.sqlite.cli prune-backups; sleep 86400; done"]
+    depends_on:
+      api: { condition: service_healthy }
+    restart: unless-stopped
+
+volumes:
+  db:
+  backups:
+  ops:

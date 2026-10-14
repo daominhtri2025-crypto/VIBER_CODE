@@ -19,7 +19,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from app.api.deps import AppContext
-from app.api.routers import admin, auth, research, student, teacher
+from app.api.routers import admin, auth, listing, research, student, teacher
 from app.config import Settings
 from app.domain.errors import (
     DomainError, IdempotencyConflict, IntegrityViolation, NotFound, PermissionDenied, StateConflict,
@@ -38,7 +38,10 @@ STATUS = {AuthError: 401, PermissionDenied: 403, NotFound: 404, VersionConflict:
 def create_app(settings: Settings | None = None, *, tutor: TutorAI | None = None,
                google: GoogleIdTokenVerifier | None = None, content: ContentStore | None = None) -> FastAPI:
     settings = settings or Settings.from_env()
-    if tutor is None and settings.ai_enabled and settings.anthropic_api_key:
+    if tutor is None and settings.ai_enabled and settings.ai_provider == "mock":
+        from app.infrastructure.ai.mock import MockTutorAI
+        tutor = MockTutorAI()
+    elif tutor is None and settings.ai_enabled and settings.anthropic_api_key:
         from app.infrastructure.ai.claude import ClaudeTutorAI
         tutor = ClaudeTutorAI(settings.anthropic_api_key)
     if google is None and settings.google_client_id:
@@ -84,7 +87,7 @@ def create_app(settings: Settings | None = None, *, tutor: TutorAI | None = None
     def health() -> dict:
         return {"status": "ok"}
 
-    for r in (auth.router, student.router, teacher.router, research.router, admin.router):
+    for r in (auth.router, listing.router, student.router, teacher.router, research.router, admin.router):
         app.include_router(r, prefix="/api/v1")
     return app
 

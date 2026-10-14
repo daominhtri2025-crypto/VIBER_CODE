@@ -1,0 +1,14 @@
+**/node_modules
+**/.next
+**/__pycache__
+**/.pytest_cache
+**/test-results
+**/playwright-report
+**/*.db
+**/*.db-wal
+**/*.db-shm
+**/backups
+.git
+.env
+api/data
+!database/math_tutor_db/data/math_tutor_demo.db

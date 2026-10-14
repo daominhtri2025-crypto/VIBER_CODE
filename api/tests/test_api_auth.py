@@ -164,3 +164,17 @@ def test_body_cannot_smuggle_identity_or_verdict(env, extra):
             "operation": "divide_both_sides", "operation_value": "2"} | extra
     assert env.client.post(f"{API}/sessions/{r['session_id']}/steps", json=body,
                            headers=env.headers("student-b")).status_code == 422
+
+
+# ------------------------------------------------------------ listing scope
+def test_listing_endpoints_are_scoped(env):
+    assert [c["id"] for c in env.client.get(f"{API}/classes", headers=env.headers("teacher-demo")).json()] == ["class-demo"]
+    assert env.client.get(f"{API}/my/sessions", headers=env.headers("student-a")).json()[0]["id"] == "session-demo"
+    assert env.client.get(f"{API}/my/sessions", headers=env.headers("student-b")).json() == []
+    assert {a["id"] for a in env.client.get(f"{API}/my/assessments", headers=env.headers("student-a")).json()} == \
+        {"pre-demo", "post-demo"}
+    assert [s["id"] for s in env.client.get(f"{API}/studies", headers=env.headers("researcher-demo")).json()] == ["study-demo"]
+    assert env.client.get(f"{API}/admin/users", headers=env.headers("teacher-demo")).status_code == 403
+    probs = env.client.get(f"{API}/problems", headers=env.headers("teacher-demo")).json()
+    assert probs and "teacher_solution" not in probs[0]
+    assert len(env.client.get(f"{API}/admin/ai-configs", headers=env.headers("admin-demo")).json()) >= 1

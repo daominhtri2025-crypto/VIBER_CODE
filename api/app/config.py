@@ -30,6 +30,7 @@ class Settings:
 
     # --- AI (Anthropic Claude, decision 14/10/2026)
     ai_enabled: bool = False
+    ai_provider: str = "anthropic"            # "mock" = deterministic offline tutor for demos/E2E (never in production)
     anthropic_api_key: str | None = None
     ai_timeout_seconds: float = 8.0
     ai_quota_per_session: int = 30
@@ -62,6 +63,7 @@ class Settings:
             google_client_id=_env("GOOGLE_CLIENT_ID"),
             google_allowed_domains=split("GOOGLE_ALLOWED_DOMAINS"),
             ai_enabled=b("AI_ENABLED", False),
+            ai_provider=(_env("AI_PROVIDER", "anthropic") or "anthropic").lower(),
             anthropic_api_key=_env("ANTHROPIC_API_KEY"),
             ai_timeout_seconds=float(_env("AI_TIMEOUT_SECONDS", "8")),
             ai_quota_per_session=int(_env("AI_QUOTA_PER_SESSION", "30")),
@@ -77,5 +79,7 @@ class Settings:
     def validate_for_production(self) -> None:
         if len(self.jwt_secret) < 32:
             raise RuntimeError("JWT_SECRET must be at least 32 characters")
-        if self.ai_enabled and not self.anthropic_api_key:
+        if self.ai_provider not in ("anthropic", "mock"):
+            raise RuntimeError("AI_PROVIDER must be anthropic|mock")
+        if self.ai_enabled and self.ai_provider == "anthropic" and not self.anthropic_api_key:
             raise RuntimeError("AI_ENABLED requires ANTHROPIC_API_KEY")

@@ -71,6 +71,7 @@ class VerifyIn(Versioned):
 
 class SubmitIn(Strict):
     expected_version: int = Field(ge=0)
+    request_id: str | None = Field(default=None, min_length=1, max_length=64)
 
 
 class ActivityIn(Strict):

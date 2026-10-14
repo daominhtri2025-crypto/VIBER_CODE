@@ -3,7 +3,7 @@
 Đọc trước khi viết mã:
 
 1. `docs/PROJECT_HANDOFF.md` — nguồn chuẩn (Handoff v1.0). Nếu mâu thuẫn với prompt ngắn, Handoff thắng.
-2. `docs/PHASE1_REPORT.md`, `PHASE2_REPORT.md`, `PHASE3_REPORT.md` — trạng thái, quyết định (D*, Q*, E*, F*) và phần còn thiếu.
+2. `docs/PHASE1_REPORT.md` … `PHASE4_REPORT.md`, `DEPLOYMENT.md` — trạng thái, quyết định (D*, Q*, E*, F*) và phần còn thiếu.
 3. `database/math_tutor_db/schema.sql` (baseline v1, **không sửa**) và `database/migrations/` (v2+).
 
 ## Quy tắc bất biến
@@ -19,6 +19,7 @@
 - MathChecker là nơi DUY NHẤT quyết định đúng/sai; không dùng `eval`/`sympify` trên input học sinh (SymPy chỉ là oracle trong test).
 - AI (Claude, KHÔNG dùng Gemini API: điều khoản cấm ứng dụng cho người <18 tuổi) chỉ diễn đạt; mọi đầu ra qua `check_output` + fallback; không gửi PII/văn bản tự do; không gọi AI trong independent/assessment.
 - Không `ADD COLUMN` vào bảng v1 mà gói cũ INSERT theo vị trí (assessments, item_responses…): dùng bảng 1:1.
+- Web: trình duyệt không bao giờ giữ JWT (BFF `/bff/*`, cookie httpOnly); mutation qua BFF cần header `x-mt-client: web`; xem trước công thức chỉ để hiển thị, không chấm ở trình duyệt.
 - Nội dung trong `content/` chỉ nạp qua `ContentStore` (kiểm checksum); sửa nội dung = file/version mới + cập nhật MANIFEST.
 
 ## Lệnh

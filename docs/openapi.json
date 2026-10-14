@@ -279,6 +279,564 @@
     }
    }
   },
+  "/api/v1/my/sessions": {
+   "get": {
+    "tags": [
+     "listing"
+    ],
+    "summary": "My Sessions",
+    "operationId": "my_sessions_api_v1_my_sessions_get",
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "items": {
+          "additionalProperties": true,
+          "type": "object"
+         },
+         "type": "array",
+         "title": "Response My Sessions Api V1 My Sessions Get"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/my/assessments": {
+   "get": {
+    "tags": [
+     "listing"
+    ],
+    "summary": "My Assessments",
+    "operationId": "my_assessments_api_v1_my_assessments_get",
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "items": {
+          "additionalProperties": true,
+          "type": "object"
+         },
+         "type": "array",
+         "title": "Response My Assessments Api V1 My Assessments Get"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/classes": {
+   "get": {
+    "tags": [
+     "listing"
+    ],
+    "summary": "My Classes",
+    "operationId": "my_classes_api_v1_classes_get",
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "items": {
+          "additionalProperties": true,
+          "type": "object"
+         },
+         "type": "array",
+         "title": "Response My Classes Api V1 Classes Get"
+        }
+       }
+      }
+     }
+    }
+   },
+   "post": {
+    "tags": [
+     "teacher"
+    ],
+    "summary": "Create Class",
+    "operationId": "create_class_api_v1_classes_post",
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/ClassIn"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "201": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "additionalProperties": true,
+         "type": "object",
+         "title": "Response Create Class Api V1 Classes Post"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/classes/{class_id}/assignments": {
+   "get": {
+    "tags": [
+     "listing"
+    ],
+    "summary": "Class Assignments",
+    "operationId": "class_assignments_api_v1_classes__class_id__assignments_get",
+    "parameters": [
+     {
+      "name": "class_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Class Id"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "array",
+         "items": {
+          "type": "object",
+          "additionalProperties": true
+         },
+         "title": "Response Class Assignments Api V1 Classes  Class Id  Assignments Get"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/topics": {
+   "get": {
+    "tags": [
+     "listing"
+    ],
+    "summary": "Topics",
+    "operationId": "topics_api_v1_topics_get",
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "items": {
+          "additionalProperties": true,
+          "type": "object"
+         },
+         "type": "array",
+         "title": "Response Topics Api V1 Topics Get"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/problems": {
+   "get": {
+    "tags": [
+     "listing"
+    ],
+    "summary": "Problem Bank",
+    "description": "Approved versions of everyone + the caller's own drafts. No solutions in the list view.",
+    "operationId": "problem_bank_api_v1_problems_get",
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "items": {
+          "additionalProperties": true,
+          "type": "object"
+         },
+         "type": "array",
+         "title": "Response Problem Bank Api V1 Problems Get"
+        }
+       }
+      }
+     }
+    }
+   },
+   "post": {
+    "tags": [
+     "teacher"
+    ],
+    "summary": "Create Problem",
+    "operationId": "create_problem_api_v1_problems_post",
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/ProblemIn"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "201": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "additionalProperties": true,
+         "type": "object",
+         "title": "Response Create Problem Api V1 Problems Post"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/directory/students": {
+   "get": {
+    "tags": [
+     "listing"
+    ],
+    "summary": "Student Directory",
+    "description": "Active students for enrolment/recruitment (teacher adding to class, researcher recruiting).",
+    "operationId": "student_directory_api_v1_directory_students_get",
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "items": {
+          "additionalProperties": true,
+          "type": "object"
+         },
+         "type": "array",
+         "title": "Response Student Directory Api V1 Directory Students Get"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/studies": {
+   "get": {
+    "tags": [
+     "listing"
+    ],
+    "summary": "My Studies",
+    "operationId": "my_studies_api_v1_studies_get",
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "items": {
+          "additionalProperties": true,
+          "type": "object"
+         },
+         "type": "array",
+         "title": "Response My Studies Api V1 Studies Get"
+        }
+       }
+      }
+     }
+    }
+   },
+   "post": {
+    "tags": [
+     "research"
+    ],
+    "summary": "Create Study",
+    "operationId": "create_study_api_v1_studies_post",
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/StudyIn"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "201": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "additionalProperties": true,
+         "type": "object",
+         "title": "Response Create Study Api V1 Studies Post"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/studies/{study_id}": {
+   "get": {
+    "tags": [
+     "listing"
+    ],
+    "summary": "Study Detail",
+    "operationId": "study_detail_api_v1_studies__study_id__get",
+    "parameters": [
+     {
+      "name": "study_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Study Id"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "additionalProperties": true,
+         "title": "Response Study Detail Api V1 Studies  Study Id  Get"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/admin/users": {
+   "get": {
+    "tags": [
+     "listing"
+    ],
+    "summary": "Users",
+    "operationId": "users_api_v1_admin_users_get",
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "items": {
+          "additionalProperties": true,
+          "type": "object"
+         },
+         "type": "array",
+         "title": "Response Users Api V1 Admin Users Get"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/admin/ai-configs": {
+   "get": {
+    "tags": [
+     "listing"
+    ],
+    "summary": "Ai Configs",
+    "operationId": "ai_configs_api_v1_admin_ai_configs_get",
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "items": {
+          "additionalProperties": true,
+          "type": "object"
+         },
+         "type": "array",
+         "title": "Response Ai Configs Api V1 Admin Ai Configs Get"
+        }
+       }
+      }
+     }
+    }
+   },
+   "post": {
+    "tags": [
+     "admin"
+    ],
+    "summary": "Create Ai Config",
+    "operationId": "create_ai_config_api_v1_admin_ai_configs_post",
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/AIConfigIn"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "201": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "additionalProperties": true,
+         "type": "object",
+         "title": "Response Create Ai Config Api V1 Admin Ai Configs Post"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/erasure-requests": {
+   "get": {
+    "tags": [
+     "listing"
+    ],
+    "summary": "Erasure Requests",
+    "operationId": "erasure_requests_api_v1_erasure_requests_get",
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "items": {
+          "additionalProperties": true,
+          "type": "object"
+         },
+         "type": "array",
+         "title": "Response Erasure Requests Api V1 Erasure Requests Get"
+        }
+       }
+      }
+     }
+    }
+   },
+   "post": {
+    "tags": [
+     "research"
+    ],
+    "summary": "Request Erasure",
+    "operationId": "request_erasure_api_v1_erasure_requests_post",
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/ErasureIn"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "201": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "additionalProperties": true,
+         "type": "object",
+         "title": "Response Request Erasure Api V1 Erasure Requests Post"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
   "/api/v1/assignments": {
    "get": {
     "tags": [
@@ -1062,6 +1620,50 @@
     }
    }
   },
+  "/api/v1/attempts/{attempt_id}": {
+   "get": {
+    "tags": [
+     "student"
+    ],
+    "summary": "Attempt Status",
+    "operationId": "attempt_status_api_v1_attempts__attempt_id__get",
+    "parameters": [
+     {
+      "name": "attempt_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Attempt Id"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "additionalProperties": true,
+         "title": "Response Attempt Status Api V1 Attempts  Attempt Id  Get"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
   "/api/v1/attempts/{attempt_id}/items": {
    "get": {
     "tags": [
@@ -1260,49 +1862,6 @@
     }
    }
   },
-  "/api/v1/classes": {
-   "post": {
-    "tags": [
-     "teacher"
-    ],
-    "summary": "Create Class",
-    "operationId": "create_class_api_v1_classes_post",
-    "requestBody": {
-     "content": {
-      "application/json": {
-       "schema": {
-        "$ref": "#/components/schemas/ClassIn"
-       }
-      }
-     },
-     "required": true
-    },
-    "responses": {
-     "201": {
-      "description": "Successful Response",
-      "content": {
-       "application/json": {
-        "schema": {
-         "additionalProperties": true,
-         "type": "object",
-         "title": "Response Create Class Api V1 Classes Post"
-        }
-       }
-      }
-     },
-     "422": {
-      "description": "Validation Error",
-      "content": {
-       "application/json": {
-        "schema": {
-         "$ref": "#/components/schemas/HTTPValidationError"
-        }
-       }
-      }
-     }
-    }
-   }
-  },
   "/api/v1/classes/{class_id}/members": {
    "post": {
     "tags": [
@@ -1376,49 +1935,6 @@
           "additionalProperties": true
          },
          "title": "Response Members Api V1 Classes  Class Id  Members Get"
-        }
-       }
-      }
-     },
-     "422": {
-      "description": "Validation Error",
-      "content": {
-       "application/json": {
-        "schema": {
-         "$ref": "#/components/schemas/HTTPValidationError"
-        }
-       }
-      }
-     }
-    }
-   }
-  },
-  "/api/v1/problems": {
-   "post": {
-    "tags": [
-     "teacher"
-    ],
-    "summary": "Create Problem",
-    "operationId": "create_problem_api_v1_problems_post",
-    "requestBody": {
-     "content": {
-      "application/json": {
-       "schema": {
-        "$ref": "#/components/schemas/ProblemIn"
-       }
-      }
-     },
-     "required": true
-    },
-    "responses": {
-     "201": {
-      "description": "Successful Response",
-      "content": {
-       "application/json": {
-        "schema": {
-         "additionalProperties": true,
-         "type": "object",
-         "title": "Response Create Problem Api V1 Problems Post"
         }
        }
       }
@@ -1764,49 +2280,6 @@
          "type": "object",
          "additionalProperties": true,
          "title": "Response Resolve Report Api V1 Feedback Reports  Report Id  Patch"
-        }
-       }
-      }
-     },
-     "422": {
-      "description": "Validation Error",
-      "content": {
-       "application/json": {
-        "schema": {
-         "$ref": "#/components/schemas/HTTPValidationError"
-        }
-       }
-      }
-     }
-    }
-   }
-  },
-  "/api/v1/studies": {
-   "post": {
-    "tags": [
-     "research"
-    ],
-    "summary": "Create Study",
-    "operationId": "create_study_api_v1_studies_post",
-    "requestBody": {
-     "content": {
-      "application/json": {
-       "schema": {
-        "$ref": "#/components/schemas/StudyIn"
-       }
-      }
-     },
-     "required": true
-    },
-    "responses": {
-     "201": {
-      "description": "Successful Response",
-      "content": {
-       "application/json": {
-        "schema": {
-         "additionalProperties": true,
-         "type": "object",
-         "title": "Response Create Study Api V1 Studies Post"
         }
        }
       }
@@ -2257,49 +2730,6 @@
     }
    }
   },
-  "/api/v1/erasure-requests": {
-   "post": {
-    "tags": [
-     "research"
-    ],
-    "summary": "Request Erasure",
-    "operationId": "request_erasure_api_v1_erasure_requests_post",
-    "requestBody": {
-     "content": {
-      "application/json": {
-       "schema": {
-        "$ref": "#/components/schemas/ErasureIn"
-       }
-      }
-     },
-     "required": true
-    },
-    "responses": {
-     "201": {
-      "description": "Successful Response",
-      "content": {
-       "application/json": {
-        "schema": {
-         "additionalProperties": true,
-         "type": "object",
-         "title": "Response Request Erasure Api V1 Erasure Requests Post"
-        }
-       }
-      }
-     },
-     "422": {
-      "description": "Validation Error",
-      "content": {
-       "application/json": {
-        "schema": {
-         "$ref": "#/components/schemas/HTTPValidationError"
-        }
-       }
-      }
-     }
-    }
-   }
-  },
   "/api/v1/users": {
    "post": {
     "tags": [
@@ -2429,49 +2859,6 @@
     "responses": {
      "204": {
       "description": "Successful Response"
-     },
-     "422": {
-      "description": "Validation Error",
-      "content": {
-       "application/json": {
-        "schema": {
-         "$ref": "#/components/schemas/HTTPValidationError"
-        }
-       }
-      }
-     }
-    }
-   }
-  },
-  "/api/v1/admin/ai-configs": {
-   "post": {
-    "tags": [
-     "admin"
-    ],
-    "summary": "Create Ai Config",
-    "operationId": "create_ai_config_api_v1_admin_ai_configs_post",
-    "requestBody": {
-     "content": {
-      "application/json": {
-       "schema": {
-        "$ref": "#/components/schemas/AIConfigIn"
-       }
-      }
-     },
-     "required": true
-    },
-    "responses": {
-     "201": {
-      "description": "Successful Response",
-      "content": {
-       "application/json": {
-        "schema": {
-         "additionalProperties": true,
-         "type": "object",
-         "title": "Response Create Ai Config Api V1 Admin Ai Configs Post"
-        }
-       }
-      }
      },
      "422": {
       "description": "Validation Error",
@@ -3585,6 +3972,19 @@
       "type": "integer",
       "minimum": 0.0,
       "title": "Expected Version"
+     },
+     "request_id": {
+      "anyOf": [
+       {
+        "type": "string",
+        "maxLength": 64,
+        "minLength": 1
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Request Id"
      }
     },
     "additionalProperties": false,

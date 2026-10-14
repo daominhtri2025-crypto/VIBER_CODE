@@ -29,6 +29,13 @@ def validate_math_spec(spec: dict) -> dict:
         raise ValidationFailed(f"math_spec missing keys: {sorted(missing)}")
     for k in REQUIRED_MATH_SPEC_KEYS:
         require_text(f"math_spec.{k}", spec[k], max_len=200)
+    # The equation must be understood by MathChecker, otherwise no step could ever be checked.
+    from app.domain.math.ast import MathInputError
+    from app.domain.math.checker import Equation
+    try:
+        Equation.parse(f"{spec['lhs']}={spec['rhs']}").solution()
+    except MathInputError as exc:
+        raise ValidationFailed(f"Phương trình không hợp lệ: {exc.message}") from exc
     return spec
 
 

@@ -1,0 +1,50 @@
+@import "tailwindcss";
+@import "@fontsource/be-vietnam-pro/400.css";
+@import "@fontsource/be-vietnam-pro/500.css";
+@import "@fontsource/be-vietnam-pro/600.css";
+@import "@fontsource/be-vietnam-pro/700.css";
+@import "katex/dist/katex.min.css";
+
+/*
+ * "Vở ô li" design system — a Vietnamese squared exercise book.
+ *   paper  cool white page        grid  pale-blue squares
+ *   ink    ballpoint blue (student writing)
+ *   pen    teacher's red pen (marks a wrong step; used sparingly)
+ *   ok     check-mark green      hl    highlighter (hints)
+ */
+@theme {
+  --color-paper: #fbfcf8;
+  --color-grid: #dce6f0;
+  --color-ink: #1f3a93;
+  --color-pen: #c62d42;
+  --color-ok: #2e7d5b;
+  --color-text: #1b2430;
+  --color-muted: #5b6676;
+  --color-line: #e3e8ef;
+  --color-hl: #fff1c2;
+  --color-hl-ink: #6b4a00;
+  --font-sans: "Be Vietnam Pro", system-ui, "Segoe UI", Roboto, sans-serif;
+}
+
+:root { color-scheme: light; }
+html, body { background: #eef2f6; color: var(--color-text); }
+body { font-family: var(--font-sans); font-size: 16px; line-height: 1.55; -webkit-font-smoothing: antialiased; }
+
+/* The notebook page: 24px squares, a red margin rule like real exercise books. */
+.notebook {
+  background-color: var(--color-paper);
+  background-image:
+    linear-gradient(to right, transparent 55px, rgba(198, 45, 66, .45) 55px, rgba(198, 45, 66, .45) 57px, transparent 57px),
+    linear-gradient(var(--color-grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--color-grid) 1px, transparent 1px);
+  background-size: 100% 100%, 24px 24px, 24px 24px;
+}
+.ink { color: var(--color-ink); }
+.katex { font-size: 1.15em; }
+
+:focus-visible { outline: 3px solid #3b6fd8; outline-offset: 2px; border-radius: 4px; }
+@media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+
+/* One deliberate motion: a freshly checked step gets its mark "written" in. */
+@keyframes stamp { from { transform: scale(1.6) rotate(-12deg); opacity: 0; } to { transform: none; opacity: 1; } }
+.stamp { animation: stamp .28s ease-out both; }

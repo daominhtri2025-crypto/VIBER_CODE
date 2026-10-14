@@ -213,3 +213,17 @@ def test_claude_timeout():
     with pytest.raises(TutorAIError) as exc:
         _adapter(handler).generate(CTX, model="m", system_prompt="s", timeout=0.1, max_output_tokens=10)
     assert exc.value.kind == "timeout"
+
+
+def test_guided_assignment_requires_catalogue(env):
+    t = env.headers("teacher-demo")
+    pid = env.client.post(f"{API}/problems", json={"topic_id": "linear-equations"}, headers=t).json()["id"]
+    env.client.post(f"{API}/problems/{pid}/versions", headers=t, json={
+        "statement": "Giải 5x - 2 = 13", "math_spec": {"variable": "x", "domain": "R", "lhs": "5*x-2", "rhs": "13"},
+        "teacher_solution": "x=3", "hints": ["a", "b", "c"], "difficulty": "easy"})
+    env.client.post(f"{API}/problems/{pid}/versions/1/approve", headers=t)
+    body = {"class_id": "class-demo", "title": "Bài mới", "learning_mode": "guided",
+            "problems": [{"problem_id": pid, "problem_version": 1}]}
+    r = env.client.post(f"{API}/assignments", json=body, headers=t)
+    assert r.status_code == 422 and r.json()["detail"]["missing_catalogue"] == [f"{pid}@1"]
+    assert env.client.post(f"{API}/assignments", json=body | {"learning_mode": "practice"}, headers=t).status_code == 201
