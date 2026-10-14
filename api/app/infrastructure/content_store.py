@@ -26,6 +26,10 @@ class ContentStore:
 
     @lru_cache(maxsize=256)
     def _load(self, subdir: str, filename: str) -> dict:
+        return json.loads(self._verified_bytes(subdir, filename))
+
+    @lru_cache(maxsize=64)
+    def _verified_bytes(self, subdir: str, filename: str) -> bytes:
         directory = self.root / subdir
         manifest = json.loads((directory / "MANIFEST.json").read_text(encoding="utf-8"))
         entry = next((e for e in manifest["files"] if e["file"] == filename), None)
@@ -35,7 +39,7 @@ class ContentStore:
         data = path.read_bytes()
         if hashlib.sha256(data).hexdigest() != entry["sha256"]:
             raise ContentIntegrityError(f"Checksum mismatch: {subdir}/{filename}")
-        return json.loads(data)
+        return data
 
     def manifest(self, subdir: str) -> dict:
         return json.loads((self.root / subdir / "MANIFEST.json").read_text(encoding="utf-8"))
@@ -45,3 +49,7 @@ class ContentStore:
 
     def templates(self, version: str = "v1") -> dict:
         return self._load("feedback", f"templates-{version}.json")
+
+    def prompt(self, prompt_version: str) -> str:
+        """System prompt text for ``ai_configs.prompt_version`` (e.g. 'tutor-system-v1')."""
+        return self._verified_bytes("prompts", f"{prompt_version}.md").decode("utf-8")

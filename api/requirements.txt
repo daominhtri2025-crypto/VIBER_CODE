@@ -1,0 +1,7 @@
+# Runtime (pinned; verified 14/10/2026)
+fastapi==0.115.6
+uvicorn==0.32.1
+httpx==0.28.1
+PyJWT[crypto]==2.10.1
+argon2-cffi==23.1.0
+cryptography==44.0.0

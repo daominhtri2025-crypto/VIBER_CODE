@@ -99,7 +99,8 @@ def test_migrating_shipped_v1_preserves_history_and_scores(legacy_db, tmp_path):
     assert result["from_version"] == 1 and result["to_version"] == LATEST
     assert result["applied"] == list(range(2, LATEST + 1))
     after = snapshot(legacy_db)
-    new_tables = {"count:audit_log", "count:erasure_requests"}  # created by 0002/0003, empty
+    new_tables = set(after) - set(before)  # created by later migrations: must exist empty
+    assert {"count:audit_log", "count:erasure_requests", "count:ai_usage"} <= new_tables
     assert {k: v for k, v in after.items() if k not in new_tables} == before
     assert all(after[k] == 0 for k in new_tables)
     c = connect(legacy_db)
@@ -170,4 +171,4 @@ def test_database_newer_than_code_is_refused(db_path):
 
 
 def test_migration_files_are_contiguous():
-    assert [m.version for m in mig.discover()] == [2, 3, 4]
+    assert [m.version for m in mig.discover()] == list(range(2, LATEST + 1)) and LATEST >= 5

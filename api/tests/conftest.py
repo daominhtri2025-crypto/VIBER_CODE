@@ -46,3 +46,10 @@ def raw_exec(conn: sqlite3.Connection, sql: str, args: tuple = ()) -> None:
         conn.execute("ROLLBACK")
         raise
     conn.execute("COMMIT")
+
+
+@pytest.fixture
+def env(tmp_path):
+    """API test environment (FastAPI TestClient + mock AI + local Google keys)."""
+    from tests.api_fixtures import build_env
+    return build_env(tmp_path)

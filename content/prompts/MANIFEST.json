@@ -1,0 +1,12 @@
+{
+  "approval_status": "pending_teacher_approval",
+  "approved_by": null,
+  "approved_at": null,
+  "files": [
+    {
+      "file": "tutor-system-v1.md",
+      "sha256": "70390127c070ebfa42f33ce5738805f9dcfdb27b503cef1f44c8ca1b8abd65cf"
+    }
+  ],
+  "note": "prompt_version trong ai_configs trỏ tới file ở đây (tutor-system-v1). Sửa = file mới."
+}

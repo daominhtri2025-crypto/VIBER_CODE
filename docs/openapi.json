@@ -1,0 +1,3776 @@
+{
+ "openapi": "3.1.0",
+ "info": {
+  "title": "Trợ lý AI học Toán THCS — API",
+  "version": "0.3.0"
+ },
+ "paths": {
+  "/health": {
+   "get": {
+    "summary": "Health",
+    "operationId": "health_health_get",
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "additionalProperties": true,
+         "type": "object",
+         "title": "Response Health Health Get"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/auth/login": {
+   "post": {
+    "tags": [
+     "auth"
+    ],
+    "summary": "Login",
+    "operationId": "login_api_v1_auth_login_post",
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/LoginIn"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "additionalProperties": true,
+         "type": "object",
+         "title": "Response Login Api V1 Auth Login Post"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/auth/google": {
+   "post": {
+    "tags": [
+     "auth"
+    ],
+    "summary": "Google Login",
+    "operationId": "google_login_api_v1_auth_google_post",
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/GoogleIn"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "additionalProperties": true,
+         "type": "object",
+         "title": "Response Google Login Api V1 Auth Google Post"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/auth/google/link": {
+   "post": {
+    "tags": [
+     "auth"
+    ],
+    "summary": "Google Link",
+    "operationId": "google_link_api_v1_auth_google_link_post",
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/GoogleIn"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "204": {
+      "description": "Successful Response"
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/auth/refresh": {
+   "post": {
+    "tags": [
+     "auth"
+    ],
+    "summary": "Refresh",
+    "operationId": "refresh_api_v1_auth_refresh_post",
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/RefreshIn"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "additionalProperties": true,
+         "type": "object",
+         "title": "Response Refresh Api V1 Auth Refresh Post"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/auth/logout": {
+   "post": {
+    "tags": [
+     "auth"
+    ],
+    "summary": "Logout",
+    "operationId": "logout_api_v1_auth_logout_post",
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/RefreshIn"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "204": {
+      "description": "Successful Response"
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/auth/password": {
+   "post": {
+    "tags": [
+     "auth"
+    ],
+    "summary": "Change Password",
+    "operationId": "change_password_api_v1_auth_password_post",
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/ChangePasswordIn"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "204": {
+      "description": "Successful Response"
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/me": {
+   "get": {
+    "tags": [
+     "auth"
+    ],
+    "summary": "Me",
+    "operationId": "me_api_v1_me_get",
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "additionalProperties": true,
+         "type": "object",
+         "title": "Response Me Api V1 Me Get"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/assignments": {
+   "get": {
+    "tags": [
+     "student"
+    ],
+    "summary": "Assignments",
+    "operationId": "assignments_api_v1_assignments_get",
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "items": {
+          "additionalProperties": true,
+          "type": "object"
+         },
+         "type": "array",
+         "title": "Response Assignments Api V1 Assignments Get"
+        }
+       }
+      }
+     }
+    }
+   },
+   "post": {
+    "tags": [
+     "teacher"
+    ],
+    "summary": "Create Assignment",
+    "operationId": "create_assignment_api_v1_assignments_post",
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/AssignmentIn"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "201": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "additionalProperties": true,
+         "type": "object",
+         "title": "Response Create Assignment Api V1 Assignments Post"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/sessions": {
+   "post": {
+    "tags": [
+     "student"
+    ],
+    "summary": "Start Session",
+    "operationId": "start_session_api_v1_sessions_post",
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/StartSessionIn"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "201": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "additionalProperties": true,
+         "type": "object",
+         "title": "Response Start Session Api V1 Sessions Post"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/sessions/{session_id}": {
+   "get": {
+    "tags": [
+     "student"
+    ],
+    "summary": "View Session",
+    "operationId": "view_session_api_v1_sessions__session_id__get",
+    "parameters": [
+     {
+      "name": "session_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Session Id"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "additionalProperties": true,
+         "title": "Response View Session Api V1 Sessions  Session Id  Get"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/sessions/{session_id}/messages": {
+   "get": {
+    "tags": [
+     "student"
+    ],
+    "summary": "Session Messages",
+    "operationId": "session_messages_api_v1_sessions__session_id__messages_get",
+    "parameters": [
+     {
+      "name": "session_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Session Id"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "array",
+         "items": {
+          "type": "object",
+          "additionalProperties": true
+         },
+         "title": "Response Session Messages Api V1 Sessions  Session Id  Messages Get"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/sessions/{session_id}/read": {
+   "post": {
+    "tags": [
+     "student"
+    ],
+    "summary": "Read Problem",
+    "operationId": "read_problem_api_v1_sessions__session_id__read_post",
+    "parameters": [
+     {
+      "name": "session_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Session Id"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/ReadIn"
+       }
+      }
+     }
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/sessions/{session_id}/knowledge": {
+   "post": {
+    "tags": [
+     "student"
+    ],
+    "summary": "Knowledge",
+    "operationId": "knowledge_api_v1_sessions__session_id__knowledge_post",
+    "parameters": [
+     {
+      "name": "session_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Session Id"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/ChoiceIn"
+       }
+      }
+     }
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/sessions/{session_id}/plan": {
+   "post": {
+    "tags": [
+     "student"
+    ],
+    "summary": "Plan",
+    "operationId": "plan_api_v1_sessions__session_id__plan_post",
+    "parameters": [
+     {
+      "name": "session_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Session Id"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/ChoiceIn"
+       }
+      }
+     }
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/sessions/{session_id}/steps": {
+   "post": {
+    "tags": [
+     "student"
+    ],
+    "summary": "Submit Step",
+    "operationId": "submit_step_api_v1_sessions__session_id__steps_post",
+    "parameters": [
+     {
+      "name": "session_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Session Id"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/StepIn"
+       }
+      }
+     }
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/sessions/{session_id}/hints": {
+   "post": {
+    "tags": [
+     "student"
+    ],
+    "summary": "Request Hint",
+    "operationId": "request_hint_api_v1_sessions__session_id__hints_post",
+    "parameters": [
+     {
+      "name": "session_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Session Id"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/HintIn"
+       }
+      }
+     }
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/sessions/{session_id}/verify": {
+   "post": {
+    "tags": [
+     "student"
+    ],
+    "summary": "Verify",
+    "operationId": "verify_api_v1_sessions__session_id__verify_post",
+    "parameters": [
+     {
+      "name": "session_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Session Id"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/VerifyIn"
+       }
+      }
+     }
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/sessions/{session_id}/independent": {
+   "post": {
+    "tags": [
+     "student"
+    ],
+    "summary": "Independent Practice",
+    "operationId": "independent_practice_api_v1_sessions__session_id__independent_post",
+    "parameters": [
+     {
+      "name": "session_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Session Id"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "additionalProperties": true,
+         "title": "Response Independent Practice Api V1 Sessions  Session Id  Independent Post"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/sessions/{session_id}/submit": {
+   "post": {
+    "tags": [
+     "student"
+    ],
+    "summary": "Submit Independent",
+    "operationId": "submit_independent_api_v1_sessions__session_id__submit_post",
+    "parameters": [
+     {
+      "name": "session_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Session Id"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/SubmitIn"
+       }
+      }
+     }
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "additionalProperties": true,
+         "title": "Response Submit Independent Api V1 Sessions  Session Id  Submit Post"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/sessions/{session_id}/activity": {
+   "post": {
+    "tags": [
+     "student"
+    ],
+    "summary": "Activity",
+    "operationId": "activity_api_v1_sessions__session_id__activity_post",
+    "parameters": [
+     {
+      "name": "session_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Session Id"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/ActivityIn"
+       }
+      }
+     }
+    },
+    "responses": {
+     "204": {
+      "description": "Successful Response"
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/feedback-reports": {
+   "post": {
+    "tags": [
+     "student"
+    ],
+    "summary": "Report Feedback",
+    "operationId": "report_feedback_api_v1_feedback_reports_post",
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/FeedbackReportIn"
+       }
+      }
+     }
+    },
+    "responses": {
+     "201": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "additionalProperties": true,
+         "title": "Response Report Feedback Api V1 Feedback Reports Post"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   },
+   "get": {
+    "tags": [
+     "teacher"
+    ],
+    "summary": "List Reports",
+    "operationId": "list_reports_api_v1_feedback_reports_get",
+    "parameters": [
+     {
+      "name": "status",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Status"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "array",
+         "items": {
+          "type": "object",
+          "additionalProperties": true
+         },
+         "title": "Response List Reports Api V1 Feedback Reports Get"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/assessments/{assessment_id}/attempts": {
+   "post": {
+    "tags": [
+     "student"
+    ],
+    "summary": "Start Attempt",
+    "operationId": "start_attempt_api_v1_assessments__assessment_id__attempts_post",
+    "parameters": [
+     {
+      "name": "assessment_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Assessment Id"
+      }
+     }
+    ],
+    "responses": {
+     "201": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "additionalProperties": true,
+         "title": "Response Start Attempt Api V1 Assessments  Assessment Id  Attempts Post"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/attempts/{attempt_id}/items": {
+   "get": {
+    "tags": [
+     "student"
+    ],
+    "summary": "Attempt Items",
+    "operationId": "attempt_items_api_v1_attempts__attempt_id__items_get",
+    "parameters": [
+     {
+      "name": "attempt_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Attempt Id"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "array",
+         "items": {
+          "type": "object",
+          "additionalProperties": true
+         },
+         "title": "Response Attempt Items Api V1 Attempts  Attempt Id  Items Get"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/attempts/{attempt_id}/items/{item_id}": {
+   "put": {
+    "tags": [
+     "student"
+    ],
+    "summary": "Save Response",
+    "operationId": "save_response_api_v1_attempts__attempt_id__items__item_id__put",
+    "parameters": [
+     {
+      "name": "attempt_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Attempt Id"
+      }
+     },
+     {
+      "name": "item_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Item Id"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/ResponseIn"
+       }
+      }
+     }
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "additionalProperties": true,
+         "title": "Response Save Response Api V1 Attempts  Attempt Id  Items  Item Id  Put"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/attempts/{attempt_id}/submit": {
+   "post": {
+    "tags": [
+     "student"
+    ],
+    "summary": "Submit Attempt",
+    "operationId": "submit_attempt_api_v1_attempts__attempt_id__submit_post",
+    "parameters": [
+     {
+      "name": "attempt_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Attempt Id"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "additionalProperties": true,
+         "title": "Response Submit Attempt Api V1 Attempts  Attempt Id  Submit Post"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/attempts/{attempt_id}/result": {
+   "get": {
+    "tags": [
+     "student"
+    ],
+    "summary": "Attempt Result",
+    "operationId": "attempt_result_api_v1_attempts__attempt_id__result_get",
+    "parameters": [
+     {
+      "name": "attempt_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Attempt Id"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "additionalProperties": true,
+         "title": "Response Attempt Result Api V1 Attempts  Attempt Id  Result Get"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/classes": {
+   "post": {
+    "tags": [
+     "teacher"
+    ],
+    "summary": "Create Class",
+    "operationId": "create_class_api_v1_classes_post",
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/ClassIn"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "201": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "additionalProperties": true,
+         "type": "object",
+         "title": "Response Create Class Api V1 Classes Post"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/classes/{class_id}/members": {
+   "post": {
+    "tags": [
+     "teacher"
+    ],
+    "summary": "Add Member",
+    "operationId": "add_member_api_v1_classes__class_id__members_post",
+    "parameters": [
+     {
+      "name": "class_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Class Id"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/MemberIn"
+       }
+      }
+     }
+    },
+    "responses": {
+     "204": {
+      "description": "Successful Response"
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   },
+   "get": {
+    "tags": [
+     "teacher"
+    ],
+    "summary": "Members",
+    "operationId": "members_api_v1_classes__class_id__members_get",
+    "parameters": [
+     {
+      "name": "class_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Class Id"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "array",
+         "items": {
+          "type": "object",
+          "additionalProperties": true
+         },
+         "title": "Response Members Api V1 Classes  Class Id  Members Get"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/problems": {
+   "post": {
+    "tags": [
+     "teacher"
+    ],
+    "summary": "Create Problem",
+    "operationId": "create_problem_api_v1_problems_post",
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/ProblemIn"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "201": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "additionalProperties": true,
+         "type": "object",
+         "title": "Response Create Problem Api V1 Problems Post"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/problems/{problem_id}/versions": {
+   "post": {
+    "tags": [
+     "teacher"
+    ],
+    "summary": "Create Version",
+    "operationId": "create_version_api_v1_problems__problem_id__versions_post",
+    "parameters": [
+     {
+      "name": "problem_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Problem Id"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/VersionIn"
+       }
+      }
+     }
+    },
+    "responses": {
+     "201": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "additionalProperties": true,
+         "title": "Response Create Version Api V1 Problems  Problem Id  Versions Post"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/problems/{problem_id}/versions/{version}": {
+   "patch": {
+    "tags": [
+     "teacher"
+    ],
+    "summary": "Edit Draft",
+    "operationId": "edit_draft_api_v1_problems__problem_id__versions__version__patch",
+    "parameters": [
+     {
+      "name": "problem_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Problem Id"
+      }
+     },
+     {
+      "name": "version",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "title": "Version"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/DraftPatchIn"
+       }
+      }
+     }
+    },
+    "responses": {
+     "204": {
+      "description": "Successful Response"
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   },
+   "get": {
+    "tags": [
+     "teacher"
+    ],
+    "summary": "Get Version",
+    "operationId": "get_version_api_v1_problems__problem_id__versions__version__get",
+    "parameters": [
+     {
+      "name": "problem_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Problem Id"
+      }
+     },
+     {
+      "name": "version",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "title": "Version"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "additionalProperties": true,
+         "title": "Response Get Version Api V1 Problems  Problem Id  Versions  Version  Get"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/problems/{problem_id}/versions/{version}/approve": {
+   "post": {
+    "tags": [
+     "teacher"
+    ],
+    "summary": "Approve",
+    "operationId": "approve_api_v1_problems__problem_id__versions__version__approve_post",
+    "parameters": [
+     {
+      "name": "problem_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Problem Id"
+      }
+     },
+     {
+      "name": "version",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "title": "Version"
+      }
+     }
+    ],
+    "responses": {
+     "204": {
+      "description": "Successful Response"
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/classes/{class_id}/report": {
+   "get": {
+    "tags": [
+     "teacher"
+    ],
+    "summary": "Class Report",
+    "operationId": "class_report_api_v1_classes__class_id__report_get",
+    "parameters": [
+     {
+      "name": "class_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Class Id"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "additionalProperties": true,
+         "title": "Response Class Report Api V1 Classes  Class Id  Report Get"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/teacher/sessions/{session_id}": {
+   "get": {
+    "tags": [
+     "teacher"
+    ],
+    "summary": "Teacher Session",
+    "operationId": "teacher_session_api_v1_teacher_sessions__session_id__get",
+    "parameters": [
+     {
+      "name": "session_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Session Id"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "additionalProperties": true,
+         "title": "Response Teacher Session Api V1 Teacher Sessions  Session Id  Get"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/feedback-reports/{report_id}": {
+   "patch": {
+    "tags": [
+     "teacher"
+    ],
+    "summary": "Resolve Report",
+    "operationId": "resolve_report_api_v1_feedback_reports__report_id__patch",
+    "parameters": [
+     {
+      "name": "report_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Report Id"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/FeedbackResolveIn"
+       }
+      }
+     }
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "additionalProperties": true,
+         "title": "Response Resolve Report Api V1 Feedback Reports  Report Id  Patch"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/studies": {
+   "post": {
+    "tags": [
+     "research"
+    ],
+    "summary": "Create Study",
+    "operationId": "create_study_api_v1_studies_post",
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/StudyIn"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "201": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "additionalProperties": true,
+         "type": "object",
+         "title": "Response Create Study Api V1 Studies Post"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/studies/{study_id}/researchers": {
+   "post": {
+    "tags": [
+     "research"
+    ],
+    "summary": "Add Researcher",
+    "operationId": "add_researcher_api_v1_studies__study_id__researchers_post",
+    "parameters": [
+     {
+      "name": "study_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Study Id"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/ResearcherIn"
+       }
+      }
+     }
+    },
+    "responses": {
+     "204": {
+      "description": "Successful Response"
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/studies/{study_id}/groups": {
+   "post": {
+    "tags": [
+     "research"
+    ],
+    "summary": "Create Group",
+    "operationId": "create_group_api_v1_studies__study_id__groups_post",
+    "parameters": [
+     {
+      "name": "study_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Study Id"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/GroupIn"
+       }
+      }
+     }
+    },
+    "responses": {
+     "201": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "additionalProperties": true,
+         "title": "Response Create Group Api V1 Studies  Study Id  Groups Post"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/studies/{study_id}/participants": {
+   "post": {
+    "tags": [
+     "research"
+    ],
+    "summary": "Add Participant",
+    "operationId": "add_participant_api_v1_studies__study_id__participants_post",
+    "parameters": [
+     {
+      "name": "study_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Study Id"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/ParticipantIn"
+       }
+      }
+     }
+    },
+    "responses": {
+     "201": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "additionalProperties": true,
+         "title": "Response Add Participant Api V1 Studies  Study Id  Participants Post"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/studies/{study_id}/assessments": {
+   "post": {
+    "tags": [
+     "research"
+    ],
+    "summary": "Create Assessment",
+    "operationId": "create_assessment_api_v1_studies__study_id__assessments_post",
+    "parameters": [
+     {
+      "name": "study_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Study Id"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/AssessmentIn"
+       }
+      }
+     }
+    },
+    "responses": {
+     "201": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "additionalProperties": true,
+         "title": "Response Create Assessment Api V1 Studies  Study Id  Assessments Post"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/assessments/{assessment_id}/publish": {
+   "post": {
+    "tags": [
+     "research"
+    ],
+    "summary": "Publish",
+    "operationId": "publish_api_v1_assessments__assessment_id__publish_post",
+    "parameters": [
+     {
+      "name": "assessment_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Assessment Id"
+      }
+     }
+    ],
+    "responses": {
+     "204": {
+      "description": "Successful Response"
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/studies/{study_id}/responses": {
+   "get": {
+    "tags": [
+     "research"
+    ],
+    "summary": "Responses",
+    "operationId": "responses_api_v1_studies__study_id__responses_get",
+    "parameters": [
+     {
+      "name": "study_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Study Id"
+      }
+     },
+     {
+      "name": "ungraded",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "type": "boolean",
+       "default": true,
+       "title": "Ungraded"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "array",
+         "items": {
+          "type": "object",
+          "additionalProperties": true
+         },
+         "title": "Response Responses Api V1 Studies  Study Id  Responses Get"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/responses/{response_id}/grade": {
+   "patch": {
+    "tags": [
+     "research"
+    ],
+    "summary": "Grade",
+    "operationId": "grade_api_v1_responses__response_id__grade_patch",
+    "parameters": [
+     {
+      "name": "response_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Response Id"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/GradeIn"
+       }
+      }
+     }
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "additionalProperties": true,
+         "title": "Response Grade Api V1 Responses  Response Id  Grade Patch"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/studies/{study_id}/export": {
+   "get": {
+    "tags": [
+     "research"
+    ],
+    "summary": "Export Results",
+    "operationId": "export_results_api_v1_studies__study_id__export_get",
+    "parameters": [
+     {
+      "name": "study_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Study Id"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/studies/{study_id}/export/process": {
+   "get": {
+    "tags": [
+     "research"
+    ],
+    "summary": "Export Process",
+    "operationId": "export_process_api_v1_studies__study_id__export_process_get",
+    "parameters": [
+     {
+      "name": "study_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Study Id"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/erasure-requests": {
+   "post": {
+    "tags": [
+     "research"
+    ],
+    "summary": "Request Erasure",
+    "operationId": "request_erasure_api_v1_erasure_requests_post",
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/ErasureIn"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "201": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "additionalProperties": true,
+         "type": "object",
+         "title": "Response Request Erasure Api V1 Erasure Requests Post"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/users": {
+   "post": {
+    "tags": [
+     "admin"
+    ],
+    "summary": "Create User",
+    "description": "Admin: any roles. Teacher: student accounts only (checked in AuthService).",
+    "operationId": "create_user_api_v1_users_post",
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/UserIn"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "201": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "additionalProperties": true,
+         "type": "object",
+         "title": "Response Create User Api V1 Users Post"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/admin/users/{user_id}/status": {
+   "patch": {
+    "tags": [
+     "admin"
+    ],
+    "summary": "Set Status",
+    "operationId": "set_status_api_v1_admin_users__user_id__status_patch",
+    "parameters": [
+     {
+      "name": "user_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "User Id"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/StatusIn"
+       }
+      }
+     }
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "additionalProperties": true,
+         "title": "Response Set Status Api V1 Admin Users  User Id  Status Patch"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/admin/users/{user_id}/roles": {
+   "post": {
+    "tags": [
+     "admin"
+    ],
+    "summary": "Change Role",
+    "operationId": "change_role_api_v1_admin_users__user_id__roles_post",
+    "parameters": [
+     {
+      "name": "user_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "User Id"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/RoleIn"
+       }
+      }
+     }
+    },
+    "responses": {
+     "204": {
+      "description": "Successful Response"
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/admin/ai-configs": {
+   "post": {
+    "tags": [
+     "admin"
+    ],
+    "summary": "Create Ai Config",
+    "operationId": "create_ai_config_api_v1_admin_ai_configs_post",
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/AIConfigIn"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "201": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "additionalProperties": true,
+         "type": "object",
+         "title": "Response Create Ai Config Api V1 Admin Ai Configs Post"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/admin/ai-configs/{config_id}/activate": {
+   "post": {
+    "tags": [
+     "admin"
+    ],
+    "summary": "Activate Ai Config",
+    "operationId": "activate_ai_config_api_v1_admin_ai_configs__config_id__activate_post",
+    "parameters": [
+     {
+      "name": "config_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Config Id"
+      }
+     }
+    ],
+    "responses": {
+     "204": {
+      "description": "Successful Response"
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/admin/ai-usage": {
+   "get": {
+    "tags": [
+     "admin"
+    ],
+    "summary": "Ai Usage",
+    "operationId": "ai_usage_api_v1_admin_ai_usage_get",
+    "parameters": [
+     {
+      "name": "days",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "type": "integer",
+       "default": 1,
+       "title": "Days"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "array",
+         "items": {
+          "type": "object",
+          "additionalProperties": true
+         },
+         "title": "Response Ai Usage Api V1 Admin Ai Usage Get"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/erasure-requests/{request_id}/approve": {
+   "post": {
+    "tags": [
+     "admin"
+    ],
+    "summary": "Approve Erasure",
+    "operationId": "approve_erasure_api_v1_erasure_requests__request_id__approve_post",
+    "parameters": [
+     {
+      "name": "request_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Request Id"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "additionalProperties": true,
+         "title": "Response Approve Erasure Api V1 Erasure Requests  Request Id  Approve Post"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/erasure-requests/{request_id}/reject": {
+   "post": {
+    "tags": [
+     "admin"
+    ],
+    "summary": "Reject Erasure",
+    "operationId": "reject_erasure_api_v1_erasure_requests__request_id__reject_post",
+    "parameters": [
+     {
+      "name": "request_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Request Id"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "additionalProperties": true,
+         "title": "Response Reject Erasure Api V1 Erasure Requests  Request Id  Reject Post"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/erasure-requests/{request_id}/execute": {
+   "post": {
+    "tags": [
+     "admin"
+    ],
+    "summary": "Execute Erasure",
+    "operationId": "execute_erasure_api_v1_erasure_requests__request_id__execute_post",
+    "parameters": [
+     {
+      "name": "request_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Request Id"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "additionalProperties": true,
+         "title": "Response Execute Erasure Api V1 Erasure Requests  Request Id  Execute Post"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  }
+ },
+ "components": {
+  "schemas": {
+   "AIConfigIn": {
+    "properties": {
+     "provider": {
+      "type": "string",
+      "pattern": "^(anthropic|mock)$",
+      "title": "Provider"
+     },
+     "model_name": {
+      "type": "string",
+      "maxLength": 100,
+      "minLength": 1,
+      "title": "Model Name"
+     },
+     "prompt_version": {
+      "type": "string",
+      "maxLength": 100,
+      "minLength": 1,
+      "pattern": "^[a-z0-9-]+$",
+      "title": "Prompt Version"
+     },
+     "parameters": {
+      "additionalProperties": true,
+      "type": "object",
+      "title": "Parameters"
+     }
+    },
+    "additionalProperties": false,
+    "type": "object",
+    "required": [
+     "provider",
+     "model_name",
+     "prompt_version"
+    ],
+    "title": "AIConfigIn"
+   },
+   "ActivityIn": {
+    "properties": {
+     "event_type": {
+      "type": "string",
+      "pattern": "^(pause|resume|heartbeat)$",
+      "title": "Event Type"
+     }
+    },
+    "additionalProperties": false,
+    "type": "object",
+    "required": [
+     "event_type"
+    ],
+    "title": "ActivityIn"
+   },
+   "AssessmentIn": {
+    "properties": {
+     "title": {
+      "type": "string",
+      "maxLength": 200,
+      "minLength": 1,
+      "title": "Title"
+     },
+     "phase": {
+      "type": "string",
+      "pattern": "^(pre|post|retention)$",
+      "title": "Phase"
+     },
+     "rubric_version": {
+      "type": "string",
+      "maxLength": 50,
+      "minLength": 1,
+      "title": "Rubric Version"
+     },
+     "items": {
+      "items": {
+       "$ref": "#/components/schemas/ItemIn"
+      },
+      "type": "array",
+      "maxItems": 50,
+      "minItems": 1,
+      "title": "Items"
+     },
+     "opens_at": {
+      "anyOf": [
+       {
+        "type": "string",
+        "format": "date-time"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Opens At"
+     },
+     "closes_at": {
+      "anyOf": [
+       {
+        "type": "string",
+        "format": "date-time"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Closes At"
+     }
+    },
+    "additionalProperties": false,
+    "type": "object",
+    "required": [
+     "title",
+     "phase",
+     "rubric_version",
+     "items"
+    ],
+    "title": "AssessmentIn"
+   },
+   "AssignedProblem": {
+    "properties": {
+     "problem_id": {
+      "type": "string",
+      "title": "Problem Id"
+     },
+     "problem_version": {
+      "type": "integer",
+      "minimum": 1.0,
+      "title": "Problem Version"
+     }
+    },
+    "additionalProperties": false,
+    "type": "object",
+    "required": [
+     "problem_id",
+     "problem_version"
+    ],
+    "title": "AssignedProblem"
+   },
+   "AssignmentIn": {
+    "properties": {
+     "class_id": {
+      "type": "string",
+      "title": "Class Id"
+     },
+     "title": {
+      "type": "string",
+      "maxLength": 200,
+      "minLength": 1,
+      "title": "Title"
+     },
+     "learning_mode": {
+      "type": "string",
+      "pattern": "^(guided|practice|independent)$",
+      "title": "Learning Mode"
+     },
+     "problems": {
+      "items": {
+       "$ref": "#/components/schemas/AssignedProblem"
+      },
+      "type": "array",
+      "maxItems": 50,
+      "minItems": 1,
+      "title": "Problems"
+     },
+     "due_at": {
+      "anyOf": [
+       {
+        "type": "string",
+        "format": "date-time"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Due At"
+     }
+    },
+    "additionalProperties": false,
+    "type": "object",
+    "required": [
+     "class_id",
+     "title",
+     "learning_mode",
+     "problems"
+    ],
+    "title": "AssignmentIn"
+   },
+   "ChangePasswordIn": {
+    "properties": {
+     "old_password": {
+      "type": "string",
+      "maxLength": 256,
+      "minLength": 1,
+      "title": "Old Password"
+     },
+     "new_password": {
+      "type": "string",
+      "maxLength": 256,
+      "minLength": 8,
+      "title": "New Password"
+     }
+    },
+    "additionalProperties": false,
+    "type": "object",
+    "required": [
+     "old_password",
+     "new_password"
+    ],
+    "title": "ChangePasswordIn"
+   },
+   "ChoiceIn": {
+    "properties": {
+     "request_id": {
+      "type": "string",
+      "maxLength": 64,
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9._:-]+$",
+      "title": "Request Id"
+     },
+     "expected_version": {
+      "type": "integer",
+      "minimum": 0.0,
+      "title": "Expected Version"
+     },
+     "option_id": {
+      "type": "string",
+      "maxLength": 64,
+      "minLength": 1,
+      "title": "Option Id"
+     },
+     "explanation": {
+      "type": "string",
+      "maxLength": 2000,
+      "title": "Explanation",
+      "default": ""
+     }
+    },
+    "additionalProperties": false,
+    "type": "object",
+    "required": [
+     "request_id",
+     "expected_version",
+     "option_id"
+    ],
+    "title": "ChoiceIn"
+   },
+   "ClassIn": {
+    "properties": {
+     "name": {
+      "type": "string",
+      "maxLength": 120,
+      "minLength": 1,
+      "title": "Name"
+     },
+     "school_year": {
+      "type": "string",
+      "maxLength": 20,
+      "minLength": 1,
+      "title": "School Year"
+     }
+    },
+    "additionalProperties": false,
+    "type": "object",
+    "required": [
+     "name",
+     "school_year"
+    ],
+    "title": "ClassIn"
+   },
+   "DraftPatchIn": {
+    "properties": {
+     "statement": {
+      "anyOf": [
+       {
+        "type": "string",
+        "maxLength": 1000
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Statement"
+     },
+     "math_spec": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/MathSpec"
+       },
+       {
+        "type": "null"
+       }
+      ]
+     },
+     "teacher_solution": {
+      "anyOf": [
+       {
+        "type": "string",
+        "maxLength": 4000
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Teacher Solution"
+     },
+     "hints": {
+      "anyOf": [
+       {
+        "items": {
+         "type": "string"
+        },
+        "type": "array",
+        "maxItems": 3,
+        "minItems": 3
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Hints"
+     },
+     "difficulty": {
+      "anyOf": [
+       {
+        "type": "string",
+        "pattern": "^(easy|medium|hard)$"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Difficulty"
+     }
+    },
+    "additionalProperties": false,
+    "type": "object",
+    "title": "DraftPatchIn"
+   },
+   "ErasureIn": {
+    "properties": {
+     "subject_user_id": {
+      "type": "string",
+      "title": "Subject User Id"
+     },
+     "reason": {
+      "type": "string",
+      "maxLength": 1000,
+      "minLength": 5,
+      "title": "Reason"
+     }
+    },
+    "additionalProperties": false,
+    "type": "object",
+    "required": [
+     "subject_user_id",
+     "reason"
+    ],
+    "title": "ErasureIn"
+   },
+   "FeedbackReportIn": {
+    "properties": {
+     "message_id": {
+      "type": "string",
+      "maxLength": 64,
+      "minLength": 1,
+      "title": "Message Id"
+     },
+     "reason": {
+      "type": "string",
+      "maxLength": 1000,
+      "minLength": 3,
+      "title": "Reason"
+     }
+    },
+    "additionalProperties": false,
+    "type": "object",
+    "required": [
+     "message_id",
+     "reason"
+    ],
+    "title": "FeedbackReportIn"
+   },
+   "FeedbackResolveIn": {
+    "properties": {
+     "status": {
+      "type": "string",
+      "pattern": "^(reviewing|resolved)$",
+      "title": "Status"
+     },
+     "resolution": {
+      "anyOf": [
+       {
+        "type": "string",
+        "maxLength": 1000
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Resolution"
+     }
+    },
+    "additionalProperties": false,
+    "type": "object",
+    "required": [
+     "status"
+    ],
+    "title": "FeedbackResolveIn"
+   },
+   "GoogleIn": {
+    "properties": {
+     "id_token": {
+      "type": "string",
+      "maxLength": 4096,
+      "minLength": 10,
+      "title": "Id Token"
+     }
+    },
+    "additionalProperties": false,
+    "type": "object",
+    "required": [
+     "id_token"
+    ],
+    "title": "GoogleIn"
+   },
+   "GradeIn": {
+    "properties": {
+     "solution_score": {
+      "type": "number",
+      "minimum": 0.0,
+      "title": "Solution Score"
+     },
+     "explanation_score": {
+      "type": "number",
+      "minimum": 0.0,
+      "title": "Explanation Score"
+     }
+    },
+    "additionalProperties": false,
+    "type": "object",
+    "required": [
+     "solution_score",
+     "explanation_score"
+    ],
+    "title": "GradeIn"
+   },
+   "GroupIn": {
+    "properties": {
+     "name": {
+      "type": "string",
+      "maxLength": 100,
+      "minLength": 1,
+      "title": "Name"
+     },
+     "condition": {
+      "type": "string",
+      "pattern": "^(ai_guided|comparison)$",
+      "title": "Condition"
+     }
+    },
+    "additionalProperties": false,
+    "type": "object",
+    "required": [
+     "name",
+     "condition"
+    ],
+    "title": "GroupIn"
+   },
+   "HTTPValidationError": {
+    "properties": {
+     "detail": {
+      "items": {
+       "$ref": "#/components/schemas/ValidationError"
+      },
+      "type": "array",
+      "title": "Detail"
+     }
+    },
+    "type": "object",
+    "title": "HTTPValidationError"
+   },
+   "HintIn": {
+    "properties": {
+     "request_id": {
+      "type": "string",
+      "maxLength": 64,
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9._:-]+$",
+      "title": "Request Id"
+     }
+    },
+    "additionalProperties": false,
+    "type": "object",
+    "required": [
+     "request_id"
+    ],
+    "title": "HintIn"
+   },
+   "ItemIn": {
+    "properties": {
+     "problem_id": {
+      "type": "string",
+      "title": "Problem Id"
+     },
+     "problem_version": {
+      "type": "integer",
+      "minimum": 1.0,
+      "title": "Problem Version"
+     },
+     "max_solution_score": {
+      "type": "number",
+      "maximum": 100.0,
+      "minimum": 0.0,
+      "title": "Max Solution Score"
+     },
+     "max_explanation_score": {
+      "type": "number",
+      "maximum": 100.0,
+      "minimum": 0.0,
+      "title": "Max Explanation Score"
+     }
+    },
+    "additionalProperties": false,
+    "type": "object",
+    "required": [
+     "problem_id",
+     "problem_version",
+     "max_solution_score",
+     "max_explanation_score"
+    ],
+    "title": "ItemIn"
+   },
+   "LoginIn": {
+    "properties": {
+     "username": {
+      "type": "string",
+      "maxLength": 64,
+      "minLength": 1,
+      "title": "Username"
+     },
+     "password": {
+      "type": "string",
+      "maxLength": 256,
+      "minLength": 1,
+      "title": "Password"
+     }
+    },
+    "additionalProperties": false,
+    "type": "object",
+    "required": [
+     "username",
+     "password"
+    ],
+    "title": "LoginIn"
+   },
+   "MathSpec": {
+    "properties": {
+     "variable": {
+      "type": "string",
+      "pattern": "^x$",
+      "title": "Variable"
+     },
+     "domain": {
+      "type": "string",
+      "maxLength": 20,
+      "title": "Domain"
+     },
+     "lhs": {
+      "type": "string",
+      "maxLength": 200,
+      "minLength": 1,
+      "title": "Lhs"
+     },
+     "rhs": {
+      "type": "string",
+      "maxLength": 200,
+      "minLength": 1,
+      "title": "Rhs"
+     }
+    },
+    "additionalProperties": false,
+    "type": "object",
+    "required": [
+     "variable",
+     "domain",
+     "lhs",
+     "rhs"
+    ],
+    "title": "MathSpec"
+   },
+   "MemberIn": {
+    "properties": {
+     "student_id": {
+      "type": "string",
+      "maxLength": 64,
+      "minLength": 1,
+      "title": "Student Id"
+     }
+    },
+    "additionalProperties": false,
+    "type": "object",
+    "required": [
+     "student_id"
+    ],
+    "title": "MemberIn"
+   },
+   "ParticipantIn": {
+    "properties": {
+     "student_id": {
+      "type": "string",
+      "title": "Student Id"
+     },
+     "group_id": {
+      "type": "string",
+      "title": "Group Id"
+     }
+    },
+    "additionalProperties": false,
+    "type": "object",
+    "required": [
+     "student_id",
+     "group_id"
+    ],
+    "title": "ParticipantIn"
+   },
+   "ProblemIn": {
+    "properties": {
+     "topic_id": {
+      "type": "string",
+      "maxLength": 64,
+      "minLength": 1,
+      "title": "Topic Id"
+     }
+    },
+    "additionalProperties": false,
+    "type": "object",
+    "required": [
+     "topic_id"
+    ],
+    "title": "ProblemIn"
+   },
+   "ReadIn": {
+    "properties": {
+     "request_id": {
+      "type": "string",
+      "maxLength": 64,
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9._:-]+$",
+      "title": "Request Id"
+     },
+     "expected_version": {
+      "type": "integer",
+      "minimum": 0.0,
+      "title": "Expected Version"
+     },
+     "restatement": {
+      "type": "string",
+      "maxLength": 1000,
+      "title": "Restatement"
+     }
+    },
+    "additionalProperties": false,
+    "type": "object",
+    "required": [
+     "request_id",
+     "expected_version",
+     "restatement"
+    ],
+    "title": "ReadIn"
+   },
+   "RefreshIn": {
+    "properties": {
+     "refresh_token": {
+      "type": "string",
+      "maxLength": 200,
+      "minLength": 10,
+      "title": "Refresh Token"
+     }
+    },
+    "additionalProperties": false,
+    "type": "object",
+    "required": [
+     "refresh_token"
+    ],
+    "title": "RefreshIn"
+   },
+   "ResearcherIn": {
+    "properties": {
+     "researcher_id": {
+      "type": "string",
+      "title": "Researcher Id"
+     }
+    },
+    "additionalProperties": false,
+    "type": "object",
+    "required": [
+     "researcher_id"
+    ],
+    "title": "ResearcherIn"
+   },
+   "ResponseIn": {
+    "properties": {
+     "solution": {
+      "type": "string",
+      "maxLength": 2000,
+      "title": "Solution"
+     },
+     "explanation": {
+      "type": "string",
+      "maxLength": 2000,
+      "title": "Explanation",
+      "default": ""
+     }
+    },
+    "additionalProperties": false,
+    "type": "object",
+    "required": [
+     "solution"
+    ],
+    "title": "ResponseIn"
+   },
+   "RoleIn": {
+    "properties": {
+     "role": {
+      "type": "string",
+      "pattern": "^(student|teacher|researcher|admin)$",
+      "title": "Role"
+     },
+     "grant": {
+      "type": "boolean",
+      "title": "Grant",
+      "default": true
+     }
+    },
+    "additionalProperties": false,
+    "type": "object",
+    "required": [
+     "role"
+    ],
+    "title": "RoleIn"
+   },
+   "StartSessionIn": {
+    "properties": {
+     "assignment_id": {
+      "type": "string",
+      "maxLength": 64,
+      "minLength": 1,
+      "title": "Assignment Id"
+     },
+     "problem_id": {
+      "type": "string",
+      "maxLength": 64,
+      "minLength": 1,
+      "title": "Problem Id"
+     },
+     "problem_version": {
+      "type": "integer",
+      "minimum": 1.0,
+      "title": "Problem Version"
+     }
+    },
+    "additionalProperties": false,
+    "type": "object",
+    "required": [
+     "assignment_id",
+     "problem_id",
+     "problem_version"
+    ],
+    "title": "StartSessionIn"
+   },
+   "StatusIn": {
+    "properties": {
+     "status": {
+      "type": "string",
+      "pattern": "^(active|disabled)$",
+      "title": "Status"
+     }
+    },
+    "additionalProperties": false,
+    "type": "object",
+    "required": [
+     "status"
+    ],
+    "title": "StatusIn"
+   },
+   "StepIn": {
+    "properties": {
+     "request_id": {
+      "type": "string",
+      "maxLength": 64,
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9._:-]+$",
+      "title": "Request Id"
+     },
+     "expected_version": {
+      "type": "integer",
+      "minimum": 0.0,
+      "title": "Expected Version"
+     },
+     "submitted_equation": {
+      "type": "string",
+      "maxLength": 200,
+      "minLength": 1,
+      "title": "Submitted Equation"
+     },
+     "operation": {
+      "type": "string",
+      "maxLength": 50,
+      "minLength": 1,
+      "title": "Operation"
+     },
+     "operation_value": {
+      "anyOf": [
+       {
+        "type": "string",
+        "maxLength": 50
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Operation Value"
+     },
+     "explanation": {
+      "type": "string",
+      "maxLength": 2000,
+      "title": "Explanation",
+      "default": ""
+     }
+    },
+    "additionalProperties": false,
+    "type": "object",
+    "required": [
+     "request_id",
+     "expected_version",
+     "submitted_equation",
+     "operation"
+    ],
+    "title": "StepIn"
+   },
+   "StudyIn": {
+    "properties": {
+     "title": {
+      "type": "string",
+      "maxLength": 200,
+      "minLength": 1,
+      "title": "Title"
+     },
+     "start_at": {
+      "anyOf": [
+       {
+        "type": "string",
+        "format": "date-time"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Start At"
+     },
+     "end_at": {
+      "anyOf": [
+       {
+        "type": "string",
+        "format": "date-time"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "End At"
+     }
+    },
+    "additionalProperties": false,
+    "type": "object",
+    "required": [
+     "title"
+    ],
+    "title": "StudyIn"
+   },
+   "SubmitIn": {
+    "properties": {
+     "expected_version": {
+      "type": "integer",
+      "minimum": 0.0,
+      "title": "Expected Version"
+     }
+    },
+    "additionalProperties": false,
+    "type": "object",
+    "required": [
+     "expected_version"
+    ],
+    "title": "SubmitIn"
+   },
+   "UserIn": {
+    "properties": {
+     "display_name": {
+      "type": "string",
+      "maxLength": 120,
+      "minLength": 1,
+      "title": "Display Name"
+     },
+     "roles": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "maxItems": 4,
+      "minItems": 1,
+      "title": "Roles"
+     },
+     "username": {
+      "type": "string",
+      "maxLength": 64,
+      "minLength": 3,
+      "pattern": "^[A-Za-z0-9._-]+$",
+      "title": "Username"
+     },
+     "initial_password": {
+      "type": "string",
+      "maxLength": 256,
+      "minLength": 8,
+      "title": "Initial Password"
+     },
+     "email": {
+      "anyOf": [
+       {
+        "type": "string",
+        "maxLength": 254,
+        "pattern": "^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Email"
+     }
+    },
+    "additionalProperties": false,
+    "type": "object",
+    "required": [
+     "display_name",
+     "roles",
+     "username",
+     "initial_password"
+    ],
+    "title": "UserIn"
+   },
+   "ValidationError": {
+    "properties": {
+     "loc": {
+      "items": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "integer"
+        }
+       ]
+      },
+      "type": "array",
+      "title": "Location"
+     },
+     "msg": {
+      "type": "string",
+      "title": "Message"
+     },
+     "type": {
+      "type": "string",
+      "title": "Error Type"
+     }
+    },
+    "type": "object",
+    "required": [
+     "loc",
+     "msg",
+     "type"
+    ],
+    "title": "ValidationError"
+   },
+   "VerifyIn": {
+    "properties": {
+     "request_id": {
+      "type": "string",
+      "maxLength": 64,
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9._:-]+$",
+      "title": "Request Id"
+     },
+     "expected_version": {
+      "type": "integer",
+      "minimum": 0.0,
+      "title": "Expected Version"
+     },
+     "substitution": {
+      "anyOf": [
+       {
+        "type": "string",
+        "maxLength": 200
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Substitution"
+     },
+     "conclusion": {
+      "anyOf": [
+       {
+        "type": "string",
+        "pattern": "^(no_solution|infinite_solutions)$"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Conclusion"
+     }
+    },
+    "additionalProperties": false,
+    "type": "object",
+    "required": [
+     "request_id",
+     "expected_version"
+    ],
+    "title": "VerifyIn"
+   },
+   "VersionIn": {
+    "properties": {
+     "statement": {
+      "type": "string",
+      "maxLength": 1000,
+      "minLength": 1,
+      "title": "Statement"
+     },
+     "math_spec": {
+      "$ref": "#/components/schemas/MathSpec"
+     },
+     "teacher_solution": {
+      "type": "string",
+      "maxLength": 4000,
+      "minLength": 1,
+      "title": "Teacher Solution"
+     },
+     "hints": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "maxItems": 3,
+      "minItems": 3,
+      "title": "Hints"
+     },
+     "difficulty": {
+      "type": "string",
+      "pattern": "^(easy|medium|hard)$",
+      "title": "Difficulty"
+     }
+    },
+    "additionalProperties": false,
+    "type": "object",
+    "required": [
+     "statement",
+     "math_spec",
+     "teacher_solution",
+     "hints",
+     "difficulty"
+    ],
+    "title": "VersionIn"
+   }
+  }
+ }
+}

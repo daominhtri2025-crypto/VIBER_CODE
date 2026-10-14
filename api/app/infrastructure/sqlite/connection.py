@@ -36,7 +36,7 @@ def check_runtime() -> None:
 
 
 def connect(path: str | Path, *, busy_timeout_ms: int = DEFAULT_BUSY_TIMEOUT_MS,
-            must_exist: bool = True) -> sqlite3.Connection:
+            must_exist: bool = True, check_same_thread: bool = True) -> sqlite3.Connection:
     """Open a hardened connection for trusted backend code.
 
     ``must_exist=True`` prevents ``sqlite3.connect`` from silently creating an
@@ -46,7 +46,7 @@ def connect(path: str | Path, *, busy_timeout_ms: int = DEFAULT_BUSY_TIMEOUT_MS,
     if must_exist and str(path) != ":memory:" and not Path(path).is_file():
         raise FileNotFoundError(f"Database not found: {path}")
     conn = sqlite3.connect(str(path), timeout=busy_timeout_ms / 1000,
-                           isolation_level=None, check_same_thread=True)
+                           isolation_level=None, check_same_thread=check_same_thread)
     conn.row_factory = sqlite3.Row
     conn.execute("PRAGMA foreign_keys=ON")
     conn.execute(f"PRAGMA busy_timeout={int(busy_timeout_ms)}")

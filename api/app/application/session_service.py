@@ -145,8 +145,15 @@ class SessionService:
 
     # ============================================================ lifecycle
     def start(self, *, student_id: str, problem_id: str, problem_version: int,
-              assignment_id: str | None = None, mode: str = LearningMode.GUIDED) -> TutorReply:
-        """Create or resume a session. With an assignment, its learning_mode wins."""
+              assignment_id: str | None = None, mode: str = LearningMode.GUIDED,
+              ai_config_id: str | None = None) -> TutorReply:
+        """Create or resume a session. With an assignment, its learning_mode wins.
+
+        ``ai_config_id`` (the active config at creation) is frozen on the session so
+        later config changes never alter a running/historical session. The session
+        is linked to a study only when the student participates in exactly ONE
+        study that is currently running (unambiguous link, handoff §5.6 step 8).
+        """
         if assignment_id is not None:
             mode = self.assignments.get_for_student(assignment_id, student_id)["learning_mode"]
         existing = self.sessions.find_resumable(student_id=student_id, problem_id=problem_id,
@@ -156,8 +163,18 @@ class SessionService:
         if mode == LearningMode.GUIDED:
             self.content.problem(problem_id, problem_version)  # guided needs the approved catalogue
         s = self.sessions.create(student_id=student_id, problem_id=problem_id, problem_version=problem_version,
-                                 learning_mode=mode, assignment_id=assignment_id, initial_state=initial_state(mode))
+                                 learning_mode=mode, assignment_id=assignment_id, initial_state=initial_state(mode),
+                                 ai_config_id=None if mode == LearningMode.INDEPENDENT else ai_config_id,
+                                 study_id=self._running_study(student_id))
         return self._reply(s, extra={"resumed": False})
+
+    def _running_study(self, student_id: str) -> str | None:
+        now = self.sessions.clock().strftime("%Y-%m-%dT%H:%M:%S")
+        studies = [r[0] for r in self.conn.execute(
+            "SELECT s.id FROM study_participants p JOIN studies s ON s.id=p.study_id WHERE p.student_id=?"
+            " AND (s.start_at IS NULL OR s.start_at<=?) AND (s.end_at IS NULL OR s.end_at>=?)",
+            (student_id, now, now))]
+        return studies[0] if len(studies) == 1 else None
 
     def view(self, *, student_id: str, session_id: str) -> TutorReply:
         s = self._load(student_id, session_id)

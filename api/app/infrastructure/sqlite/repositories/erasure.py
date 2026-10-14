@@ -13,7 +13,9 @@ membership (enrolment, not research data), and ``audit_log`` (IDs/counts only).
 """
 from __future__ import annotations
 
+import json
 import sqlite3
+from pathlib import Path
 
 from app.domain.constants import Role
 from app.domain.errors import NotFound, PermissionDenied, StateConflict
@@ -35,6 +37,8 @@ _DELETE_PLAN: tuple[tuple[str, str], ...] = (
      "DELETE FROM messages WHERE session_id IN (SELECT id FROM learning_sessions WHERE student_id=:u)"),
     ("activity_events",
      "DELETE FROM activity_events WHERE session_id IN (SELECT id FROM learning_sessions WHERE student_id=:u)"),
+    ("ai_usage_sessions",
+     "DELETE FROM ai_usage WHERE session_id IN (SELECT id FROM learning_sessions WHERE student_id=:u)"),
     ("learning_sessions_children",
      "DELETE FROM learning_sessions WHERE student_id=:u AND parent_session_id IS NOT NULL"),
     ("learning_sessions", "DELETE FROM learning_sessions WHERE student_id=:u"),
@@ -44,13 +48,16 @@ _DELETE_PLAN: tuple[tuple[str, str], ...] = (
     ("assessment_attempts",
      "DELETE FROM assessment_attempts WHERE participant_id IN (SELECT id FROM study_participants WHERE student_id=:u)"),
     ("study_participants", "DELETE FROM study_participants WHERE student_id=:u"),
+    ("ai_usage", "DELETE FROM ai_usage WHERE student_id=:u"),
+    ("request_results", "DELETE FROM request_results WHERE actor_id=:u"),
 )
 
 
 class ErasureRepository:
-    def __init__(self, conn: sqlite3.Connection, clock: Clock = utc_now):
+    def __init__(self, conn: sqlite3.Connection, clock: Clock = utc_now, ledger_path: Path | None = None):
         self.conn = conn
         self.clock = clock
+        self.ledger_path = ledger_path
 
     def get(self, request_id: str) -> dict:
         r = row(self.conn.execute("SELECT * FROM erasure_requests WHERE id=?", (request_id,)).fetchone())
@@ -109,6 +116,8 @@ class ErasureRepository:
         finally:
             self.conn.execute(f"PRAGMA secure_delete={int(previous)}")
         self.conn.execute("PRAGMA wal_checkpoint(TRUNCATE)")
+        if self.ledger_path is not None:
+            append_ledger(self.ledger_path, result)
         return result
 
     def _execute(self, request_id: str, executor_id: str) -> dict:
@@ -126,3 +135,64 @@ class ErasureRepository:
             audit(self.conn, actor_id=executor_id, action="erasure.execute", entity_type="erasure_request",
                   entity_id=request_id, details=summary)
         return self.get(request_id)
+
+
+# ------------------------------------------------------------------ ledger
+LEDGER_FIELDS = ("id", "subject_user_id", "reason", "requested_by", "requested_at", "approved_by", "approved_at",
+                 "executed_by", "executed_at")
+
+
+def append_ledger(path: Path, request: dict) -> None:
+    """Append-only JSONL kept OUTSIDE the database so erasures survive a restore
+    from an older backup (decision 14/10/2026). Contains IDs only, no content."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("a", encoding="utf-8") as fh:
+        fh.write(json.dumps({k: request[k] for k in LEDGER_FIELDS}, ensure_ascii=False) + "\n")
+        fh.flush()
+
+
+def read_ledger(path: Path) -> list[dict]:
+    if not path.is_file():
+        return []
+    return [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines() if line.strip()]
+
+
+def replay_erasures(conn: sqlite3.Connection, entries: list[dict]) -> list[str]:
+    """Re-apply executed erasures to a (restored) database. Idempotent."""
+    replayed = []
+    previous = conn.execute("PRAGMA secure_delete").fetchone()[0]
+    conn.execute("PRAGMA secure_delete=ON")
+    try:
+        for e in entries:
+            with transaction(conn):
+                existing = conn.execute("SELECT status FROM erasure_requests WHERE id=?", (e["id"],)).fetchone()
+                if existing is None:
+                    conn.execute(
+                        "INSERT INTO erasure_requests(id, subject_user_id, reason, requested_by, requested_at, status,"
+                        " approved_by, approved_at) VALUES(?,?,?,?,?,'approved',?,?)",
+                        (e["id"], e["subject_user_id"], e["reason"], e["requested_by"], e["requested_at"],
+                         e["approved_by"], e["approved_at"]))
+                elif existing["status"] == "executed":
+                    # Restored DB already had it executed, but data created after the
+                    # backup cannot exist; still re-run deletion defensively below.
+                    pass
+                elif existing["status"] in ("pending",):
+                    conn.execute("UPDATE erasure_requests SET status='approved', approved_by=?, approved_at=?"
+                                 " WHERE id=?", (e["approved_by"], e["approved_at"], e["id"]))
+                status = conn.execute("SELECT status FROM erasure_requests WHERE id=?", (e["id"],)).fetchone()[0]
+                if status == "approved":
+                    conn.execute("UPDATE erasure_requests SET status='executing' WHERE id=?", (e["id"],))
+                summary = {}
+                if status in ("approved", "executing"):
+                    for label, sql in _DELETE_PLAN:
+                        summary[label] = conn.execute(sql, {"u": e["subject_user_id"]}).rowcount
+                    conn.execute("UPDATE erasure_requests SET status='executed', executed_by=?, executed_at=?,"
+                                 " summary=? WHERE id=?",
+                                 (e["executed_by"], e["executed_at"], dumps(summary), e["id"]))
+                    audit(conn, actor_id=None, action="erasure.replay", entity_type="erasure_request",
+                          entity_id=e["id"], details=summary)
+                    replayed.append(e["id"])
+    finally:
+        conn.execute(f"PRAGMA secure_delete={int(previous)}")
+    conn.execute("PRAGMA wal_checkpoint(TRUNCATE)")
+    return replayed

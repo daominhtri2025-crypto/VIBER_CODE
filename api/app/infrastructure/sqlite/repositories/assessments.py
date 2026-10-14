@@ -39,17 +39,45 @@ class AssessmentRepository:
             raise NotFound("Attempt not found")
         return a
 
+    def _assessment(self, assessment_id: str) -> sqlite3.Row:
+        return self.conn.execute(
+            "SELECT s.*, sc.opens_at, sc.closes_at, sc.results_published_at FROM assessments s"
+            " LEFT JOIN assessment_schedules sc ON sc.assessment_id=s.id WHERE s.id=?", (assessment_id,)).fetchone()
+
+    def _require_open(self, a) -> None:
+        now = iso(self.clock())
+        if a["opens_at"] and now < a["opens_at"]:
+            raise StateConflict("Assessment is not open yet")
+        if a["closes_at"] and now >= a["closes_at"]:
+            raise StateConflict("Assessment is closed")
+
+    def result_for_student(self, *, student_id: str, attempt_id: str) -> dict:
+        """Only after publication; component scores, never the teacher solution."""
+        a = self._attempt_for_owner(attempt_id, student_id)
+        s = self._assessment(a["assessment_id"])
+        if s["results_published_at"] is None:
+            raise StateConflict("Results are not published yet")
+        totals = self.totals(attempt_id)
+        items = rows(self.conn.execute(
+            "SELECT i.position, r.solution_score, r.explanation_score, i.max_solution_score, i.max_explanation_score"
+            " FROM assessment_items i LEFT JOIN item_responses r ON r.item_id=i.id AND r.attempt_id=?"
+            " WHERE i.assessment_id=? ORDER BY i.position", (attempt_id, a["assessment_id"])))
+        return {"attempt_id": attempt_id, "total_score": totals["total_score"],
+                "graded_items": totals["graded_items"], "expected_items": totals["expected_items"], "items": items}
+
     # -------------------------------------------------------------- student
     def start_attempt(self, *, student_id: str, assessment_id: str) -> dict:
         """Create (or resume the open) attempt for the caller's participant record."""
         require_active_role(self.conn, student_id, Role.STUDENT)
         with transaction(self.conn):
             ctx = self.conn.execute(
-                "SELECT s.id AS assessment_id, s.study_id, p.id AS participant_id FROM assessments s"
+                "SELECT s.id AS assessment_id, s.study_id, sc.opens_at, sc.closes_at, p.id AS participant_id"
+                " FROM assessments s LEFT JOIN assessment_schedules sc ON sc.assessment_id=s.id"
                 " JOIN study_participants p ON p.study_id=s.study_id WHERE s.id=? AND p.student_id=?",
                 (assessment_id, student_id)).fetchone()
             if ctx is None:
                 raise NotFound("Assessment not found")
+            self._require_open(ctx)
             if not self.conn.execute("SELECT 1 FROM assessment_items WHERE assessment_id=?",
                                      (assessment_id,)).fetchone():
                 raise StateConflict("Assessment has no items")
@@ -85,6 +113,7 @@ class AssessmentRepository:
             a = self._attempt_for_owner(attempt_id, student_id)
             if a["submitted_at"] is not None:
                 raise StateConflict("Attempt already submitted")
+            self._require_open(self._assessment(a["assessment_id"]))
             if not self.conn.execute("SELECT 1 FROM assessment_items WHERE id=? AND assessment_id=?",
                                      (item_id, a["assessment_id"])).fetchone():
                 raise NotFound("Item not found")
@@ -103,6 +132,7 @@ class AssessmentRepository:
             a = self._attempt_for_owner(attempt_id, student_id)
             if a["submitted_at"] is not None:
                 return dict(a)
+            self._require_open(self._assessment(a["assessment_id"]))
             if require_all_items:
                 missing = self.conn.execute(
                     "SELECT count(*) FROM assessment_items i WHERE i.assessment_id=? AND NOT EXISTS("
