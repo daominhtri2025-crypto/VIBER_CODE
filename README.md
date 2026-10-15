@@ -29,6 +29,10 @@ content/                             rubrics/, problems/, feedback/, prompts/ �
 docs/                                PROJECT_HANDOFF.md, PHASE1–4_REPORT.md, DEPLOYMENT.md, openapi.json
 ```
 
+## Chạy thử không cần cài đặt
+
+Mở nhánh này bằng **GitHub Codespaces** (Code → Codespaces → New with options…, máy 4-core). Stack Docker sẽ tự build, nạp dữ liệu demo và chạy ở cổng 3000. Xem `docs/CODESPACES.md`. Hướng dẫn cài đặt trên Windows và hướng dẫn sử dụng: `docs/Huong_dan_cai_dat_va_su_dung.docx`.
+
 ## Chạy nhanh
 
 ```bash

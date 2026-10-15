@@ -9,3 +9,7 @@ api/data/
 # Only the shipped demo database is versioned
 *.db
 !database/math_tutor_db/data/math_tutor_demo.db
+
+# Secrets and Codespaces state — never commit
+.env
+.devcontainer/.seeded
