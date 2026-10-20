@@ -47,6 +47,13 @@
 0 = chưa thực hiện được; 1 = cần hướng dẫn từng bước; 2 = cần nhắc; 3 = tự làm đúng; null = chưa đánh giá.
 Dashboard đối chiếu trước–sau trên cùng mã học viên, lấy phiếu mới nhất cho từng lần đo và chỉ đưa vào nhóm đủ cả 5 phép đo ở hai lần. Không xem việc đọc bài là bằng chứng đã thành thạo.
 
+## Chính sách migration
+- `drizzle/0000_fancy_rogue.sql` là migration gốc, có thể đã áp dụng trên D1. Không đổi tên, không sửa nội dung.
+- Migration mới đánh số `0001_`, `0002_`, ... Sinh bằng `drizzle-kit generate`, sau đó đọc SQL trước khi áp dụng.
+- Không dùng SQL tạo lại bảng (`CREATE TABLE` mới, `INSERT ... SELECT`, `DROP TABLE`) trừ khi được phê duyệt riêng, để tránh mất khóa ngoại và dữ liệu.
+- Sau mỗi migration, chạy `drizzle-kit check` để xác nhận snapshot khớp schema.
+- Kiểm thử API (`pnpm test`) phải nạp đủ mọi migration theo thứ tự.
+
 ## Công việc tiếp theo
 1. Quay và đăng 3–5 video thực tế, bổ sung phụ đề.
 2. Kiểm tra đăng nhập, phân quyền, đồng bộ hai thiết bị trên bản triển khai.
