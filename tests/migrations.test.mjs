@@ -13,7 +13,7 @@ const tryRun = (fn) => { try { fn(); return null; } catch (error) { return Strin
   const sql = new DatabaseSync(':memory:');
   sql.exec('PRAGMA foreign_keys = ON');
   const tags = applyMigrations(sql);
-  assert.equal(tags.length, 2, 'journal phải có 2 migration');
+  assert.equal(tags.length, 3, 'journal phải có 3 migration (0000, 0001, 0002)');
   assert.ok(columns(sql, 'assessments').includes('client_id'), 'assessments.client_id phải tồn tại');
   assert.ok(columns(sql, 'videos').includes('kind'), 'videos.kind phải tồn tại');
   assert.ok(columns(sql, 'videos').includes('url'), 'videos.url phải tồn tại');
@@ -69,7 +69,8 @@ const tryRun = (fn) => { try { fn(); return null; } catch (error) { return Strin
 {
   const sql = new DatabaseSync(':memory:');
   sql.exec('PRAGMA foreign_keys = ON');
-  applyMigrations(sql);
+  // Chỉ đến 0001: 0002 đã seed 10 bài, ở đây kiểm CHECK của bảng nên cần bảng trống.
+  applyMigrations(sql, { to: 2 });
   const insertLesson = (lesson, group) => sql.prepare("INSERT INTO lessons (lesson, title, group_no, body, quiz, created) VALUES (?, 'T', ?, '[]', '[]', '2026-01-01T00:00:00Z')").run(lesson, group);
   insertLesson(0, 1);
   insertLesson(9, 5);

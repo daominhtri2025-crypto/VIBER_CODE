@@ -1,6 +1,6 @@
-import { readFileSync, writeFileSync, mkdtempSync, rmSync } from 'node:fs';
+import { readFileSync, readdirSync, writeFileSync, mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { join, basename } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import ts from 'typescript';
 
@@ -8,8 +8,7 @@ import ts from 'typescript';
 // không mock tầng dữ liệu. Chỉ thay môi trường Workers bằng biến toàn cục.
 
 const ROUTE_PATH = 'app/api/[...path]/route.ts';
-const SHARED_PATH = 'shared/assessment-rules.ts';
-const ROUTE_SHARED_IMPORT = "'../../../shared/assessment-rules'";
+const SHARED_DIR = 'shared';
 
 // Adapter theo interface prepare/bind/first/all/run/batch (CLAUDE.md mục 3), dùng cho node:sqlite.
 export function createD1Adapter(sql) {
@@ -45,17 +44,26 @@ function transpile(source) {
   }).outputText;
 }
 
-// Nạp route.ts thật. Import tương đối của shared/ được ghi thành tệp tạm rồi import qua file URL.
+// Đổi import tương đối sang tệp .mjs cùng thư mục tạm (route và shared/ đều dùng '../../../shared/X' hoặc './X').
+function rewriteImports(code) {
+  return code
+    .replace(/from '\.\.\/\.\.\/\.\.\/shared\/([\w-]+)'/g, "from './$1.mjs'")
+    .replace(/from '\.\/([\w-]+)'/g, "from './$1.mjs'");
+}
+
+// Nạp route.ts thật. Mọi tệp trong shared/ được ghi thành .mjs tạm rồi import qua file URL.
 export async function loadApi(sql, { ownerEmail = 'owner@example.test' } = {}) {
   globalThis.__testEnv = { DB: createD1Adapter(sql), OWNER_EMAIL: ownerEmail, BUCKET: {} };
   const dir = mkdtempSync(join(tmpdir(), 'son-tra-so-test-'));
   try {
-    writeFileSync(join(dir, 'assessment-rules.mjs'), transpile(readFileSync(SHARED_PATH, 'utf8')));
+    for (const file of readdirSync(SHARED_DIR).filter((name) => name.endsWith('.ts'))) {
+      const source = readFileSync(join(SHARED_DIR, file), 'utf8');
+      writeFileSync(join(dir, `${basename(file, '.ts')}.mjs`), rewriteImports(transpile(source)));
+    }
     const routeSource = readFileSync(ROUTE_PATH, 'utf8')
-      .replace("import { env } from 'cloudflare:workers';", 'const env=globalThis.__testEnv;')
-      .replace(ROUTE_SHARED_IMPORT, "'./assessment-rules.mjs'");
+      .replace("import { env } from 'cloudflare:workers';", 'const env=globalThis.__testEnv;');
     const routeFile = join(dir, 'route.mjs');
-    writeFileSync(routeFile, transpile(routeSource));
+    writeFileSync(routeFile, rewriteImports(transpile(routeSource)));
     return await import(pathToFileURL(routeFile).href);
   } finally {
     rmSync(dir, { recursive: true, force: true });

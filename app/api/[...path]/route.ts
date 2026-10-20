@@ -1,11 +1,15 @@
 import { env } from 'cloudflare:workers';
 import { validateAssessment, isSameAssessmentContent } from '../../../shared/assessment-rules';
+import { LESSON_COUNT, toLessonResponse, type LessonRow } from '../../../shared/lesson-validation';
+import { LESSON_GROUP_NAMES } from '../../../shared/lessons-seed';
 export const dynamic='force-dynamic';
 const E=env as any;
 function out(data:unknown,status=200){return Response.json(data,{status,headers:{'Cache-Control':'no-store','X-Content-Type-Options':'nosniff'}})}
 async function role(req:Request){const id=req.headers.get('oai-authenticated-user-id');const email=(req.headers.get('oai-authenticated-user-email')||'').toLowerCase();const admin=!!id&&!!E.OWNER_EMAIL&&email===E.OWNER_EMAIL.toLowerCase();const volunteer=!!id&&(admin||!!(await E.DB.prepare('SELECT email FROM staff WHERE email=?').bind(email).first()));return {id,email,admin,volunteer}}
 async function me(r:any){let learner=await E.DB.prepare('SELECT code FROM learners WHERE id=?').bind(r.id).first();if(!learner){await E.DB.prepare('INSERT OR IGNORE INTO learners(id,code,created) VALUES(?,?,?)').bind(r.id,'ST-'+crypto.randomUUID().slice(0,12).toUpperCase(),new Date().toISOString()).run();learner=await E.DB.prepare('SELECT code FROM learners WHERE id=?').bind(r.id).first()}return learner}
 export async function GET(req:Request){try{const u=new URL(req.url),p=u.pathname.replace('/api/','');
+// FR-CNT: bài học chỉ đọc (quy tắc 4.4). Hàng hỏng hoặc thiếu bài trả 503, không trả dữ liệu dở dang.
+if(p==='lessons'){const rows=(await E.DB.prepare('SELECT lesson,title,group_no,body,quiz,next_step FROM lessons ORDER BY lesson').all()).results as LessonRow[];const lessons=rows.map(toLessonResponse);if(lessons.length!==LESSON_COUNT||lessons.some(l=>l===null))return out({error:'Chưa tải được bài học. Vui lòng thử lại.'},503);return out({groups:LESSON_GROUP_NAMES,lessons})}
 if(p==='videos'){return out((await E.DB.prepare('SELECT lesson,duration,updated FROM videos ORDER BY lesson').all()).results)}
 if(/^video\/\d+$/.test(p)){const l=Number(p.split('/')[1]);const v=await E.DB.prepare('SELECT * FROM videos WHERE lesson=?').bind(l).first();if(!v)return out({error:'Chưa có video'},404);const o=await E.BUCKET.get(v.key,{range:req.headers});if(!o)return out({error:'Không tìm thấy video'},404);const h=new Headers({'Content-Type':v.mime,'Accept-Ranges':'bytes','Cache-Control':'public,max-age=60','X-Content-Type-Options':'nosniff'});h.set('Content-Length',String(o.range?.length??o.size));if(o.range)h.set('Content-Range',`bytes ${o.range.offset}-${o.range.offset+o.range.length-1}/${o.size}`);return new Response(o.body,{headers:h,status:o.range?206:200})}
 const r=await role(req);if(p==='me'){if(!r.id)return out({authenticated:false});const l=await me(r);const rows=(await E.DB.prepare('SELECT lesson,read,done,score,updated FROM progress WHERE learner=?').bind(r.id).all()).results;return out({authenticated:true,admin:r.admin,volunteer:r.volunteer,code:l.code,progress:rows})}
