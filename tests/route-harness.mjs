@@ -52,8 +52,9 @@ function rewriteImports(code) {
 }
 
 // Nạp route.ts thật. Mọi tệp trong shared/ được ghi thành .mjs tạm rồi import qua file URL.
-export async function loadApi(sql, { ownerEmail = 'owner@example.test' } = {}) {
-  globalThis.__testEnv = { DB: createD1Adapter(sql), OWNER_EMAIL: ownerEmail, BUCKET: {} };
+// bucket: đối tượng R2 giả lập (put/get/delete) để kiểm tra việc ghi và xóa tệp. Mặc định là bucket rỗng.
+export async function loadApi(sql, { ownerEmail = 'owner@example.test', bucket = {} } = {}) {
+  globalThis.__testEnv = { DB: createD1Adapter(sql), OWNER_EMAIL: ownerEmail, BUCKET: bucket };
   const dir = mkdtempSync(join(tmpdir(), 'son-tra-so-test-'));
   try {
     for (const file of readdirSync(SHARED_DIR).filter((name) => name.endsWith('.ts'))) {
@@ -65,6 +66,20 @@ export async function loadApi(sql, { ownerEmail = 'owner@example.test' } = {}) {
     const routeFile = join(dir, 'route.mjs');
     writeFileSync(routeFile, rewriteImports(transpile(routeSource)));
     return await import(pathToFileURL(routeFile).href);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+}
+
+// Nạp một module trong shared/ (ví dụ 'video-rules') để kiểm thử đơn vị dùng đúng mã nguồn TypeScript.
+export async function loadShared(name) {
+  const dir = mkdtempSync(join(tmpdir(), 'son-tra-so-shared-'));
+  try {
+    for (const file of readdirSync(SHARED_DIR).filter((entry) => entry.endsWith('.ts'))) {
+      const source = readFileSync(join(SHARED_DIR, file), 'utf8');
+      writeFileSync(join(dir, `${basename(file, '.ts')}.mjs`), rewriteImports(transpile(source)));
+    }
+    return await import(pathToFileURL(join(dir, `${name}.mjs`)).href);
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }
