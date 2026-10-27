@@ -13,7 +13,14 @@ const tryRun = (fn) => { try { fn(); return null; } catch (error) { return Strin
   const sql = new DatabaseSync(':memory:');
   sql.exec('PRAGMA foreign_keys = ON');
   const tags = applyMigrations(sql);
-  assert.equal(tags.length, 5, 'journal phải có 5 migration (0000–0004)');
+  assert.equal(tags.length, 6, 'journal phải có 6 migration (0000–0005)');
+  const indexes = (sql, table) => sql.prepare(`PRAGMA index_list(${table})`).all().map((i) => i.name);
+  for (const name of ['progress_lesson_idx', 'progress_completed_at_idx']) {
+    assert.ok(indexes(sql, 'progress').includes(name), `chỉ mục ${name} phải tồn tại (0005)`);
+  }
+  for (const name of ['quiz_attempts_lesson_created_idx', 'quiz_attempts_learner_lesson_idx']) {
+    assert.ok(indexes(sql, 'quiz_attempts').includes(name), `chỉ mục ${name} phải tồn tại (0005)`);
+  }
   assert.ok(columns(sql, 'quiz_attempts').includes('client_id'), 'quiz_attempts.client_id phải tồn tại (0004)');
   assert.ok(columns(sql, 'assessments').includes('client_id'), 'assessments.client_id phải tồn tại');
   assert.ok(columns(sql, 'videos').includes('kind'), 'videos.kind phải tồn tại');
@@ -80,4 +87,26 @@ const tryRun = (fn) => { try { fn(); return null; } catch (error) { return Strin
   assert.notEqual(tryRun(() => insertLesson(2, 6)), null, 'group_no 6 phải bị từ chối');
 }
 
-console.log('PASS: migration 0001 trên DB rỗng và DB có dữ liệu cũ, ràng buộc idempotency, FK, CHECK bài học');
+// 6) Migration 0005 trên DB có dữ liệu (đến 0004): chỉ thêm chỉ mục, không đổi dữ liệu hay bảng.
+{
+  const sql = new DatabaseSync(':memory:');
+  sql.exec('PRAGMA foreign_keys = ON');
+  applyMigrations(sql, { to: 5 });
+  sql.prepare("INSERT INTO learners (id, code, created) VALUES ('l1','ST-IDX','2026-01-01T00:00:00Z')").run();
+  sql.prepare("INSERT INTO progress (learner, lesson, read, done, score, updated, completed_at) VALUES ('l1',4,1,1,1,'2026-01-02T00:00:00Z','2026-01-02T00:00:00Z')").run();
+  sql.prepare("INSERT INTO quiz_attempts (id, learner, lesson, choice, correct, client_id, created) VALUES ('q1','l1',4,0,1,'idx-test-0001','2026-01-03T00:00:00Z')").run();
+  const tablesBefore = sql.prepare("SELECT name, sql FROM sqlite_master WHERE type='table' ORDER BY name").all().map((r) => `${r.name}|${r.sql}`);
+
+  applyMigrations(sql, { from: 5 });
+
+  const tablesAfter = sql.prepare("SELECT name, sql FROM sqlite_master WHERE type='table' ORDER BY name").all().map((r) => `${r.name}|${r.sql}`);
+  assert.deepEqual(tablesAfter, tablesBefore, '0005 không được đổi định nghĩa bảng (chỉ CREATE INDEX)');
+  assert.deepEqual({ ...sql.prepare('SELECT learner, lesson, done, score, completed_at FROM progress').get() }, { learner: 'l1', lesson: 4, done: 1, score: 1, completed_at: '2026-01-02T00:00:00Z' }, 'tiến độ cũ giữ nguyên');
+  assert.equal(sql.prepare("SELECT correct FROM quiz_attempts WHERE id='q1'").get().correct, 1, 'lượt làm cũ giữ nguyên');
+  assert.equal(sql.prepare('PRAGMA foreign_key_check').all().length, 0);
+  // Khôi phục: DROP INDEX chỉ bỏ chỉ mục, dữ liệu còn nguyên.
+  sql.exec('DROP INDEX progress_lesson_idx');
+  assert.equal(sql.prepare('SELECT COUNT(*) AS n FROM progress').get().n, 1, 'bỏ chỉ mục không làm mất dữ liệu');
+}
+
+console.log('PASS: migration 0001–0005 trên DB rỗng và DB có dữ liệu cũ, chỉ mục 0005, ràng buộc idempotency, FK, CHECK bài học');

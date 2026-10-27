@@ -1,10 +1,12 @@
-import { sqliteTable, text, integer, primaryKey, uniqueIndex, check } from 'drizzle-orm/sqlite-core';
+import { sqliteTable, text, integer, primaryKey, uniqueIndex, index, check } from 'drizzle-orm/sqlite-core';
 import { sql } from 'drizzle-orm';
 export const learners = sqliteTable('learners', { id:text('id').primaryKey(), code:text('code').notNull().unique(), created:text('created').notNull() });
 export const progress = sqliteTable('progress', { learner:text('learner').notNull().references(()=>learners.id), lesson:integer('lesson').notNull(), read:integer('read').notNull().default(0), done:integer('done').notNull().default(0), score:integer('score').notNull().default(0), updated:text('updated').notNull(),
 // completed_at: thời điểm lần đầu đánh dấu hoàn thành (ISO 8601 UTC). NULL với dòng cũ trước 0003,
 // không suy đoán từ updated vì giá trị đó không phải thời điểm hoàn thành. Hoàn thành chỉ là tự xác nhận (quy tắc 4.7).
-completed_at:text('completed_at') },t=>[primaryKey({columns:[t.learner,t.lesson]})]);
+completed_at:text('completed_at') },t=>[primaryKey({columns:[t.learner,t.lesson]}),
+// Migration 0005 (báo cáo quản trị): chỉ mục phục vụ tổng hợp theo bài và lọc theo kỳ hoàn thành (mốc completed_at, không dùng updated).
+index('progress_lesson_idx').on(t.lesson),index('progress_completed_at_idx').on(t.completed_at)]);
 // client_id: khóa idempotency của phiếu quan sát (FR-OBS-04, DR-02). Cột nullable để giữ dòng cũ;
 // SQLite cho phép nhiều NULL trong unique index nên dòng cũ không xung đột.
 export const assessments=sqliteTable('assessments',{id:text('id').primaryKey(),learner:text('learner').notNull().references(()=>learners.id),phase:text('phase').notNull(),scores:text('scores').notNull(),assessor:text('assessor').notNull(),created:text('created').notNull(),client_id:text('client_id')},t=>[uniqueIndex('assessments_learner_client_unique').on(t.learner,t.client_id)]);
@@ -18,7 +20,9 @@ export const staff=sqliteTable('staff',{email:text('email').primaryKey(),created
 // choice là chỉ số đáp án học viên chọn; correct do máy chủ tính từ đáp án trong bảng lessons, không nhận từ client.
 // client_id bắt buộc, idempotent theo (learner, client_id) như phiếu quan sát (quyết định 5). Không unique theo (learner, lesson)
 // vì một bài có thể làm nhiều lần (quyết định 4: đếm số lần làm bài).
-export const quizAttempts=sqliteTable('quiz_attempts',{id:text('id').primaryKey(),learner:text('learner').notNull().references(()=>learners.id),lesson:integer('lesson').notNull(),choice:integer('choice').notNull(),correct:integer('correct').notNull(),client_id:text('client_id').notNull(),created:text('created').notNull()},t=>[uniqueIndex('quiz_attempts_learner_client_unique').on(t.learner,t.client_id),check('quiz_attempts_lesson_range', sql`${t.lesson} BETWEEN 0 AND 9`),check('quiz_attempts_choice_min', sql`${t.choice} >= 0`),check('quiz_attempts_correct_bool', sql`${t.correct} IN (0, 1)`)]);
+export const quizAttempts=sqliteTable('quiz_attempts',{id:text('id').primaryKey(),learner:text('learner').notNull().references(()=>learners.id),lesson:integer('lesson').notNull(),choice:integer('choice').notNull(),correct:integer('correct').notNull(),client_id:text('client_id').notNull(),created:text('created').notNull()},t=>[uniqueIndex('quiz_attempts_learner_client_unique').on(t.learner,t.client_id),
+// Migration 0005: tổng hợp theo bài và theo kỳ (mốc created), và tính đạt theo học viên.
+index('quiz_attempts_lesson_created_idx').on(t.lesson,t.created),index('quiz_attempts_learner_lesson_idx').on(t.learner,t.lesson),check('quiz_attempts_lesson_range', sql`${t.lesson} BETWEEN 0 AND 9`),check('quiz_attempts_choice_min', sql`${t.choice} >= 0`),check('quiz_attempts_correct_bool', sql`${t.correct} IN (0, 1)`)]);
 // Bài học (FR-CNT-01, 02). lesson khớp id 0–9 hiện có. body và quiz là JSON TEXT;
 // kiểm tra cấu trúc nằm ở shared/lesson-validation (commit 1.4), không ở DB.
 export const lessons=sqliteTable('lessons',{lesson:integer('lesson').primaryKey(),title:text('title').notNull(),group_no:integer('group_no').notNull(),body:text('body').notNull(),quiz:text('quiz').notNull(),next_step:text('next_step'),created:text('created').notNull()},t=>[check('lessons_lesson_range', sql`${t.lesson} BETWEEN 0 AND 9`),check('lessons_group_range', sql`${t.group_no} BETWEEN 1 AND 5`)]);
