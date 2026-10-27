@@ -13,7 +13,7 @@ const tryRun = (fn) => { try { fn(); return null; } catch (error) { return Strin
   const sql = new DatabaseSync(':memory:');
   sql.exec('PRAGMA foreign_keys = ON');
   const tags = applyMigrations(sql);
-  assert.equal(tags.length, 3, 'journal phải có 3 migration (0000, 0001, 0002)');
+  assert.equal(tags.length, 4, 'journal phải có 4 migration (0000–0003)');
   assert.ok(columns(sql, 'assessments').includes('client_id'), 'assessments.client_id phải tồn tại');
   assert.ok(columns(sql, 'videos').includes('kind'), 'videos.kind phải tồn tại');
   assert.ok(columns(sql, 'videos').includes('url'), 'videos.url phải tồn tại');

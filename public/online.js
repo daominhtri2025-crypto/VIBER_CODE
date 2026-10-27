@@ -10,5 +10,43 @@ let syncTimer;function queueSync(){if(!onlineUser?.authenticated||syncBusy)retur
 async function syncNow(){if(syncBusy||!onlineUser?.authenticated)return;const snapshot=JSON.stringify(state);if(snapshot===lastSynced)return;syncBusy=true;try{await post('progress',{...JSON.parse(snapshot),code:onlineUser.code});lastSynced=snapshot;statusBar('Mã học viên: '+onlineUser.code+' · Đã đồng bộ lúc '+new Date().toLocaleTimeString('vi-VN'));}catch(e){statusBar('Chưa đồng bộ: '+e.message+' Tiến độ đang giữ trên thiết bị.')}finally{syncBusy=false;if(JSON.stringify(state)!==snapshot)queueSync()}}
 const baseLesson=lesson;lesson=function(i){baseLesson(i);const block=document.createElement('div');block.style.marginTop='20px';const h=document.createElement('h3');h.textContent='Video thao tác thực tế';block.append(h);// Bài dùng liên kết: chỉ nhúng khi URL đúng tiền tố youtube-nocookie (máy chủ đã kiểm tra; đây là lớp phòng thủ thứ hai).
 // Bài tải tệp: phát qua /api/video/:lesson. Không gắn URL từ API vào innerHTML.
-const info=videosAvailable.find(v=>v.lesson===i);const embedPrefix='https://www.youtube-nocookie.com/embed/';if(info?.kind==='link'){if(typeof info.url==='string'&&info.url.startsWith(embedPrefix)){const f=document.createElement('iframe');f.src=info.url;f.title='Video thực tế của bài '+(i+1);f.loading='lazy';f.referrerPolicy='strict-origin-when-cross-origin';f.allow='accelerometer; encrypted-media; gyroscope; picture-in-picture';f.allowFullscreen=true;f.style='width:100%;aspect-ratio:16/9;border:0';block.append(f)}else{const p=document.createElement('p');p.textContent='Liên kết video của bài này chưa hợp lệ. Vui lòng thông báo cho người hỗ trợ.';block.append(p)}}else if(info){const v=document.createElement('video');v.controls=true;v.playsInline=true;v.preload='metadata';v.src='/api/video/'+i;v.style='width:100%;max-height:400px';block.append(v)}else{const p=document.createElement('p');p.textContent='Bài này chưa có video thực tế. Bạn có thể đọc hoặc nghe hướng dẫn ở trên.';block.append(p)}$('content').append(block)};
-(async()=>{try{videosAvailable=await jsonApi('videos')}catch{}await refreshOnline();routeLesson()})();setInterval(refreshOnline,15000);window.addEventListener('online',refreshOnline);
+const info=videosAvailable.find(v=>v.lesson===i);const embedPrefix='https://www.youtube-nocookie.com/embed/';if(info?.kind==='link'){if(typeof info.url==='string'&&info.url.startsWith(embedPrefix)){const f=document.createElement('iframe');f.src=info.url;f.title='Video thực tế của bài '+(i+1);f.loading='lazy';f.referrerPolicy='strict-origin-when-cross-origin';f.allow='accelerometer; encrypted-media; gyroscope; picture-in-picture';f.allowFullscreen=true;f.style='width:100%;aspect-ratio:16/9;border:0';block.append(f)}else{const p=document.createElement('p');p.textContent='Liên kết video của bài này chưa hợp lệ. Vui lòng thông báo cho người hỗ trợ.';block.append(p)}}else if(info){const v=document.createElement('video');v.controls=true;v.playsInline=true;v.preload='metadata';v.src='/api/video/'+i;v.style='width:100%;max-height:400px';block.append(v)}else{const p=document.createElement('p');p.textContent='Bài này chưa có video thực tế. Bạn có thể đọc hoặc nghe hướng dẫn ở trên.';block.append(p)}block.append(completionControls(i));$('content').append(block)};
+(async()=>{try{videosAvailable=await jsonApi('videos')}catch{}await refreshOnline();await refreshCourse();routeLesson()})();setInterval(refreshOnline,15000);window.addEventListener('online',()=>{refreshOnline().then(refreshCourse)});
+
+// Commit 1.6 (FR-LRN, quy tắc 4.7): nút "Đánh dấu đã hoàn thành" nằm ngay dưới khung video.
+// Chỉ là tự xác nhận của học viên, không phải kết quả đánh giá năng lực. Nút vẫn hoạt động khi chưa đăng nhập (lưu trên thiết bị).
+function completionControls(i){
+  const wrap=document.createElement('div');wrap.className='actions';wrap.style.marginTop='16px';wrap.style.flexWrap='wrap';
+  const done=state.done.includes(i);
+  const btn=document.createElement('button');btn.id='completeBtn';btn.style.minWidth='44px';btn.style.minHeight='44px';
+  btn.textContent=done?'✓ Đã hoàn thành':'Đánh dấu đã hoàn thành';
+  // Không cho bỏ đánh dấu: tiến độ hợp nhất theo giá trị lớn nhất (quy tắc 4.1).
+  btn.disabled=done;
+  btn.setAttribute('aria-describedby','completeNote');
+  btn.onclick=()=>completeLesson(i);
+  wrap.append(btn);
+  const note=document.createElement('p');note.id='completeNote';note.className='small';
+  note.textContent='Bạn tự xác nhận đã làm theo bài này. Đây không phải kết quả đánh giá năng lực của người hỗ trợ.';
+  wrap.append(note);
+  // Bài tiếp theo chỉ hiện sau khi hoàn thành, và chuyển khi người học bấm (không tự chuyển).
+  if(done&&i<9){const next=document.createElement('button');next.className='secondary';next.style.minHeight='44px';next.textContent='Bài tiếp theo →';next.onclick=()=>lesson(i+1);wrap.append(next)}
+  return wrap;
+}
+// Ghi nhận hoàn thành: cập nhật trên thiết bị ngay, rồi gửi lên máy chủ nếu đã đăng nhập.
+// Lỗi mạng không làm mất tiến độ: state vẫn giữ trên thiết bị và queueSync sẽ thử lại.
+async function completeLesson(i){
+  if(!state.done.includes(i)){state.done.push(i);save()}
+  if(!onlineUser?.authenticated){statusBar('Đã lưu trên thiết bị. Đăng nhập để đồng bộ nhiều thiết bị.');lesson(i);return}
+  try{
+    await post('progress/complete',{code:onlineUser.code,lesson:i});
+    await refreshCourse();
+    statusBar('Mã học viên: '+onlineUser.code+' · Đã ghi nhận hoàn thành bài '+(i+1)+'.');
+  }catch(e){statusBar('Chưa đồng bộ hoàn thành: '+e.message+' Tiến độ đang giữ trên thiết bị.')}
+  lesson(i);
+}
+// Tỷ lệ khóa học: lấy từ máy chủ khi đã đăng nhập để đồng bộ nhiều thiết bị; chưa đăng nhập thì app.js tự tính từ thiết bị.
+async function refreshCourse(){
+  if(!onlineUser?.authenticated){courseServer=null;render();return}
+  try{const c=await jsonApi('progress/son-tra-so');courseServer={completed:c.completed_lessons,percent:c.percent}}catch{courseServer=null}
+  render();
+}

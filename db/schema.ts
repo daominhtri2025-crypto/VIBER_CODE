@@ -1,7 +1,10 @@
 import { sqliteTable, text, integer, primaryKey, uniqueIndex, check } from 'drizzle-orm/sqlite-core';
 import { sql } from 'drizzle-orm';
 export const learners = sqliteTable('learners', { id:text('id').primaryKey(), code:text('code').notNull().unique(), created:text('created').notNull() });
-export const progress = sqliteTable('progress', { learner:text('learner').notNull().references(()=>learners.id), lesson:integer('lesson').notNull(), read:integer('read').notNull().default(0), done:integer('done').notNull().default(0), score:integer('score').notNull().default(0), updated:text('updated').notNull() },t=>[primaryKey({columns:[t.learner,t.lesson]})]);
+export const progress = sqliteTable('progress', { learner:text('learner').notNull().references(()=>learners.id), lesson:integer('lesson').notNull(), read:integer('read').notNull().default(0), done:integer('done').notNull().default(0), score:integer('score').notNull().default(0), updated:text('updated').notNull(),
+// completed_at: thời điểm lần đầu đánh dấu hoàn thành (ISO 8601 UTC). NULL với dòng cũ trước 0003,
+// không suy đoán từ updated vì giá trị đó không phải thời điểm hoàn thành. Hoàn thành chỉ là tự xác nhận (quy tắc 4.7).
+completed_at:text('completed_at') },t=>[primaryKey({columns:[t.learner,t.lesson]})]);
 // client_id: khóa idempotency của phiếu quan sát (FR-OBS-04, DR-02). Cột nullable để giữ dòng cũ;
 // SQLite cho phép nhiều NULL trong unique index nên dòng cũ không xung đột.
 export const assessments=sqliteTable('assessments',{id:text('id').primaryKey(),learner:text('learner').notNull().references(()=>learners.id),phase:text('phase').notNull(),scores:text('scores').notNull(),assessor:text('assessor').notNull(),created:text('created').notNull(),client_id:text('client_id')},t=>[uniqueIndex('assessments_learner_client_unique').on(t.learner,t.client_id)]);

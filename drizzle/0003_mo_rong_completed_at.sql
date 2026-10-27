@@ -1,0 +1,1 @@
+ALTER TABLE `progress` ADD `completed_at` text;
