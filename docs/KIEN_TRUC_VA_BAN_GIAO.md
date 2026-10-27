@@ -6,18 +6,20 @@
 | public/home.html | Giao diện học tập, thích ứng điện thoại |
 | public/app.js | Nội dung bài học, câu kiểm tra và tiến độ trên thiết bị |
 | public/resources.js | Phiếu đánh giá cục bộ, sao lưu/khôi phục, tài liệu hỗ trợ |
-| public/online.js | Đăng nhập, đồng bộ API và video trong bài học |
+| public/online.js | Đăng nhập, đồng bộ API, video và nút đánh dấu hoàn thành trong bài học |
+| public/home-polish.css, public/slideshow.js | Giao diện trang chủ (CSS thuần) và slideshow đầu trang |
+| shared/ | Quy tắc nghiệp vụ dùng chung (kiểm tra bài học, phiếu, video, tiến độ); được `tsc --strict` kiểm tra |
 | public/admin.html, public/admin.js | Dashboard, phân quyền, ghi phiếu quan sát và tải video |
 | public/print.html, public/qr | Sổ tay, poster, phiếu và mã QR |
 | app/api/[...path]/route.ts | API máy chủ, kiểm tra quyền và lưu D1/R2 |
 | db/schema.ts | Schema Drizzle |
 | drizzle/ | SQL migration, snapshot và nhật ký migration |
 | build/, scripts/ | Tích hợp môi trường build và chạy |
-| tests/api.test.mjs | Kiểm tra API bằng SQLite trong bộ nhớ |
+| tests/*.test.mjs | Kiểm tra API, migration, phiếu, bài học, video và tiến độ bằng SQLite thật; chạy bằng `npm test` |
 
 ## Dữ liệu
 - learners: khóa danh tính ổn định theo website, mã học viên, ngày tạo.
-- progress: mỗi học viên/bài học một bản ghi; đã đọc, tự thực hành, kiểm tra đạt và thời gian cập nhật.
+- progress: mỗi học viên/bài học một bản ghi; đã đọc, tự thực hành (done), kiểm tra đạt, thời gian cập nhật và `completed_at` (thời điểm lần đầu tự xác nhận hoàn thành; NULL với dòng tạo trước migration 0003).
 - assessments: phiếu quan sát 5 kỹ năng, lần đo, người đánh giá, thời gian.
 - staff: email tài khoản được quyền đánh giá.
 - videos: bài học, khóa tệp trong R2, loại video, thời lượng và thời gian cập nhật.
@@ -26,7 +28,9 @@
 | Phương thức / đường dẫn | Quyền |
 |---|---|
 | GET /api/me | Khách xem trạng thái; người đăng nhập xem tiến độ của mình |
-| POST /api/progress | Người đăng nhập, chỉ tiến độ của chính mình |
+| POST /api/progress | Người đăng nhập, chỉ tiến độ của chính mình (đồng bộ, hợp nhất theo giá trị lớn nhất) |
+| POST /api/progress/complete | Người đăng nhập; ghi nhận hoàn thành một bài, idempotent, không đảo ngược |
+| GET /api/progress/son-tra-so | Người đăng nhập; tỷ lệ hoàn thành khóa học của chính mình (401 nếu chưa đăng nhập, 404 nếu sai mã khóa) |
 | GET /api/videos | Công khai danh mục video |
 | GET /api/video/:lesson | Công khai video bài học, hỗ trợ Range |
 | GET /api/dashboard | Chỉ chủ website |
@@ -39,6 +43,7 @@
 - Danh tính phải do lớp xác thực Sites cung cấp. Cấp quyền tình nguyện viên không trao quyền xem toàn bộ dữ liệu.
 - API ghi dữ liệu kiểm tra Origin cùng website và kiểm tra quyền phía máy chủ.
 - Tiến độ hợp nhất theo giá trị lớn nhất để tránh mất tiến độ khi hai thiết bị cập nhật xen kẽ; không có chức năng đặt lại tiến độ trực tuyến trong phiên bản này.
+- "Hoàn thành" và "tự thực hành" chỉ là tự xác nhận của học viên, không phải bằng chứng năng lực (quy tắc 4.7). Tỷ lệ khóa học tính trên số bài có done = 1.
 - Mã học viên gửi kèm khi đồng bộ để từ chối bản cập nhật nhầm tài khoản.
 - Nội dung xem công khai; không đưa thông tin cá nhân vào video hoặc tài liệu.
 - Thay video hiện tạo một tệp R2 mới; cần bổ sung chính sách dọn tệp cũ nếu vận hành lâu dài.
@@ -46,6 +51,11 @@
 ## Đánh giá
 0 = chưa thực hiện được; 1 = cần hướng dẫn từng bước; 2 = cần nhắc; 3 = tự làm đúng; null = chưa đánh giá.
 Dashboard đối chiếu trước–sau trên cùng mã học viên, lấy phiếu mới nhất cho từng lần đo và chỉ đưa vào nhóm đủ cả 5 phép đo ở hai lần. Không xem việc đọc bài là bằng chứng đã thành thạo.
+
+## Hiện trạng Phase 1
+- Đã có migration `0000`–`0003`, 10 bài học trong D1, API tiến độ và nút đánh dấu hoàn thành.
+- Đã gỡ mã giao diện mẫu shadcn và các phụ thuộc không dùng; tên package là `son-tra-so`.
+- Chưa làm: Tailwind biên dịch tĩnh (Phase 2); FR-KEY và Gemini TTS đang **Hoãn** (xem SRS mục 3.6 và DAC D-02).
 
 ## Chính sách migration
 - `drizzle/0000_fancy_rogue.sql` là migration gốc, có thể đã áp dụng trên D1. Không đổi tên, không sửa nội dung.

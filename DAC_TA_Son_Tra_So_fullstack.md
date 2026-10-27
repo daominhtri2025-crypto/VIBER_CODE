@@ -167,7 +167,7 @@ Chi tiết đường dẫn và tên tham số của các endpoint này `[Cần x
 
 **Lưu ý:** tách endpoint ghi âm khỏi endpoint tải lên để không mở WebM cho tệp tải lên thông thường (FR-CNT-14 chỉ cho ghi âm trực tiếp).
 
-### 5.4. Endpoint khóa Gemini **[Dự kiến, chỉ máy chủ cục bộ, chỉ dùng nếu D-02 giữ TTS]**
+### 5.4. Endpoint khóa Gemini **[Hoãn theo D-02: không dùng Gemini TTS]**
 
 | Method và đường dẫn | Mô tả | Phản hồi |
 |---|---|---|

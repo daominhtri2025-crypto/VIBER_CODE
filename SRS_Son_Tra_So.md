@@ -63,7 +63,7 @@ Sơn Trà Số là ứng dụng web giúp người dân phường Sơn Trà họ
 | Đối chiếu trước–sau | So sánh kết quả của cùng một mã học viên giữa các giai đoạn |
 | D1 | Cơ sở dữ liệu SQLite của Cloudflare |
 | R2 | Kho lưu trữ tệp của Cloudflare |
-| TTS | Chuyển văn bản thành giọng nói (Gemini TTS) |
+| TTS | Chuyển văn bản thành giọng nói (Gemini TTS) — **Hoãn** theo D-02 |
 | Idempotent | Gửi lại cùng một yêu cầu không tạo thêm bản ghi trùng |
 | Append-only | Chỉ thêm, không sửa hoặc xóa |
 
@@ -189,6 +189,7 @@ Người dân phường Sơn Trà, đặc biệt người lớn tuổi, cần th
 | FR-CNT-17 | Phát tệp âm thanh hỗ trợ tua (Range) | S | Trả 206 với `Content-Range` đúng |
 
 ### 3.6. Quản lý khóa API Gemini (FR-KEY) — chỉ máy chủ cục bộ
+> **Trạng thái: Hoãn.** Không triển khai trong Phase 1, theo quyết định không dùng Gemini TTS (DAC D-02). Chỉ mở lại khi có quyết định mới.
 
 Khóa API được nhập trực tiếp trên dashboard quản trị của máy chủ cục bộ, chỉ lưu trong bộ nhớ tiến trình. Tính năng này không có trên bản Sites.
 
