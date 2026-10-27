@@ -126,7 +126,9 @@ assert.equal(LESSON_GROUP_NAMES.length, 5);
     assert.equal(lesson.icon, seed.icon);
     assert.equal(lesson.summary, seed.summary);
     assert.deepEqual(lesson.steps, seed.steps);
-    assert.deepEqual(lesson.quiz, seed.quiz);
+    // Mục 2 (quyết định 2): GET /api/lessons không được chứa đáp án; máy chủ chấm trong POST /api/quiz/answer.
+    assert.deepEqual(lesson.quiz, { question: seed.quiz.question, options: seed.quiz.options });
+    assert.equal('answer' in lesson.quiz, false, 'quiz.answer không được có trong phản hồi công khai');
     assert.equal(lesson.next_step, seed.nextStep);
   });
 

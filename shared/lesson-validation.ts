@@ -1,6 +1,6 @@
 // Kiểm tra và ánh xạ bài học dùng chung (CLAUDE.md mục 3, 4.4).
 // Dùng cho: kiểm tra dữ liệu seed trước khi ghi, và kiểm tra hàng D1 trước khi trả về API.
-import { LESSON_GROUP_NAMES, type LessonSeed } from './lessons-seed';
+import { LESSON_GROUP_NAMES, type LessonQuiz, type LessonSeed } from './lessons-seed';
 
 export const LESSON_MIN = 0;
 export const LESSON_MAX = 9; // Khớp CHECK trong bảng lessons (0001): bộ bài cố định 10 bài.
@@ -18,7 +18,7 @@ export interface LessonRow {
   next_step: string | null;
 }
 
-// Dạng trả về cho trình duyệt. Đáp án vẫn có mặt vì kiểm tra quiz ở client (quyết định 5 của 1.4).
+// Dạng trả về cho trình duyệt. Không có đáp án: máy chủ tự chấm bài kiểm tra (Mục 2, quyết định 2 và 3).
 export interface LessonResponse {
   lesson: number;
   title: string;
@@ -26,7 +26,7 @@ export interface LessonResponse {
   icon: string;
   summary: string;
   steps: string[];
-  quiz: { question: string; options: string[]; answer: number };
+  quiz: { question: string; options: string[] };
   next_step: string;
 }
 
@@ -93,7 +93,8 @@ interface StoredBody {
 export function toLessonResponse(row: LessonRow): LessonResponse | null {
   try {
     const body = JSON.parse(row.body) as StoredBody;
-    const quiz = JSON.parse(row.quiz) as LessonResponse['quiz'];
+    // Đọc đầy đủ đáp án để kiểm tra cấu trúc, nhưng chỉ đưa câu hỏi và các lựa chọn ra ngoài.
+    const quiz = JSON.parse(row.quiz) as LessonQuiz;
     const response: LessonResponse = {
       lesson: row.lesson,
       title: row.title,
@@ -101,7 +102,7 @@ export function toLessonResponse(row: LessonRow): LessonResponse | null {
       icon: body.icon,
       summary: body.summary,
       steps: body.steps,
-      quiz,
+      quiz: { question: quiz.question, options: quiz.options },
       next_step: row.next_step ?? '',
     };
     const check = checkLessonSeed({
@@ -111,7 +112,7 @@ export function toLessonResponse(row: LessonRow): LessonResponse | null {
       icon: response.icon,
       summary: response.summary,
       steps: response.steps,
-      quiz: response.quiz,
+      quiz,
       nextStep: response.next_step,
     });
     return check.ok ? response : null;

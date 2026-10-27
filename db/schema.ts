@@ -14,6 +14,11 @@ export const assessments=sqliteTable('assessments',{id:text('id').primaryKey(),l
 // trái chính sách migration. Giá trị kind được kiểm tra ở lớp service (shared/).
 export const videos=sqliteTable('videos',{lesson:integer('lesson').primaryKey(),key:text('key').notNull(),mime:text('mime').notNull(),duration:integer('duration').notNull(),updated:text('updated').notNull(),kind:text('kind').notNull().default('file'),url:text('url')});
 export const staff=sqliteTable('staff',{email:text('email').primaryKey(),created:text('created').notNull()});
+// quiz_attempts: lịch sử làm bài kiểm tra trắc nghiệm, do máy chủ chấm (quyết định 3, 5 của Mục 2).
+// choice là chỉ số đáp án học viên chọn; correct do máy chủ tính từ đáp án trong bảng lessons, không nhận từ client.
+// client_id bắt buộc, idempotent theo (learner, client_id) như phiếu quan sát (quyết định 5). Không unique theo (learner, lesson)
+// vì một bài có thể làm nhiều lần (quyết định 4: đếm số lần làm bài).
+export const quizAttempts=sqliteTable('quiz_attempts',{id:text('id').primaryKey(),learner:text('learner').notNull().references(()=>learners.id),lesson:integer('lesson').notNull(),choice:integer('choice').notNull(),correct:integer('correct').notNull(),client_id:text('client_id').notNull(),created:text('created').notNull()},t=>[uniqueIndex('quiz_attempts_learner_client_unique').on(t.learner,t.client_id),check('quiz_attempts_lesson_range', sql`${t.lesson} BETWEEN 0 AND 9`),check('quiz_attempts_choice_min', sql`${t.choice} >= 0`),check('quiz_attempts_correct_bool', sql`${t.correct} IN (0, 1)`)]);
 // Bài học (FR-CNT-01, 02). lesson khớp id 0–9 hiện có. body và quiz là JSON TEXT;
 // kiểm tra cấu trúc nằm ở shared/lesson-validation (commit 1.4), không ở DB.
 export const lessons=sqliteTable('lessons',{lesson:integer('lesson').primaryKey(),title:text('title').notNull(),group_no:integer('group_no').notNull(),body:text('body').notNull(),quiz:text('quiz').notNull(),next_step:text('next_step'),created:text('created').notNull()},t=>[check('lessons_lesson_range', sql`${t.lesson} BETWEEN 0 AND 9`),check('lessons_group_range', sql`${t.group_no} BETWEEN 1 AND 5`)]);

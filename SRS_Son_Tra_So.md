@@ -127,7 +127,7 @@ Người dân phường Sơn Trà, đặc biệt người lớn tuổi, cần th
 | FR-LRN-01 | Hiển thị danh sách bài học, 10 bài mỗi trang, có điều hướng trang | M | Chuyển trang đúng; số bài hiển thị khớp tổng số bài |
 | FR-LRN-02 | Hiển thị trang bài học gồm: tiêu đề, mô tả, các bước, video (nếu có), âm thanh (nếu có), câu hỏi kiểm tra, bước tiếp theo | M | Mọi trường hiển thị đầy đủ; bài không có video không báo lỗi |
 | FR-LRN-03 | Đánh dấu đã đọc và đã thực hành | M | Trạng thái được lưu và hiển thị lại sau khi tải trang |
-| FR-LRN-04 | Làm câu hỏi kiểm tra; ghi điểm cao nhất | M | Đúng đáp án cho điểm; điểm không giảm khi làm lại |
+| FR-LRN-04 | Làm câu hỏi kiểm tra; ghi điểm cao nhất | M | Máy chủ chấm theo đáp án lưu trên máy chủ; đáp án không có trong phản hồi công khai; chỉ chấm khi đã đăng nhập và có kết nối; làm sai không tiết lộ đáp án đúng; điểm không giảm khi làm lại; gửi lại cùng mã lượt không tạo lượt mới (Mục 2 đã duyệt) |
 | FR-LRN-05 | Xem tiến độ của chính mình | M | Không hiển thị tiến độ của học viên khác |
 | FR-LRN-06 | Đồng bộ tiến độ khi đăng nhập; hợp nhất bằng giá trị lớn nhất từng trường | M | Hai thiết bị cập nhật xen kẽ không làm mất tiến độ |
 | FR-LRN-07 | Từ chối đồng bộ nếu mã học viên không khớp tài khoản | M | Trả lỗi 403 hoặc 409 `[Cần thống nhất mã lỗi]` |

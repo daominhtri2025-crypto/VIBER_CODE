@@ -21,6 +21,7 @@
 - learners: khóa danh tính ổn định theo website, mã học viên, ngày tạo.
 - progress: mỗi học viên/bài học một bản ghi; đã đọc, tự thực hành (done), kiểm tra đạt, thời gian cập nhật và `completed_at` (thời điểm lần đầu tự xác nhận hoàn thành; NULL với dòng tạo trước migration 0003).
 - assessments: phiếu quan sát 5 kỹ năng, lần đo, người đánh giá, thời gian.
+- quiz_attempts: mỗi lượt làm bài kiểm tra một dòng (bài, lựa chọn, `correct` do máy chủ tính, `client_id`); unique theo `(learner, client_id)`. Không sửa hay xóa lịch sử qua API.
 - staff: email tài khoản được quyền đánh giá.
 - videos: bài học, khóa tệp trong R2, loại video, thời lượng và thời gian cập nhật.
 
@@ -53,7 +54,8 @@
 Dashboard đối chiếu trước–sau trên cùng mã học viên, lấy phiếu mới nhất cho từng lần đo và chỉ đưa vào nhóm đủ cả 5 phép đo ở hai lần. Không xem việc đọc bài là bằng chứng đã thành thạo.
 
 ## Hiện trạng Phase 1
-- Đã có migration `0000`–`0003`, 10 bài học trong D1, API tiến độ và nút đánh dấu hoàn thành.
+- Đã có migration `0000`–`0004`, 10 bài học trong D1, API tiến độ và nút đánh dấu hoàn thành.
+- Bài kiểm tra trắc nghiệm do máy chủ chấm (`POST /api/quiz/answer`, bảng `quiz_attempts` ở migration `0004`). Đáp án không có trong `GET /api/lessons`. Dashboard hiển thị số lần làm bài và tỷ lệ đúng, ghi chú là "kiểm tra hiểu bài nội bộ".
 - Đã gỡ mã giao diện mẫu shadcn và các phụ thuộc không dùng; tên package là `son-tra-so`.
 - Chưa làm: Tailwind biên dịch tĩnh (Phase 2); FR-KEY và Gemini TTS đang **Hoãn** (xem SRS mục 3.6 và DAC D-02).
 
