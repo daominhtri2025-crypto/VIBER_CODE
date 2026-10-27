@@ -81,6 +81,6 @@ Chạy độc lập trên Cloudflare/Vercel hoặc máy chủ khác cần bổ s
 - Xem bài không cần tài khoản; đồng bộ cần đăng nhập ChatGPT.
 - Kết quả tự đánh dấu tách biệt với đánh giá quan sát của tình nguyện viên.
 - Bản triển khai đã build và kiểm tra logic API. Luồng đăng nhập thật trên trình duyệt, hiệu năng nhiều người đồng thời và thử nghiệm hiện trường cần được xác nhận trước khi sử dụng rộng.
-- Giữ các giấy phép trong `build/` và `vendor/` khi phân phối các thành phần tương ứng.
+- Giữ giấy phép trong `build/` khi phân phối thành phần tương ứng.
 
 Đọc `docs/KIEN_TRUC_VA_BAN_GIAO.md` để tiếp tục phát triển.
