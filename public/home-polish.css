@@ -1,0 +1,268 @@
+/* Commit 1.7: nâng cấp giao diện trang chủ (mobile-first, kiểm tra ở 360 px).
+   Giá trị theo thang bo góc và bóng của Tailwind (rounded-xl = 12px, rounded-2xl = 16px, shadow-md, shadow-lg),
+   viết bằng CSS thuần để không thêm phụ thuộc; Tailwind sẽ thuộc Phase 2. */
+
+:root {
+  --radius-xl: 12px;
+  --radius-2xl: 16px;
+  --shadow-md: 0 4px 12px rgba(24, 62, 54, 0.1);
+  --shadow-lg: 0 12px 28px rgba(24, 62, 54, 0.14);
+  --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --focus: #f2b705; /* vàng nhấn: viền focus rõ trên nền sáng và nền xanh */
+}
+
+/* Nút: mức tối thiểu 44 px (CLAUDE.md mục 6), chuyển màu mượt, nhấn nhẹ khi bấm. */
+button,
+.btn {
+  min-height: 44px;
+  border-radius: var(--radius-xl);
+  transition: transform 0.15s var(--ease), background-color 0.2s, box-shadow 0.2s, color 0.2s;
+}
+button:not(:disabled):active {
+  transform: scale(0.97);
+}
+button:disabled {
+  cursor: default;
+  opacity: 0.9;
+}
+:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+
+/* Hover có tác dụng thật trên màn hình có chuột; tránh dính trạng thái hover trên điện thoại. */
+@media (hover: hover) {
+  .btn:hover,
+  button.primary:hover:not(:disabled) {
+    background-color: #1d7458;
+    box-shadow: var(--shadow-md);
+  }
+  .secondary:hover:not(:disabled) {
+    background-color: #dbe6d0;
+  }
+  .card button:hover {
+    background: none;
+    color: #0f4c3a;
+    text-decoration: underline;
+  }
+  .filters button:not(.active):hover {
+    background-color: #dbe6cf;
+  }
+  .options button:hover:not(:disabled) {
+    background-color: #dfe9d6;
+    color: var(--ink);
+  }
+  .close:hover:not(:disabled) {
+    background-color: #dde7d4;
+  }
+}
+
+/* Thẻ bài học: bo góc lớn, bóng nhẹ, nhấc lên khi rê chuột hoặc khi có focus bàn phím. */
+.card {
+  border-radius: var(--radius-2xl);
+  box-shadow: var(--shadow-md);
+  transition: transform 0.25s var(--ease), box-shadow 0.25s var(--ease), border-color 0.25s;
+}
+@media (hover: hover) {
+  .card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-lg);
+    border-color: #bcd2b4;
+  }
+  .card:hover .icon {
+    transform: scale(1.06) rotate(-3deg);
+  }
+}
+.card:focus-within {
+  box-shadow: var(--shadow-lg);
+}
+.card .icon {
+  transition: transform 0.25s var(--ease);
+}
+
+/* Badge trạng thái thay cho dòng chữ đơn điệu. */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: 999px;
+  padding: 4px 10px;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.4;
+  margin-bottom: 10px;
+}
+.badge.done {
+  background: #d9efdc;
+  color: #1f6b3a;
+}
+.badge.info {
+  background: #e6eddc;
+  color: #3a663c;
+}
+
+/* Nút đóng modal: đạt 44×44 px (sửa điểm trừ đã ghi nhận). */
+.close {
+  float: right;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0 14px;
+  font-size: 22px;
+  line-height: 1;
+  border-radius: var(--radius-xl);
+  display: inline-grid;
+  place-items: center;
+  background: #edf1e8;
+  color: var(--ink);
+}
+
+/* Slideshow đầu trang. */
+.slideshow {
+  margin: 28px 0 0;
+  padding: 26px 26px 18px;
+  border-radius: var(--radius-2xl);
+  background: linear-gradient(135deg, #173f34 0%, #225e4b 100%);
+  color: #fff;
+  box-shadow: var(--shadow-lg);
+  position: relative;
+  overflow: hidden;
+}
+.slideshow::after {
+  content: '';
+  position: absolute;
+  right: -60px;
+  top: -60px;
+  width: 200px;
+  height: 200px;
+  border-radius: 50%;
+  background: rgba(242, 183, 5, 0.18);
+  pointer-events: none;
+}
+.slide {
+  display: none;
+  position: relative;
+  z-index: 1;
+  min-height: 150px;
+}
+.slide.active {
+  display: block;
+  animation: slide-in 0.5s var(--ease);
+}
+.slide .badge {
+  background: rgba(242, 183, 5, 0.22);
+  color: #ffe9a0;
+}
+.slide h2 {
+  color: #fff;
+  margin: 4px 0 8px;
+  font-size: clamp(24px, 4vw, 32px);
+  line-height: 1.25;
+}
+.slide p {
+  color: #d5e6d8;
+  margin: 0;
+  max-width: 560px;
+}
+.slide-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 16px;
+  position: relative;
+  z-index: 1;
+}
+.slide-nav,
+.slide-play {
+  flex: none;
+  background: rgba(255, 255, 255, 0.14);
+  color: #fff;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  display: inline-grid;
+  place-items: center;
+  font-size: 20px;
+  border-radius: 50%;
+}
+.slide-nav:hover:not(:disabled),
+.slide-play:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.26);
+}
+.dots {
+  flex: none;
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+/* Màn hình hẹp: dải chấm xuống hàng riêng để ba nút điều hướng vẫn đủ 44 px. */
+@media (max-width: 550px) {
+  .dots {
+    order: -1;
+    flex-basis: 100%;
+    justify-content: center;
+  }
+}
+.dots button {
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  background: transparent;
+  display: inline-grid;
+  place-items: center;
+}
+.dots button::before {
+  content: '';
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.45);
+  transition: width 0.25s var(--ease), background-color 0.25s;
+}
+.dots button[aria-current='true']::before {
+  width: 26px;
+  border-radius: 6px;
+  background: var(--focus);
+}
+.slideshow:focus-within .slide-nav,
+.slideshow:focus-within .dots button {
+  outline-color: var(--focus);
+}
+.slide-play[aria-pressed='false'] {
+  background: rgba(242, 183, 5, 0.3);
+}
+
+@keyframes slide-in {
+  from {
+    opacity: 0;
+    transform: translateX(14px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Người dùng yêu cầu giảm chuyển động: tắt hoạt ảnh và hiệu ứng nhấc thẻ. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .card:hover {
+    transform: none;
+  }
+}
+
+@media (max-width: 550px) {
+  .slideshow {
+    padding: 20px 18px 14px;
+  }
+  .slide {
+    min-height: 170px;
+  }
+}
