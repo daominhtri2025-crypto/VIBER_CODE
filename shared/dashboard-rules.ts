@@ -210,3 +210,61 @@ export function inPeriod(iso: unknown, from: string | null, to: string | null): 
   if (to !== null && time > Date.parse(to)) return false;
   return true;
 }
+
+// Các hàm dưới đây nhận dữ liệu đã gom sẵn trong SQL (xem shared/dashboard-queries.ts), để không tải từng lượt làm vào bộ nhớ.
+// Logic ngưỡng và tuần ISO vẫn chỉ có một bản, dùng chung với các hàm ở trên.
+
+export interface LessonCount { lesson: number; attempts: number; correct: number }
+export interface LessonCompletion { lesson: number; completed: number }
+export interface DailyAttempt { day: string; attempts: number; correct: number }
+export interface DailyCompletion { day: string; completions: number }
+
+// Ngày địa phương dạng YYYY-MM-DD (đã cộng múi giờ ở tầng truy vấn) sang khóa kỳ báo cáo.
+export function periodKeyFromLocalDay(day: string, granularity: Granularity): string | null {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(day)) return null;
+  const midnight = Date.parse(`${day}T00:00:00Z`);
+  if (Number.isNaN(midnight)) return null;
+  if (granularity === 'day') return day;
+  return isoWeekKey(new Date(midnight));
+}
+
+// Chuỗi thời gian từ dữ liệu đã gom theo ngày. Kết quả phải khớp với periodSeries trên cùng dữ liệu gốc (được kiểm thử).
+export function seriesFromDaily(attempts: DailyAttempt[], completions: DailyCompletion[], granularity: Granularity): PeriodPoint[] {
+  const points = new Map<string, PeriodPoint>();
+  const at = (period: string) => {
+    const point = points.get(period) ?? { period, attempts: 0, correct: 0, completions: 0 };
+    points.set(period, point);
+    return point;
+  };
+  for (const row of attempts) {
+    const period = periodKeyFromLocalDay(row.day, granularity);
+    if (period === null) continue;
+    const point = at(period);
+    point.attempts += row.attempts;
+    point.correct += row.correct;
+  }
+  for (const row of completions) {
+    const period = periodKeyFromLocalDay(row.day, granularity);
+    if (period === null) continue;
+    at(period).completions += row.completions;
+  }
+  return [...points.values()].sort((x, y) => (x.period < y.period ? -1 : x.period > y.period ? 1 : 0));
+}
+
+// Thống kê theo bài từ số đếm đã gom. Bài không có lượt làm có attemptCorrectRate = null.
+export function lessonStatsFromCounts(attempts: LessonCount[], completions: LessonCompletion[]): LessonStat[] {
+  const stats: LessonStat[] = [];
+  for (let lesson = LESSON_MIN; lesson <= LESSON_MAX; lesson++) {
+    const a = attempts.find((row) => row.lesson === lesson);
+    const attemptCount = a?.attempts ?? 0;
+    const correct = a?.correct ?? 0;
+    stats.push({
+      lesson,
+      completed: completions.find((row) => row.lesson === lesson)?.completed ?? 0,
+      attempts: attemptCount,
+      correct,
+      attemptCorrectRate: attemptCount === 0 ? null : (correct * 100) / attemptCount,
+    });
+  }
+  return stats;
+}
