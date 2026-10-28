@@ -2,6 +2,7 @@ import { env } from 'cloudflare:workers';
 import { validateAssessment } from '../../../shared/assessment-rules';
 import { loadLessonCatalog } from '../../../shared/lesson-service';
 import { findVideoByLesson, listVideos, replaceWithVideoLink, storeUploadedVideo } from '../../../shared/video-service';
+import { ensureLearnerCode, isStaffEmail } from '../../../shared/identity-service';
 import { LESSON_GROUP_NAMES } from '../../../shared/lessons-seed';
 import { checkVideoLink } from '../../../shared/video-rules';
 import { COURSE_ID, buildCourseProgress, validateComplete, type CourseRow } from '../../../shared/progress-rules';
@@ -40,8 +41,8 @@ const E = env as unknown as Env;
 const UPLOAD_BODY_LIMIT = 27 * 1024 * 1024;
 
 function out(data:unknown,status=200){return Response.json(data,{status,headers:{'Cache-Control':'no-store','X-Content-Type-Options':'nosniff'}})}
-async function role(req:Request):Promise<Identity>{const id=req.headers.get('oai-authenticated-user-id');const email=(req.headers.get('oai-authenticated-user-email')||'').toLowerCase();const admin=!!id&&!!E.OWNER_EMAIL&&email===E.OWNER_EMAIL.toLowerCase();const volunteer=!!id&&(admin||!!(await E.DB.prepare('SELECT email FROM staff WHERE email=?').bind(email).first()));return {id,email,admin,volunteer}}
-async function me(id:string):Promise<{code:string}>{let learner=await E.DB.prepare('SELECT code FROM learners WHERE id=?').bind(id).first<{code:string}>();if(!learner){await E.DB.prepare('INSERT OR IGNORE INTO learners(id,code,created) VALUES(?,?,?)').bind(id,'ST-'+crypto.randomUUID().slice(0,12).toUpperCase(),new Date().toISOString()).run();learner=await E.DB.prepare('SELECT code FROM learners WHERE id=?').bind(id).first<{code:string}>()}if(!learner)throw new Error('learner missing');return learner}
+async function role(req:Request):Promise<Identity>{const id=req.headers.get('oai-authenticated-user-id');const email=(req.headers.get('oai-authenticated-user-email')||'').toLowerCase();const admin=!!id&&!!E.OWNER_EMAIL&&email===E.OWNER_EMAIL.toLowerCase();const volunteer=!!id&&(admin||(await isStaffEmail(E.DB,email)));return {id,email,admin,volunteer}}
+async function me(id:string):Promise<{code:string}>{return {code:await ensureLearnerCode(E.DB,id,()=>'ST-'+crypto.randomUUID().slice(0,12).toUpperCase(),new Date().toISOString())}}
 
 export async function GET(req:Request){try{const u=new URL(req.url),p=u.pathname.replace('/api/','');
 // FR-CNT: bài học chỉ đọc (quy tắc 4.4). Hàng hỏng hoặc thiếu bài trả 503, không trả dữ liệu dở dang.

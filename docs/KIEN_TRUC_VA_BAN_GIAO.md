@@ -64,12 +64,13 @@ Dashboard đối chiếu trước–sau trên cùng mã học viên, lấy phi�
 ## Nợ kỹ thuật và giới hạn đã biết
 - Đã chuyển sang dịch vụ dùng chung: `shared/dashboard-summary.ts` (khối dashboard cũ), `shared/staff-service.ts` (POST `/api/staff`), `shared/assessment-service.ts` (POST `/api/assessment`).
 - Nhóm `lessons` đã chuyển sang `shared/lesson-service.ts` (danh mục bài, trả 503 khi thiếu hoặc hỏng dữ liệu).
+- Nhóm xác thực (`role()`, `me()`) đã chuyển sang `shared/identity-service.ts`; kiểm thử trong `tests/identity-service.test.mjs`.
 - Nhóm `upload-video` đã chuyển sang `storeUploadedVideo` trong `shared/video-service.ts`, qua Adapter `VideoStorage` cho R2. Thứ tự: kiểm tra, ghi R2, ghi DB (lỗi thì xóa tệp mới), rồi xóa tệp cũ.
 - Nhóm `video-link` đã chuyển vào `shared/video-service.ts` (`replaceWithVideoLink`); route vẫn xóa tệp R2 cũ sau khi ghi DB.
 - Nhóm đọc video (`videos`, `video/:lesson`) đã chuyển sang `shared/video-service.ts`; stream R2 vẫn ở route.
 - Nhóm `quiz/answer` đã chuyển sang `shared/quiz-service.ts`; điểm kiểm tra đúng ghi qua `recordQuizPass` trong `shared/progress-service.ts` (không còn SQL `progress` trong `route.ts`).
 - Nhóm `progress` đã chuyển sang `shared/progress-service.ts` (đồng bộ, hoàn thành bài, tổng hợp khóa học), có kiểm thử hợp nhất `done`/`read` theo giá trị lớn nhất trong `tests/progress-service.test.mjs`.
-- Còn SQL trực tiếp trong `route.ts`, vi phạm CLAUDE.md mục 3: hàm `role()` (kiểm tra tình nguyện viên qua bảng `staff`), `me()` (phần tạo học viên), và `GET /api/me`. Cần chuyển theo từng nhóm, mỗi nhóm một thay đổi.
+- Đã hoàn tất tách SQL khỏi `route.ts`: không còn câu lệnh SQL nào trong route. Quyền tình nguyện viên (`role()` gọi `isStaffEmail`) và khởi tạo học viên (`me()` gọi `ensureLearnerCode`) nằm ở `shared/identity-service.ts`; route chỉ đọc header danh tính và cờ quản trị.
 - Thẻ tổng quan đầu trang (học viên, phiếu quan sát, phiếu đạt) lấy từ `report` của máy chủ; hàm xuất CSV cũ đã bỏ, khối tự học và phiếu quan sát nằm trong CSV báo cáo và không chịu ảnh hưởng bộ lọc.
 - Truy vấn báo cáo chưa đo trên D1 của bản triển khai và chưa có kiểm thử tải đồng thời. Chỉ tiêu NFR-PERF-03 mới đạt trên SQLite trong bộ nhớ.
 - FR-DSH-02 (làm mới 15 giây) chưa có kiểm thử đo khoảng thời gian.
