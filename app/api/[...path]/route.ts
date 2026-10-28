@@ -1,6 +1,6 @@
 import { env } from 'cloudflare:workers';
 import { validateAssessment } from '../../../shared/assessment-rules';
-import { LESSON_COUNT, toLessonResponse, type LessonRow } from '../../../shared/lesson-validation';
+import { loadLessonCatalog } from '../../../shared/lesson-service';
 import { LESSON_GROUP_NAMES } from '../../../shared/lessons-seed';
 import { checkVideoLink, checkVideoUpload, detectVideoFormat } from '../../../shared/video-rules';
 import { COURSE_ID, buildCourseProgress, validateComplete, type CourseRow } from '../../../shared/progress-rules';
@@ -44,7 +44,7 @@ async function me(id:string):Promise<{code:string}>{let learner=await E.DB.prepa
 
 export async function GET(req:Request){try{const u=new URL(req.url),p=u.pathname.replace('/api/','');
 // FR-CNT: bài học chỉ đọc (quy tắc 4.4). Hàng hỏng hoặc thiếu bài trả 503, không trả dữ liệu dở dang.
-if(p==='lessons'){const rows=(await E.DB.prepare('SELECT lesson,title,group_no,body,quiz,next_step FROM lessons ORDER BY lesson').all()).results as LessonRow[];const lessons=rows.map(toLessonResponse);if(lessons.length!==LESSON_COUNT||lessons.some(l=>l===null))return out({error:'Chưa tải được bài học. Vui lòng thử lại.'},503);return out({groups:LESSON_GROUP_NAMES,lessons})}
+if(p==='lessons'){const lessons=await loadLessonCatalog(E.DB);if(!lessons)return out({error:'Chưa tải được bài học. Vui lòng thử lại.'},503);return out({groups:LESSON_GROUP_NAMES,lessons})}
 // Danh mục video công khai. Bài dùng liên kết có url (đã chuẩn hóa sang youtube-nocookie); bài tải tệp có url = null.
 if(p==='videos'){return out((await E.DB.prepare('SELECT lesson,duration,updated,kind,url FROM videos ORDER BY lesson').all()).results)}
 // FR-LRN-08: chỉ phát tệp tải lên (hỗ trợ Range). Bài dùng liên kết trả 404 để trình duyệt nhúng trực tiếp từ /api/videos.
