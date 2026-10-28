@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { applyMigrations } from './migrate-helper.mjs';
 import { loadApi } from './route-harness.mjs';
 
-// Kiểm thử API GET /api/dashboard với báo cáo lọc (Bước 4; FR-DSH-01 đến 06; FR-OBS-05).
+// Kiểm thử API GET /api/dashboard với báo cáo lọc (Bước 4; FR-DSH-01 đến 07; FR-OBS-05).
 // Chạy route.ts thật trên SQLite thật (CLAUDE.md mục 7). Dữ liệu được chèn trực tiếp để mọi kết quả tính tay được.
 // Múi giờ: 16:59:59.999Z = 23:59 ngày 26/10 (VN); 18:00Z = 01:00 ngày 27/10 (VN).
 

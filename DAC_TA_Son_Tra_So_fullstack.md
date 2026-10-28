@@ -152,7 +152,7 @@ Quy tắc 4.4 cấm sửa bài học, còn FR-CNT-16 yêu cầu thay tệp âm t
 | `/api/progress` | FR-LRN-06, 07 | Hợp nhất tiến độ. Trả 403 hoặc 409 khi mã học viên không khớp `[Cần thống nhất mã lỗi]`. Trường `scores` của client bị bỏ qua: điểm kiểm tra chỉ do máy chủ ghi (Mục 2, quyết định 3) |
 | `/api/quiz/answer` | FR-LRN-04 | POST `{code, lesson, choice, client_id}`. Máy chủ chấm bằng đáp án trong bảng `lessons`; trả `{ok, correct, attempt_count}`, không trả đáp án. Idempotent theo `(learner, client_id)`; cùng `client_id` khác lựa chọn trả 409; `choice` ngoài danh sách trả 400; dữ liệu bài hỏng trả 503 |
 | `/api/assessment` | FR-OBS-01 đến 04 | Idempotent theo `client_id` |
-| `/api/dashboard` | FR-DSH-01 đến 06 | 403 cho tình nguyện viên (FR-OBS-05) |
+| `/api/dashboard` | FR-DSH-01 đến 07; FR-OBS-05 | Chỉ quản trị viên; tình nguyện viên và học viên nhận 403. Tham số: `from`, `to` (ISO 8601 UTC có `Z`; ngày hiển thị theo Asia/Saigon, UTC+7), `lesson` (0–9), `group` (1–5), `granularity` (`day` hoặc `week`). Tham số rỗng nghĩa là không lọc; tham số sai trả 400 với thông báo tiếng Việt. Phản hồi giữ các trường cũ (`learners`, `assessments`, `staff`, `at`) và thêm `report` = `{filter, learners, lessons, groups, series, prePost}`. `report.learners` chỉ có mã học viên. Ngưỡng đạt không đổi theo bộ lọc |
 | `/api/video-link` | FR-CNT-05 | Kiểm tra https, URL, độ dài |
 
 Chi tiết đường dẫn và tên tham số của các endpoint này `[Cần xác minh với mã v4]`.

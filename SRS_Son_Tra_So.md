@@ -155,6 +155,7 @@ Người dân phường Sơn Trà, đặc biệt người lớn tuổi, cần th
 | FR-DSH-04 | Xuất CSV | M | Tệp mở được bằng bảng tính; mã hóa UTF-8 có BOM |
 | FR-DSH-05 | Không quy đổi chưa đánh giá thành 0 trong tính tỷ lệ | M | Kiểm thử đơn vị đạt |
 | FR-DSH-06 | Không dùng số lượt đọc làm chỉ số năng lực | M | Dashboard không hiển thị "năng lực" từ lượt đọc |
+| FR-DSH-07 | Lọc báo cáo theo khoảng thời gian (từ/đến ngày theo giờ Việt Nam), bài, nhóm và kỳ (ngày/tuần). Bổ sung theo kế hoạch báo cáo đã duyệt | M | Tham số sai trả 400; mốc 17:00 UTC là đầu ngày kế tiếp ở Việt Nam; kiểm thử API đạt |
 
 ### 3.4. Quản lý quyền và tình nguyện viên (FR-ADM)
 
@@ -280,7 +281,7 @@ Các endpoint được liệt kê trong `DAC_TA_Son_Tra_So_fullstack.md`, Mục 
 |---|---|---|---|
 | NFR-PERF-01 | Hiệu năng | Trang học tải lần đầu trên mạng 4G | `[Cần xác định, đề xuất ≤ 3 giây]` |
 | NFR-PERF-02 | Hiệu năng | API đọc danh sách bài | `[Cần xác định]` |
-| NFR-PERF-03 | Hiệu năng | Dashboard với 200 học viên | `[Cần xác định]` |
+| NFR-PERF-03 | Hiệu năng | Dashboard báo cáo với 500 học viên đồng thời | Phản hồi API `/api/dashboard` dưới 1 giây (chỉ tiêu đã duyệt). Đo hiện tại: 14 ms cho 500 học viên và 10.000 lượt làm trên SQLite trong bộ nhớ; chưa đo trên D1 và chưa kiểm tải đồng thời |
 | NFR-SEC-01 | Bảo mật | Không có bí mật trong mã nguồn hoặc tệp được commit | Quét bằng công cụ trước mỗi phát hành |
 | NFR-SEC-02 | Bảo mật | Chống giả mạo danh tính qua header | Kiểm thử đạt |
 | NFR-SEC-03 | Bảo mật | Kiểm tra `Origin` trên mọi yêu cầu ghi | Kiểm thử đạt |
@@ -389,7 +390,12 @@ Các endpoint được liệt kê trong `DAC_TA_Son_Tra_So_fullstack.md`, Mục 
 |---|---|---|---|
 | FR-LRN-06 | `public/online.js`, `route.ts` (`/api/progress`) | `client-progress.test.mjs`, `api.test.mjs` | Ghi trong hồ sơ |
 | FR-OBS-04 | `route.ts` (`/api/assessment`), `schema.ts` | `api.test.mjs` | Ghi trong hồ sơ |
-| FR-DSH-03 | `route.ts` (`/api/dashboard`) | `api.test.mjs` | Ghi trong hồ sơ |
+| FR-DSH-01, FR-DSH-05 | `shared/dashboard-rules.ts`, `shared/dashboard-queries.ts`, `route.ts` (`/api/dashboard`) | `dashboard-rules.test.mjs`, `dashboard-queries.test.mjs`, `dashboard-api.test.mjs` | Tự động: npm test đạt |
+| FR-DSH-02 | `public/admin-report.js`, `public/admin.js` (chu kỳ 15 000 ms) | Chưa có | Chưa kiểm chứng: chưa đo khoảng thời gian làm mới |
+| FR-DSH-03 | `shared/dashboard-rules.ts` (`pairPrePost`), `route.ts` (`/api/dashboard`) | `dashboard-rules.test.mjs`, `dashboard-queries.test.mjs` | Tự động: npm test đạt |
+| FR-DSH-04 | `public/admin-report.js` (CSV có BOM) | `admin-page.test.mjs`, `admin-page-browser.mjs` (chạy thủ công) | Tự động và trình duyệt 360px: đạt |
+| FR-DSH-07, FR-OBS-05 | `route.ts` (`/api/dashboard`), `shared/dashboard-queries.ts` | `dashboard-api.test.mjs` | Tự động: npm test đạt |
+| NFR-PERF-03 | `shared/dashboard-queries.ts` | `dashboard-queries.test.mjs` (500 học viên, 10.000 lượt) | Đạt trên SQLite; chưa đo trên D1 |
 | FR-CNT-02 | `server-local/server.mjs` | `local-server.test.mjs` | Ghi trong hồ sơ |
 | FR-CNT-05 | `route.ts` (`/api/video-link`) | `local-server.test.mjs` | Ghi trong hồ sơ |
 | FR-CNT-07 | `server-local/narration.mjs` | `narration.test.mjs` | Ghi trong hồ sơ |

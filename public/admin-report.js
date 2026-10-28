@@ -1,4 +1,4 @@
-// Báo cáo thống kê chuyên sâu cho quản trị viên (Bước 5; FR-DSH-01 đến 06).
+// Báo cáo thống kê chuyên sâu cho quản trị viên (Bước 5; FR-DSH-01 đến 07).
 // Mọi quy tắc (ngưỡng đạt, múi giờ, ghép trước–sau) nằm trên máy chủ trong shared/dashboard-rules.
 // File này chỉ lấy số liệu đã tính, hiển thị và xuất CSV. Không tính lại ngưỡng ở client.
 // Dùng api, el, text, cell của admin.js: các hàm và biến đó nằm trong cùng phạm vi script cổ điển.
@@ -153,7 +153,7 @@
     ];
   }
 
-  // FR-DSH-06: CSV UTF-8 có BOM để Excel tiếng Việt đọc đúng dấu.
+  // FR-DSH-04: CSV UTF-8 có BOM để Excel tiếng Việt đọc đúng dấu.
   function exportCsv() {
     if (!lastReport) return;
     const body = csvRows(lastReport).map((row) => row.map(csvQuote).join(',')).join('\r\n');

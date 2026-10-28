@@ -9,7 +9,7 @@
 | public/online.js | Đăng nhập, đồng bộ API, video và nút đánh dấu hoàn thành trong bài học |
 | public/home-polish.css, public/slideshow.js | Giao diện trang chủ (CSS thuần) và slideshow đầu trang |
 | shared/ | Quy tắc nghiệp vụ dùng chung (kiểm tra bài học, phiếu, video, tiến độ); được `tsc --strict` kiểm tra |
-| public/admin.html, public/admin.js | Dashboard, phân quyền, ghi phiếu quan sát và tải video |
+| public/admin.html, public/admin.js, public/admin-report.js | Điều phối: báo cáo thống kê (bộ lọc, bảng, CSV có BOM), phân quyền, ghi phiếu quan sát và tải video |
 | public/print.html, public/qr | Sổ tay, poster, phiếu và mã QR |
 | app/api/[...path]/route.ts | API máy chủ, kiểm tra quyền và lưu D1/R2 |
 | db/schema.ts | Schema Drizzle |
@@ -34,7 +34,7 @@
 | GET /api/progress/son-tra-so | Người đăng nhập; tỷ lệ hoàn thành khóa học của chính mình (401 nếu chưa đăng nhập, 404 nếu sai mã khóa) |
 | GET /api/videos | Công khai danh mục video |
 | GET /api/video/:lesson | Công khai video bài học, hỗ trợ Range |
-| GET /api/dashboard | Chỉ chủ website |
+| GET /api/dashboard | Chỉ quản trị viên; nhận tham số lọc và trả `report` (chi tiết trong DAC) |
 | POST /api/assessment | Chủ website hoặc tình nguyện viên được cấp quyền |
 | POST /api/staff | Chỉ chủ website; cấp/thu hồi quyền đánh giá |
 | POST /api/upload-video | Chỉ chủ website; lưu R2 và gắn vào bài học |
@@ -54,10 +54,18 @@
 Dashboard đối chiếu trước–sau trên cùng mã học viên, lấy phiếu mới nhất cho từng lần đo và chỉ đưa vào nhóm đủ cả 5 phép đo ở hai lần. Không xem việc đọc bài là bằng chứng đã thành thạo.
 
 ## Hiện trạng Phase 1
-- Đã có migration `0000`–`0004`, 10 bài học trong D1, API tiến độ và nút đánh dấu hoàn thành.
+- Đã có migration `0000`–`0005`. Migration `0005` chỉ thêm chỉ mục cho báo cáo, không đổi dữ liệu hay bảng.
+- Báo cáo quản trị: `GET /api/dashboard` lọc theo khoảng thời gian, bài, nhóm và kỳ; giao diện `public/admin-report.js`; CSV UTF-8 có BOM. Kiểm thử: `npm test` và kiểm thử trình duyệt 360px (`tests/admin-page-browser.mjs`, chạy thủ công).
+- Migration `0000`–`0005` đã áp dụng thử trên D1 cục bộ (Wrangler) không lỗi. Chưa áp dụng trên D1 của bản triển khai Sites.
 - Bài kiểm tra trắc nghiệm do máy chủ chấm (`POST /api/quiz/answer`, bảng `quiz_attempts` ở migration `0004`). Đáp án không có trong `GET /api/lessons`. Dashboard hiển thị số lần làm bài và tỷ lệ đúng, ghi chú là "kiểm tra hiểu bài nội bộ".
 - Đã gỡ mã giao diện mẫu shadcn và các phụ thuộc không dùng; tên package là `son-tra-so`.
 - Chưa làm: Tailwind biên dịch tĩnh (Phase 2); FR-KEY và Gemini TTS đang **Hoãn** (xem SRS mục 3.6 và DAC D-02).
+
+## Nợ kỹ thuật và giới hạn đã biết
+- `route.ts` (khối `dashboard`) còn truy vấn SQL cũ cho `learners`, `assessments`, `staff`, vi phạm CLAUDE.md mục 3. Cần chuyển sang lớp service, không làm trong cùng thay đổi với tính năng.
+- Phần "Phiếu đạt ≥3/5" và xuất CSV cũ (`exportDashboard`) vẫn tính ở client; chỉ phần báo cáo mới lấy từ máy chủ.
+- Truy vấn báo cáo chưa đo trên D1 của bản triển khai và chưa có kiểm thử tải đồng thời. Chỉ tiêu NFR-PERF-03 mới đạt trên SQLite trong bộ nhớ.
+- FR-DSH-02 (làm mới 15 giây) chưa có kiểm thử đo khoảng thời gian.
 
 ## Chính sách migration
 - `drizzle/0000_fancy_rogue.sql` là migration gốc, có thể đã áp dụng trên D1. Không đổi tên, không sửa nội dung.

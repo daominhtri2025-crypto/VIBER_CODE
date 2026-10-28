@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import assert from 'node:assert/strict';
 
-// Kiểm thử tĩnh cho giao diện báo cáo quản trị (Bước 5; FR-DSH-01 đến 06; CLAUDE.md mục 2 và 6).
+// Kiểm thử tĩnh cho giao diện báo cáo quản trị (Bước 5; FR-DSH-01 đến 07; CLAUDE.md mục 2 và 6).
 // Kiểm tra cấu trúc mã nguồn: không chèn HTML từ dữ liệu, nhãn khớp máy chủ, có BOM, chống công thức CSV,
 // và logic ghép trước–sau không còn nằm ở client. Kiểm thử trên trình duyệt (360px, tải CSV) nằm ở tests/admin-page-browser.mjs.
 
@@ -26,7 +26,7 @@ const rules = readFileSync('shared/dashboard-rules.ts', 'utf8');
   assert.deepEqual(parse(clientBlock), server, 'nhãn phía client lệch khỏi máy chủ');
 }
 
-// 3) CSV: có BOM UTF-8 (FR-DSH-06) và chống công thức bằng tiền tố nháy đơn.
+// 3) CSV: có BOM UTF-8 (FR-DSH-04) và chống công thức bằng tiền tố nháy đơn.
 {
   assert.ok(report.includes("'\\ufeff'"), 'thiếu BOM UTF-8 khi xuất CSV');
   assert.ok(report.includes('/^[=+@-]/'), 'thiếu chống công thức CSV');

@@ -1,4 +1,4 @@
-// Quy tắc báo cáo quản trị dùng chung (FR-DSH-01 đến 06; Mục 4.6, 4.7, 4.8 của CLAUDE.md).
+// Quy tắc báo cáo quản trị dùng chung (FR-DSH-01 đến 07; Mục 4.6, 4.7, 4.8 của CLAUDE.md).
 // Module thuần: không truy vấn DB, không đọc môi trường. Route và kiểm thử đều dùng cùng một bản.
 import { LESSON_COUNT, LESSON_MAX, LESSON_MIN } from './lesson-validation';
 

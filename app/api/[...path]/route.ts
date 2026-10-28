@@ -50,7 +50,7 @@ if(p==='progress/'+COURSE_ID){if(!r.id)return out({error:'Vui lòng đăng nhậ
 if(p.startsWith('progress/'))return out({error:'Không tìm thấy khóa học'},404);
 if(p==='me'){if(!r.id)return out({authenticated:false});const l=await me(r.id);const rows=(await E.DB.prepare('SELECT lesson,read,done,score,updated FROM progress WHERE learner=?').bind(r.id).all()).results;return out({authenticated:true,admin:r.admin,volunteer:r.volunteer,code:l.code,progress:rows})}
 if(p==='dashboard'){if(!r.admin)return out({error:'Chỉ quản trị viên được xem dashboard'},403);
-// FR-DSH-04: báo cáo lọc theo khoảng thời gian, bài, nhóm và kỳ. Bộ lọc sai trả 400 trước khi chạy truy vấn nào.
+// FR-DSH-07: báo cáo lọc theo khoảng thời gian, bài, nhóm và kỳ. Bộ lọc sai trả 400 trước khi chạy truy vấn nào.
 // Truy vấn và quy tắc nằm trong shared/dashboard-queries; route chỉ chuyển tham số.
 let report;try{report=await loadDashboardSnapshot(E.DB,filterFromSearchParams(u.searchParams))}catch(e){if(e instanceof RangeError)return out({error:e.message},400);throw e}
 // Mục 2, quyết định 4: số lần làm bài và tỷ lệ đúng là số liệu "kiểm tra hiểu bài nội bộ", không phải đánh giá năng lực.

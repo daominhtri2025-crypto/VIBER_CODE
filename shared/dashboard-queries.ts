@@ -1,4 +1,4 @@
-// Truy vấn báo cáo quản trị (Bước 3; FR-DSH-01 đến 06; NFR-PERF-03: 500 học viên, dưới 1 giây).
+// Truy vấn báo cáo quản trị (Bước 3; FR-DSH-01 đến 07; NFR-PERF-03: 500 học viên, dưới 1 giây).
 // Chỉ dùng cú pháp SQL chuẩn để chạy trên cả D1 và SQLite: strftime, COUNT, SUM, COUNT(DISTINCT ...),
 // CASE, GROUP BY trên truy vấn con. Không dùng hàm riêng của một engine.
 // Mốc thời gian lưu theo toISOString() (có mili giây, kết thúc bằng Z), nên so sánh chuỗi đúng thứ tự.
@@ -81,7 +81,7 @@ export function normalizeFilter(input: Partial<ReportFilter> = {}): ReportFilter
   return { from, to, lesson, group, granularity };
 }
 
-// Chuyển tham số truy vấn URL thành bộ lọc (FR-DSH-04). Tham số rỗng nghĩa là không lọc.
+// Chuyển tham số truy vấn URL thành bộ lọc (FR-DSH-07). Tham số rỗng nghĩa là không lọc.
 // Số sai định dạng (ví dụ "abc", "-1") không được ép thành 0: trả NaN để normalizeFilter từ chối.
 // Granularity được ép kiểu ở đây nhưng vẫn do normalizeFilter kiểm tra lại giá trị.
 export function filterFromSearchParams(params: URLSearchParams): Partial<ReportFilter> {
