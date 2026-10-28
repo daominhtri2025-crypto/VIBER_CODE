@@ -76,6 +76,12 @@ const lessonsInGroup = (group) => [...groupOf].filter(([, g]) => g === group).ma
   assert.equal(JSON.stringify(report).includes('l1@test.test'), false, 'không lộ email học viên');
 }
 
+// 3b) Phiếu quan sát: tổng và số phiếu đạt ≥3/5 (phiếu api-a1 đủ 5 nhiệm vụ, toàn 3).
+{
+  const { report } = (await getJson('dashboard')).body;
+  assert.deepEqual(report.assessmentTotals, { total: 1, achieved: 1 });
+}
+
 // 4) Chuỗi theo ngày theo giờ Việt Nam: lượt 16:59:59.999Z thuộc 26/10; hoàn thành 02:00Z thuộc 27/10.
 {
   const { series } = (await getJson('dashboard')).body.report;

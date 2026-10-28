@@ -12,6 +12,7 @@
   const lessonNames = new Map();
   const lessonGroup = new Map();
   let lastReport = null;
+  let lastLegacy = { learners: [], assessments: [] };
   let requestSeq = 0;
   let ready = false;
 
@@ -115,6 +116,7 @@
       const body = await api('dashboard?' + queryString(filter));
       if (seq !== requestSeq) return;
       lastReport = body.report;
+      lastLegacy = { learners: body.learners || [], assessments: body.assessments || [] };
       render(body.report);
       status('Đã cập nhật lúc ' + new Date().toLocaleTimeString('vi-VN') + '.');
       field('rptExport').disabled = false;
@@ -150,6 +152,14 @@
       [],
       ['Mã học viên', 'Bài đã làm', 'Bài có lượt đúng', 'Trạng thái'],
       ...report.learners.map((l) => [l.code, l.attempted, l.correctLessons, PASS_LABEL[l.quiz.status] || '']),
+      [],
+      ['Tự học theo học viên (không chịu ảnh hưởng bộ lọc)'],
+      ['Mã học viên', 'Đã đọc', 'Tự thực hành', 'Kiểm tra đạt', 'Lần làm bài kiểm tra (nội bộ)', 'Tỷ lệ đúng (nội bộ, %)', 'Cập nhật'],
+      ...lastLegacy.learners.map((l) => [l.code, l.read || 0, l.done || 0, l.score || 0, l.quiz_attempts || 0, l.quiz_rate ?? '', l.updated || '']),
+      [],
+      ['Phiếu quan sát (không chịu ảnh hưởng bộ lọc)'],
+      ['Mã học viên', 'Lần đo', 'Điểm 1', 'Điểm 2', 'Điểm 3', 'Điểm 4', 'Điểm 5', 'Người đánh giá', 'Thời điểm'],
+      ...lastLegacy.assessments.map((a) => [a.code, a.phase, ...JSON.parse(a.scores).map((v) => v ?? ''), a.assessor, a.created]),
     ];
   }
 

@@ -62,8 +62,8 @@ Dashboard đối chiếu trước–sau trên cùng mã học viên, lấy phi�
 - Chưa làm: Tailwind biên dịch tĩnh (Phase 2); FR-KEY và Gemini TTS đang **Hoãn** (xem SRS mục 3.6 và DAC D-02).
 
 ## Nợ kỹ thuật và giới hạn đã biết
-- `route.ts` (khối `dashboard`) còn truy vấn SQL cũ cho `learners`, `assessments`, `staff`, vi phạm CLAUDE.md mục 3. Cần chuyển sang lớp service, không làm trong cùng thay đổi với tính năng.
-- Phần "Phiếu đạt ≥3/5" và xuất CSV cũ (`exportDashboard`) vẫn tính ở client; chỉ phần báo cáo mới lấy từ máy chủ.
+- Khối `dashboard` của `route.ts` đã chuyển truy vấn `learners`, `assessments`, `staff` sang `shared/dashboard-summary.ts`. Các handler khác trong `route.ts` (`me`, `progress`, các POST, `staff`, `videos`, `lessons`) vẫn có SQL trực tiếp, vi phạm CLAUDE.md mục 3. Cần chuyển theo từng nhóm, mỗi nhóm một thay đổi.
+- Phiếu đạt ≥3/5 và tổng số phiếu lấy từ `report.assessmentTotals` của máy chủ. Hàm xuất CSV cũ đã bỏ; khối tự học và phiếu quan sát nay nằm trong CSV báo cáo, không chịu ảnh hưởng bộ lọc.
 - Truy vấn báo cáo chưa đo trên D1 của bản triển khai và chưa có kiểm thử tải đồng thời. Chỉ tiêu NFR-PERF-03 mới đạt trên SQLite trong bộ nhớ.
 - FR-DSH-02 (làm mới 15 giây) chưa có kiểm thử đo khoảng thời gian.
 

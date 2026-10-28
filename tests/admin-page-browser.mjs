@@ -141,6 +141,8 @@ try {
     const text = bytes.subarray(3).toString('utf8');
     assert.ok(text.includes('Báo cáo thống kê Sơn Trà Số'));
     assert.ok(text.includes('Asia/Saigon (UTC+7)'));
+    assert.ok(text.includes('Tự học theo học viên'), 'thiếu khối tự học trong CSV');
+    assert.ok(text.includes('Phiếu quan sát'), 'thiếu khối phiếu quan sát trong CSV');
   });
 
   check('CSV: ô bắt đầu bằng "=" bị thêm nháy đơn và nhân đôi dấu ngoặc kép', async () => {

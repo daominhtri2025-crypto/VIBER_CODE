@@ -59,4 +59,11 @@ const rules = readFileSync('shared/dashboard-rules.ts', 'utf8');
   assert.ok(report.includes('if (seq !== requestSeq) return'), 'thiếu chống phản hồi cũ');
 }
 
+// 8) Phần cũ đã dọn: không còn hàm xuất CSV cũ, không tự đếm phiếu đạt ở client; phiếu đạt lấy từ máy chủ.
+{
+  assert.equal(adminJs.includes('exportDashboard'), false, 'còn hàm xuất CSV cũ trong admin.js');
+  assert.equal(adminJs.includes('x===3'), false, 'admin.js vẫn tự đếm phiếu đạt');
+  assert.ok(adminJs.includes('report.assessmentTotals'), 'phiếu đạt phải lấy từ máy chủ');
+}
+
 console.log('PASS: giao diện báo cáo (tĩnh): không chèn HTML từ API, nhãn khớp máy chủ, CSV có BOM và chống công thức, UTC+7, ghép trước–sau chỉ ở máy chủ, đủ trạng thái, chống phản hồi cũ');

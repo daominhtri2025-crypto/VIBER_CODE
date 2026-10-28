@@ -5,6 +5,7 @@
 // Gom nhóm nằm trong SQL để không tải từng lượt làm vào bộ nhớ khi số lượt tăng.
 import {
   REPORT_UTC_OFFSET_MINUTES,
+  achievedSkillCount,
   groupStats,
   isIsoUtc,
   lessonStatsFromCounts,
@@ -53,6 +54,8 @@ export interface DashboardSnapshot {
   groups: Array<{ group: number } & Omit<LessonStat, 'lesson'>>;
   series: PeriodPoint[];
   prePost: { pairs: number; beforeAchieved: number; afterAchieved: number };
+  // Phiếu quan sát (không lọc theo thời gian): tổng số và số phiếu đạt ≥3/5 khi đủ 5 nhiệm vụ.
+  assessmentTotals: { total: number; achieved: number };
 }
 
 // Modifier múi giờ dạng tham số (không ghép chuỗi SQL). Ví dụ: "+420 minutes".
@@ -266,6 +269,11 @@ export async function loadDashboardSnapshot(db: Db, input: Partial<ReportFilter>
 
   const series = seriesFromDaily(dailyAttempts, dailyCompletions, filter.granularity);
   const pairs = pairPrePost(assessments);
+  // Phiếu thiếu nhiệm vụ không được tính là đạt; achievedSkillCount trả null cho phiếu chưa đủ.
+  const achievedAssessments = assessments.filter((row) => {
+    const count = achievedSkillCount(row.scores);
+    return count !== null && count >= 3;
+  }).length;
 
   return {
     filter,
@@ -273,6 +281,7 @@ export async function loadDashboardSnapshot(db: Db, input: Partial<ReportFilter>
     lessons,
     groups,
     series,
+    assessmentTotals: { total: assessments.length, achieved: achievedAssessments },
     prePost: {
       pairs: pairs.length,
       beforeAchieved: pairs.filter((pair) => pair.before).length,
