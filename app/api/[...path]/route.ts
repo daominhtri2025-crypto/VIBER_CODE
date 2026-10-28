@@ -1,6 +1,7 @@
 import { env } from 'cloudflare:workers';
 import { validateAssessment } from '../../../shared/assessment-rules';
 import { loadLessonCatalog } from '../../../shared/lesson-service';
+import { findVideoByLesson, listVideos } from '../../../shared/video-service';
 import { LESSON_GROUP_NAMES } from '../../../shared/lessons-seed';
 import { checkVideoLink, checkVideoUpload, detectVideoFormat } from '../../../shared/video-rules';
 import { COURSE_ID, buildCourseProgress, validateComplete, type CourseRow } from '../../../shared/progress-rules';
@@ -46,9 +47,9 @@ export async function GET(req:Request){try{const u=new URL(req.url),p=u.pathname
 // FR-CNT: bài học chỉ đọc (quy tắc 4.4). Hàng hỏng hoặc thiếu bài trả 503, không trả dữ liệu dở dang.
 if(p==='lessons'){const lessons=await loadLessonCatalog(E.DB);if(!lessons)return out({error:'Chưa tải được bài học. Vui lòng thử lại.'},503);return out({groups:LESSON_GROUP_NAMES,lessons})}
 // Danh mục video công khai. Bài dùng liên kết có url (đã chuẩn hóa sang youtube-nocookie); bài tải tệp có url = null.
-if(p==='videos'){return out((await E.DB.prepare('SELECT lesson,duration,updated,kind,url FROM videos ORDER BY lesson').all()).results)}
+if(p==='videos'){return out(await listVideos(E.DB))}
 // FR-LRN-08: chỉ phát tệp tải lên (hỗ trợ Range). Bài dùng liên kết trả 404 để trình duyệt nhúng trực tiếp từ /api/videos.
-if(/^video\/\d+$/.test(p)){const l=Number(p.split('/')[1]);const v=await E.DB.prepare('SELECT key,mime,kind FROM videos WHERE lesson=?').bind(l).first<{key:string;mime:string;kind:string}>();if(!v||v.kind!=='file')return out({error:'Chưa có video tải lên cho bài này'},404);const o=await E.BUCKET.get(v.key,{range:req.headers});if(!o)return out({error:'Không tìm thấy video'},404);const h=new Headers({'Content-Type':v.mime,'Accept-Ranges':'bytes','Cache-Control':'public,max-age=60','X-Content-Type-Options':'nosniff'});h.set('Content-Length',String(o.range?.length??o.size));if(o.range)h.set('Content-Range',`bytes ${o.range.offset}-${o.range.offset+o.range.length-1}/${o.size}`);return new Response(o.body,{headers:h,status:o.range?206:200})}
+if(/^video\/\d+$/.test(p)){const l=Number(p.split('/')[1]);const v=await findVideoByLesson(E.DB,l);if(!v||v.kind!=='file')return out({error:'Chưa có video tải lên cho bài này'},404);const o=await E.BUCKET.get(v.key,{range:req.headers});if(!o)return out({error:'Không tìm thấy video'},404);const h=new Headers({'Content-Type':v.mime,'Accept-Ranges':'bytes','Cache-Control':'public,max-age=60','X-Content-Type-Options':'nosniff'});h.set('Content-Length',String(o.range?.length??o.size));if(o.range)h.set('Content-Range',`bytes ${o.range.offset}-${o.range.offset+o.range.length-1}/${o.size}`);return new Response(o.body,{headers:h,status:o.range?206:200})}
 const r=await role(req);
 // FR-LRN, Commit 1.6: tiến độ khóa học của chính học viên qua phiên xác thực; không nhận tham số học viên.
 if(p==='progress/'+COURSE_ID){if(!r.id)return out({error:'Vui lòng đăng nhập'},401);return out(buildCourseProgress(await loadCourseRows(E.DB,r.id) as CourseRow[]))}

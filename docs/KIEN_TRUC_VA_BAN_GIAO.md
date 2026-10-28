@@ -64,9 +64,10 @@ Dashboard đối chiếu trước–sau trên cùng mã học viên, lấy phi�
 ## Nợ kỹ thuật và giới hạn đã biết
 - Đã chuyển sang dịch vụ dùng chung: `shared/dashboard-summary.ts` (khối dashboard cũ), `shared/staff-service.ts` (POST `/api/staff`), `shared/assessment-service.ts` (POST `/api/assessment`).
 - Nhóm `lessons` đã chuyển sang `shared/lesson-service.ts` (danh mục bài, trả 503 khi thiếu hoặc hỏng dữ liệu).
+- Nhóm đọc video (`videos`, `video/:lesson`) đã chuyển sang `shared/video-service.ts`; stream R2 vẫn ở route.
 - Nhóm `quiz/answer` đã chuyển sang `shared/quiz-service.ts`; điểm kiểm tra đúng ghi qua `recordQuizPass` trong `shared/progress-service.ts` (không còn SQL `progress` trong `route.ts`).
 - Nhóm `progress` đã chuyển sang `shared/progress-service.ts` (đồng bộ, hoàn thành bài, tổng hợp khóa học), có kiểm thử hợp nhất `done`/`read` theo giá trị lớn nhất trong `tests/progress-service.test.mjs`.
-- Còn SQL trực tiếp trong `route.ts`, vi phạm CLAUDE.md mục 3: hàm `role()` (kiểm tra tình nguyện viên qua bảng `staff`), `me()` (phần tạo học viên), và `GET /api/me`, `POST /api/upload-video`, `POST /api/video-link`, `GET /api/videos`, `GET /api/video/:lesson`. Cần chuyển theo từng nhóm, mỗi nhóm một thay đổi.
+- Còn SQL trực tiếp trong `route.ts`, vi phạm CLAUDE.md mục 3: hàm `role()` (kiểm tra tình nguyện viên qua bảng `staff`), `me()` (phần tạo học viên), và `GET /api/me`, `POST /api/upload-video`, `POST /api/video-link`. Cần chuyển theo từng nhóm, mỗi nhóm một thay đổi.
 - Thẻ tổng quan đầu trang (học viên, phiếu quan sát, phiếu đạt) lấy từ `report` của máy chủ; hàm xuất CSV cũ đã bỏ, khối tự học và phiếu quan sát nằm trong CSV báo cáo và không chịu ảnh hưởng bộ lọc.
 - Truy vấn báo cáo chưa đo trên D1 của bản triển khai và chưa có kiểm thử tải đồng thời. Chỉ tiêu NFR-PERF-03 mới đạt trên SQLite trong bộ nhớ.
 - FR-DSH-02 (làm mới 15 giây) chưa có kiểm thử đo khoảng thời gian.
