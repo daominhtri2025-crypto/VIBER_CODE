@@ -4,8 +4,9 @@ import { LESSON_COUNT, toLessonResponse, type LessonRow } from '../../../shared/
 import { LESSON_GROUP_NAMES } from '../../../shared/lessons-seed';
 import { checkVideoLink, checkVideoUpload, detectVideoFormat } from '../../../shared/video-rules';
 import { COURSE_ID, buildCourseProgress, validateComplete, type CourseRow } from '../../../shared/progress-rules';
-import { correctRate, gradeChoice, isChoiceInRange, isSameQuizAttempt, parseStoredQuiz, validateQuizAnswer } from '../../../shared/quiz-rules';
+import { gradeChoice, isChoiceInRange, isSameQuizAttempt, parseStoredQuiz, validateQuizAnswer } from '../../../shared/quiz-rules';
 import { filterFromSearchParams, loadDashboardSnapshot } from '../../../shared/dashboard-queries';
+import { loadDashboardSummary } from '../../../shared/dashboard-summary';
 export const dynamic='force-dynamic';
 
 // Kiểu tối thiểu cho các phương thức route dùng (thay cho any). D1 và R2 đều có cùng dạng ở runtime.
@@ -53,9 +54,7 @@ if(p==='dashboard'){if(!r.admin)return out({error:'Chỉ quản trị viên đư
 // FR-DSH-07: báo cáo lọc theo khoảng thời gian, bài, nhóm và kỳ. Bộ lọc sai trả 400 trước khi chạy truy vấn nào.
 // Truy vấn và quy tắc nằm trong shared/dashboard-queries; route chỉ chuyển tham số.
 let report;try{report=await loadDashboardSnapshot(E.DB,filterFromSearchParams(u.searchParams))}catch(e){if(e instanceof RangeError)return out({error:e.message},400);throw e}
-// Mục 2, quyết định 4: số lần làm bài và tỷ lệ đúng là số liệu "kiểm tra hiểu bài nội bộ", không phải đánh giá năng lực.
-// Dùng truy vấn con để không nhân đôi dòng khi JOIN với progress.
-const learners=(await E.DB.prepare('SELECT l.code,l.created,COUNT(p.lesson) AS lessons,SUM(p.read) AS read,SUM(p.done) AS done,SUM(p.score) AS score,MAX(p.updated) AS updated,(SELECT COUNT(*) FROM quiz_attempts q WHERE q.learner=l.id) AS quiz_attempts,(SELECT COALESCE(SUM(q.correct),0) FROM quiz_attempts q WHERE q.learner=l.id) AS quiz_correct FROM learners l LEFT JOIN progress p ON l.id=p.learner GROUP BY l.id ORDER BY l.created DESC').all()).results.map(l=>({...l,quiz_rate:correctRate(Number(l.quiz_attempts),Number(l.quiz_correct))}));const assessments=(await E.DB.prepare('SELECT a.id,l.code,a.phase,a.scores,a.assessor,a.created FROM assessments a JOIN learners l ON l.id=a.learner ORDER BY a.created DESC').all()).results;const staff=(await E.DB.prepare('SELECT email FROM staff ORDER BY email').all()).results;return out({learners,assessments,staff,at:new Date().toISOString(),report})}
+const {learners,assessments,staff}=await loadDashboardSummary(E.DB);return out({learners,assessments,staff,at:new Date().toISOString(),report})}
 return out({error:'Không tìm thấy'},404)}catch{return out({error:'Chưa thể tải dữ liệu. Vui lòng thử lại.'},503)}}
 
 export async function POST(req:Request){try{if(req.headers.get('origin')!==new URL(req.url).origin)return out({error:'Yêu cầu không hợp lệ'},403);const r=await role(req);if(!r.id)return out({error:'Vui lòng đăng nhập'},401);const id=r.id;const p=new URL(req.url).pathname.replace('/api/','');

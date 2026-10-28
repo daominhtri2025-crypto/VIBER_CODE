@@ -43,6 +43,7 @@ attempt.run('qa-4', 'api-l2', 3, 0, 0, 'api-client-0004', '2026-10-27T03:00:00.0
 const progress = sql.prepare('INSERT INTO progress(learner, lesson, read, done, score, updated, completed_at) VALUES (?, ?, 1, ?, 0, ?, ?)');
 progress.run('api-l1', 0, 1, '2026-10-27T02:00:00.000Z', '2026-10-27T02:00:00.000Z');
 progress.run('api-l1', 1, 0, '2026-10-27T02:00:00.000Z', null);
+sql.prepare('INSERT INTO assessments(id, learner, phase, scores, assessor, created) VALUES (?, ?, ?, ?, ?, ?)').run('api-a1', 'api-l1', 'Trước học', '[3,3,3,3,3]', 'owner@example.test', '2026-10-26T00:00:00.000Z');
 const groupOf = new Map(sql.prepare('SELECT lesson, group_no FROM lessons').all().map((row) => [row.lesson, row.group_no]));
 const lessonsInGroup = (group) => [...groupOf].filter(([, g]) => g === group).map(([lesson]) => lesson).sort((x, y) => x - y);
 
@@ -137,6 +138,22 @@ const lessonsInGroup = (group) => [...groupOf].filter(([, g]) => g === group).ma
   assert.equal(report.filter.lesson, null);
   assert.equal(report.filter.group, null);
   assert.equal(report.lessons.length, 10);
+}
+
+// 11) Khối cũ (learners, assessments, staff) đã chuyển sang shared/dashboard-summary: hình dạng dữ liệu không đổi.
+{
+  const body = (await getJson('dashboard')).body;
+  const l1 = body.learners.find((row) => row.code === 'ST-API-1');
+  assert.deepEqual(Object.keys(l1).sort(), ['code', 'created', 'done', 'lessons', 'quiz_attempts', 'quiz_correct', 'quiz_rate', 'read', 'score', 'updated']);
+  assert.equal(l1.lessons, 2, 'hai dòng tiến độ');
+  assert.equal(l1.done, 1);
+  assert.equal(l1.quiz_attempts, 3);
+  assert.equal(l1.quiz_correct, 2);
+  assert.equal(l1.quiz_rate, 67, '2/3 lượt đúng làm tròn 67%');
+  assert.equal(body.assessments.length, 1);
+  assert.deepEqual(Object.keys(body.assessments[0]).sort(), ['assessor', 'code', 'created', 'id', 'phase', 'scores']);
+  assert.equal(body.assessments[0].code, 'ST-API-1');
+  assert.ok(body.staff.some((row) => row.email === 'vol@test.test'), 'danh sách tình nguyện viên giữ nguyên');
 }
 
 console.log('PASS: API báo cáo quản trị: 403 cho tình nguyện viên và học viên, lọc bài/nhóm/khoảng thời gian/kỳ, 400 cho tham số sai, mốc múi giờ, không lộ danh tính, giữ trường cũ');
