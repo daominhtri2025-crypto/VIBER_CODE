@@ -6,6 +6,7 @@ export interface VideoStatement {
   bind(...values: unknown[]): VideoStatement;
   all<T = Record<string, unknown>>(): Promise<{ results: T[] }>;
   first<T = Record<string, unknown>>(): Promise<T | null>;
+  run(): Promise<unknown>;
 }
 export interface VideoDb {
   prepare(query: string): VideoStatement;
@@ -39,4 +40,23 @@ export async function findVideoByLesson(db: VideoDb, lesson: number): Promise<St
     .prepare('SELECT key,mime,kind FROM videos WHERE lesson=?')
     .bind(lesson)
     .first<StoredVideo>();
+}
+
+// Thay video của bài bằng liên kết YouTube (FR-CNT-05, 06; quy tắc 4.5: mỗi bài đúng một video).
+// Ghi đè hàng cũ rồi trả khóa R2 của tệp cũ (nếu có) để route xóa sau khi đã ghi DB.
+// Thứ tự này giữ nguyên hành vi cũ: tệp chỉ bị xóa khi bản ghi mới đã được lưu.
+export async function replaceWithVideoLink(
+  db: VideoDb,
+  lesson: number,
+  embedUrl: string,
+  now: string,
+): Promise<{ previousFileKey: string | null }> {
+  const previous = await findVideoByLesson(db, lesson);
+  await db
+    .prepare(
+      "INSERT INTO videos(lesson,key,mime,duration,updated,kind,url) VALUES(?,'','',0,?,'link',?) ON CONFLICT(lesson) DO UPDATE SET key='',mime='',duration=0,updated=excluded.updated,kind='link',url=excluded.url",
+    )
+    .bind(lesson, now, embedUrl)
+    .run();
+  return { previousFileKey: previous?.kind === 'file' ? previous.key : null };
 }

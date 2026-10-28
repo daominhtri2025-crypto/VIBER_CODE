@@ -13,7 +13,9 @@ const owner = { id: 'owner', email: 'owner@example.test' };
 const sql = new DatabaseSync(':memory:');
 sql.exec('PRAGMA foreign_keys = ON');
 applyMigrations(sql);
-const api = await loadApi(sql, { bucket: {} });
+const deletedKeys = [];
+const bucket = { delete: async (key) => { deletedKeys.push(key); } };
+const api = await loadApi(sql, { bucket });
 
 function request(method, path, identity, json) {
   const headers = {};
@@ -58,4 +60,24 @@ function request(method, path, identity, json) {
   assert.equal(response.status, 404);
 }
 
-console.log('PASS: nhóm đọc video (dịch vụ): danh sách rỗng, sắp theo bài, bài không có video trả 404');
+// 5) Thay tệp bằng liên kết (quy tắc 4.5): tệp R2 cũ bị xóa đúng một lần; bản ghi thành liên kết.
+{
+  sql.prepare("INSERT INTO videos(lesson,key,mime,duration,updated,kind,url) VALUES(?,?,?,?,?,'file',NULL)")
+    .run(6, 'videos/6/old-file', 'video/mp4', 30, '2026-10-01T00:00:00.000Z');
+  const response = await api.POST(request('POST', 'video-link', owner, { lesson: 6, url: `https://www.youtube.com/watch?v=${YOUTUBE_ID}` }));
+  assert.equal(response.status, 200);
+  assert.deepEqual(deletedKeys, ['videos/6/old-file'], 'tệp R2 cũ phải bị xóa đúng một lần');
+  const row = sql.prepare('SELECT kind,key,url FROM videos WHERE lesson=6').get();
+  assert.equal(row.kind, 'link');
+  assert.equal(row.key, '');
+}
+
+// 6) Thay liên kết bằng liên kết (không có tệp cũ): không gọi xóa R2.
+{
+  deletedKeys.length = 0;
+  const response = await api.POST(request('POST', 'video-link', owner, { lesson: 4, url: `https://youtu.be/${YOUTUBE_ID}` }));
+  assert.equal(response.status, 200);
+  assert.deepEqual(deletedKeys, [], 'không có tệp cũ thì không được xóa R2');
+}
+
+console.log('PASS: dịch vụ video: danh sách rỗng, sắp theo bài, 404 khi không có video, thay tệp bằng liên kết xóa đúng tệp cũ');
