@@ -71,3 +71,14 @@ export async function syncProgress(db: ProgressDb, learnerId: string, read: numb
     ),
   );
 }
+
+// Điểm kiểm tra chỉ tăng, không giảm (quy tắc 4.1). Được gọi từ quiz-service khi lượt làm đúng.
+// Không đặt done hay completed_at: kiểm tra không phải là hoàn thành bài.
+export async function recordQuizPass(db: ProgressDb, learnerId: string, lesson: number, now: string): Promise<void> {
+  await db
+    .prepare(
+      'INSERT INTO progress(learner,lesson,read,done,score,updated,completed_at) VALUES(?,?,0,0,1,?,NULL) ON CONFLICT(learner,lesson) DO UPDATE SET score=MAX(progress.score,excluded.score)',
+    )
+    .bind(learnerId, lesson, now)
+    .run();
+}
