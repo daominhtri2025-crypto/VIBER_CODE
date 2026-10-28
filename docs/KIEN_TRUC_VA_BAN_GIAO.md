@@ -37,7 +37,7 @@
 | GET /api/dashboard | Chỉ quản trị viên; nhận tham số lọc và trả `report` (chi tiết trong DAC) |
 | POST /api/assessment | Chủ website hoặc tình nguyện viên được cấp quyền |
 | POST /api/staff | Chỉ chủ website; cấp/thu hồi quyền đánh giá |
-| POST /api/upload-video | Chỉ chủ website; lưu R2 và gắn vào bài học |
+| POST /api/upload-video | Chỉ chủ website; đếm byte khi đọc (tối đa 27 MB thân yêu cầu, 25 MB tệp); lưu R2 và gắn vào bài học |
 
 ## Quy tắc vận hành
 - OWNER_EMAIL là cấu hình phía máy chủ, không đưa vào mã JavaScript trên trình duyệt.
@@ -65,6 +65,7 @@ Dashboard đối chiếu trước–sau trên cùng mã học viên, lấy phi�
 - Đã chuyển sang dịch vụ dùng chung: `shared/dashboard-summary.ts` (khối dashboard cũ), `shared/staff-service.ts` (POST `/api/staff`), `shared/assessment-service.ts` (POST `/api/assessment`).
 - Nhóm `lessons` đã chuyển sang `shared/lesson-service.ts` (danh mục bài, trả 503 khi thiếu hoặc hỏng dữ liệu).
 - Nhóm xác thực (`role()`, `me()`) đã chuyển sang `shared/identity-service.ts`; kiểm thử trong `tests/identity-service.test.mjs`.
+- Giới hạn tải video: `shared/body-limit.ts` đếm byte khi đọc luồng (không tin `Content-Length`), vượt 27 MB thì hủy luồng và trả 413 trước khi đọc hết. Thân yêu cầu được giữ trong bộ nhớ tới mức giới hạn này; chưa phải phân tích multipart theo luồng. Thời lượng video vẫn do client gửi và được tin tưởng.
 - Nhóm `upload-video` đã chuyển sang `storeUploadedVideo` trong `shared/video-service.ts`, qua Adapter `VideoStorage` cho R2. Thứ tự: kiểm tra, ghi R2, ghi DB (lỗi thì xóa tệp mới), rồi xóa tệp cũ.
 - Nhóm `video-link` đã chuyển vào `shared/video-service.ts` (`replaceWithVideoLink`); route vẫn xóa tệp R2 cũ sau khi ghi DB.
 - Nhóm đọc video (`videos`, `video/:lesson`) đã chuyển sang `shared/video-service.ts`; stream R2 vẫn ở route.
