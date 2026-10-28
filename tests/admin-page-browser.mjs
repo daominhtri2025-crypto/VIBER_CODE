@@ -39,6 +39,7 @@ function reportFor(query) {
     lessons, groups: [{ group: 1, completed: 2, attempts: 3, correct: 1, attemptCorrectRate: 33 }],
     series: [{ period: '2026-10-27', attempts: 3, correct: 1, completions: 2 }],
     prePost: { pairs: 0, beforeAchieved: 0, afterAchieved: 0 },
+    assessmentTotals: { total: 0, achieved: 0 },
   };
 }
 
@@ -150,6 +151,11 @@ try {
     const text = readFileSync(path).subarray(3).toString('utf8');
     assert.ok(text.includes('"\'=HYPERLINK(""http://x"")"'), 'ô công thức chưa được vô hiệu hóa đúng');
     assert.equal(/(^|,)"?=HYPERLINK/m.test(text), false, 'còn ô công thức chưa vô hiệu hóa');
+  });
+
+  check('thẻ tổng quan đếm từ báo cáo máy chủ (2 học viên trong dữ liệu giả lập)', async () => {
+    const first = await page.locator('#metrics .metric strong').first().textContent();
+    assert.equal(first, '2');
   });
 
   check('không có lỗi JavaScript hay lỗi console trên trang', async () => {

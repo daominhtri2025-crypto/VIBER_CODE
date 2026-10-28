@@ -62,8 +62,9 @@ Dashboard đối chiếu trước–sau trên cùng mã học viên, lấy phi�
 - Chưa làm: Tailwind biên dịch tĩnh (Phase 2); FR-KEY và Gemini TTS đang **Hoãn** (xem SRS mục 3.6 và DAC D-02).
 
 ## Nợ kỹ thuật và giới hạn đã biết
-- Khối `dashboard` của `route.ts` đã chuyển truy vấn `learners`, `assessments`, `staff` sang `shared/dashboard-summary.ts`. Các handler khác trong `route.ts` (`me`, `progress`, các POST, `staff`, `videos`, `lessons`) vẫn có SQL trực tiếp, vi phạm CLAUDE.md mục 3. Cần chuyển theo từng nhóm, mỗi nhóm một thay đổi.
-- Phiếu đạt ≥3/5 và tổng số phiếu lấy từ `report.assessmentTotals` của máy chủ. Hàm xuất CSV cũ đã bỏ; khối tự học và phiếu quan sát nay nằm trong CSV báo cáo, không chịu ảnh hưởng bộ lọc.
+- Đã chuyển sang dịch vụ dùng chung: `shared/dashboard-summary.ts` (khối dashboard cũ), `shared/staff-service.ts` (POST `/api/staff`), `shared/assessment-service.ts` (POST `/api/assessment`).
+- Còn SQL trực tiếp trong `route.ts`, vi phạm CLAUDE.md mục 3: hàm `role()` (kiểm tra tình nguyện viên qua bảng `staff`), `me()` và `GET /api/me`, `GET /api/progress/son-tra-so`, `POST /api/progress` và `POST /api/progress/complete`, `POST /api/quiz/answer`, `POST /api/upload-video`, `POST /api/video-link`, `GET /api/videos`, `GET /api/video/:lesson`, `GET /api/lessons`. Cần chuyển theo từng nhóm, mỗi nhóm một thay đổi.
+- Thẻ tổng quan đầu trang (học viên, phiếu quan sát, phiếu đạt) lấy từ `report` của máy chủ; hàm xuất CSV cũ đã bỏ, khối tự học và phiếu quan sát nằm trong CSV báo cáo và không chịu ảnh hưởng bộ lọc.
 - Truy vấn báo cáo chưa đo trên D1 của bản triển khai và chưa có kiểm thử tải đồng thời. Chỉ tiêu NFR-PERF-03 mới đạt trên SQLite trong bộ nhớ.
 - FR-DSH-02 (làm mới 15 giây) chưa có kiểm thử đo khoảng thời gian.
 
