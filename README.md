@@ -6,7 +6,7 @@ Gói bàn giao từ mã nguồn phiên bản triển khai `d97887299c4faab9fbb34
 ## Có trong gói
 - 10 bài học thuộc 5 chủ đề, hướng dẫn bằng chữ và giọng đọc trên trình duyệt.
 - 15 tình huống an toàn số, thực hành biểu mẫu, sổ tay và 11 mã QR.
-- Đăng nhập ChatGPT trên môi trường Sites, đồng bộ tiến độ nhiều thiết bị.
+- Học viên đăng nhập qua Sites để đồng bộ tiến độ nhiều thiết bị; quản trị viên và tình nguyện viên đăng nhập bằng email và mật khẩu.
 - Dashboard tự làm mới mỗi 15 giây; đánh giá quan sát trước–sau và xuất CSV.
 - Phân quyền người học, tình nguyện viên, chủ website.
 - Tải video MP4/WebM dưới 2 phút, tối đa 25 MB vào kho R2.
@@ -25,7 +25,7 @@ npm install -g pnpm@11.25.0
 pnpm install --frozen-lockfile
 ```
 
-Sao chép `.dev.vars.example` thành `.dev.vars`. Giá trị `OWNER_EMAIL=seedy@sites.test` chỉ dành cho đăng nhập mô phỏng trên máy cá nhân.
+Sao chép `.dev.vars.example` thành `.dev.vars`. Giá trị `OWNER_EMAIL=seedy@sites.test` chỉ dành cho đăng nhập mô phỏng trên máy cá nhân. Đặt `ADMIN_PASSWORD` trong `.dev.vars` với một giá trị riêng của bạn; giá trị này chỉ dùng cho lần đăng nhập quản trị đầu tiên, không ghi vào repo.
 
 Build một lần để sinh cấu hình D1 cục bộ:
 
@@ -47,9 +47,9 @@ pnpm dev
 
 Mở địa chỉ terminal thông báo, thường là `http://localhost:5173`.
 - `/home.html`: website học tập.
-- `/admin.html`: giao diện quản trị.
+- `/admin.html`: trang điều phối; cần đăng nhập bằng email và mật khẩu.
 - `/print.html`: tài liệu in.
-- `/signin-with-chatgpt?return_to=/admin.html`: đăng nhập mô phỏng trên máy cá nhân; danh tính mẫu là `seedy@sites.test`.
+- `/signin-with-chatgpt?return_to=/home.html`: đăng nhập học viên mô phỏng trên máy cá nhân; danh tính mẫu là `seedy@sites.test`.
 
 Môi trường cục bộ và dữ liệu thật tách biệt. Không phát máy chủ mô phỏng đăng nhập ra Internet. Tệp `.sites-runtime/execution-profile.json` đã được loại khỏi gói; bản giải nén mặc định dùng profile portable.
 
@@ -64,10 +64,10 @@ pnpm build
 Bài kiểm tra API dùng SQLite trong bộ nhớ và kiểm tra xác thực, chống yêu cầu khác nguồn, tách dữ liệu giữa tài khoản, hợp nhất tiến độ, phân quyền, cấp/thu hồi quyền đánh giá. Đây không phải kiểm thử tải hoặc kiểm thử toàn bộ luồng đăng nhập thật trên trình duyệt.
 
 ## Triển khai
-Bản nguồn này dùng cơ chế xác thực của Sites. Các đường dẫn đăng nhập và danh tính người dùng được nền tảng cung cấp; không có máy chủ OAuth độc lập trong gói.
+Học viên dùng cơ chế xác thực của Sites; các đường dẫn đăng nhập và danh tính được nền tảng cung cấp. Quản trị viên và tình nguyện viên đăng nhập bằng email và mật khẩu do máy chủ quản lý (SRS FR-AUTH). Gói không có máy chủ OAuth độc lập.
 
 1. Tạo hoặc chọn dự án Sites đích. Gói xuất đã bỏ project_id để tránh vô tình cập nhật website đang hoạt động; gắn ID do nền tảng cấp cho dự án đích vào `.openai/hosting.json`.
-2. Giữ binding D1 `DB`, binding R2 `BUCKET`, cấu hình bí mật `OWNER_EMAIL` bằng email của tài khoản chủ dự án đích.
+2. Giữ binding D1 `DB`, binding R2 `BUCKET`, cấu hình bí mật `OWNER_EMAIL` bằng email của tài khoản chủ dự án đích và bí mật `ADMIN_PASSWORD` cho lần đăng nhập quản trị đầu tiên.
 3. Build và áp dụng migration qua quy trình triển khai Sites. Không chạy lại migration cũ trên cơ sở dữ liệu đã có.
 4. Kiểm tra quyền, đăng nhập, đồng bộ hai thiết bị và tải video trước khi phát mã QR.
 5. Nếu dùng tên miền khác, tạo lại 11 QR trong `public/qr/`; QR đi kèm hiện trỏ về website Sơn Trà Số đang triển khai.
@@ -78,7 +78,7 @@ Chạy độc lập trên Cloudflare/Vercel hoặc máy chủ khác cần bổ s
 - Gói không có dữ liệu người học, tài khoản, cơ sở dữ liệu thật, video đã tải lên, mật khẩu hoặc khóa bí mật.
 - Chưa có video quay thực tế kèm theo; quản trị viên tải lên tại `/admin.html`.
 - Dashboard cập nhật theo chu kỳ 15 giây, không dùng WebSocket.
-- Xem bài không cần tài khoản; đồng bộ cần đăng nhập ChatGPT.
+- Xem bài không cần tài khoản; đồng bộ tiến độ cần đăng nhập qua Sites.
 - Kết quả tự đánh dấu tách biệt với đánh giá quan sát của tình nguyện viên.
 - Bản triển khai đã build và kiểm tra logic API. Luồng đăng nhập thật trên trình duyệt, hiệu năng nhiều người đồng thời và thử nghiệm hiện trường cần được xác nhận trước khi sử dụng rộng.
 - Giữ giấy phép trong `build/` khi phân phối thành phần tương ứng.

@@ -9,7 +9,7 @@
 | public/online.js | Đăng nhập, đồng bộ API, video và nút đánh dấu hoàn thành trong bài học |
 | public/home-polish.css, public/slideshow.js | Giao diện trang chủ (CSS thuần) và slideshow đầu trang |
 | shared/ | Quy tắc nghiệp vụ dùng chung (kiểm tra bài học, phiếu, video, tiến độ); được `tsc --strict` kiểm tra |
-| public/admin.html, public/admin.js, public/admin-report.js | Điều phối: báo cáo thống kê (bộ lọc, bảng, CSV có BOM), phân quyền, ghi phiếu quan sát và tải video |
+| public/admin.html, public/admin.js, public/admin-report.js | Điều phối: đăng nhập email và mật khẩu, menu bên trái, tài khoản tình nguyện viên, báo cáo thống kê (bộ lọc, bảng, CSV có BOM), ghi phiếu quan sát và tải video |
 | public/print.html, public/qr | Sổ tay, poster, phiếu và mã QR |
 | app/api/[...path]/route.ts | API máy chủ, kiểm tra quyền và lưu D1/R2 |
 | db/schema.ts | Schema Drizzle |
@@ -24,11 +24,21 @@
 - quiz_attempts: mỗi lượt làm bài kiểm tra một dòng (bài, lựa chọn, `correct` do máy chủ tính, `client_id`); unique theo `(learner, client_id)`. Không sửa hay xóa lịch sử qua API.
 - staff: email tài khoản được quyền đánh giá.
 - videos: bài học, khóa tệp trong R2, loại video, thời lượng và thời gian cập nhật.
+- accounts (migration 0006): tài khoản quản trị và tình nguyện viên; mật khẩu chỉ lưu dạng băm PBKDF2-SHA256, kèm số lần sai, thời điểm khóa tạm và cờ buộc đổi mật khẩu.
+- sessions (migration 0006): phiên đăng nhập; chỉ lưu băm SHA-256 của mã phiên, không lưu mã gốc.
 
 ## API
 | Phương thức / đường dẫn | Quyền |
 |---|---|
-| GET /api/me | Khách xem trạng thái; người đăng nhập xem tiến độ của mình |
+| GET /api/me | Khách xem trạng thái; học viên xem tiến độ của mình; quản trị viên và tình nguyện viên nhận thêm đối tượng `account` (vai trò, email, họ tên, cờ buộc đổi mật khẩu) |
+| POST /api/auth/login | Công khai; đăng nhập bằng email và mật khẩu, khóa tạm 15 phút sau 5 lần sai (423). Đặt cookie `st_session` |
+| POST /api/auth/logout | Đăng xuất phiên hiện tại và xóa cookie |
+| POST /api/auth/password | Mọi vai trò đã đăng nhập; đổi mật khẩu (cần mật khẩu hiện tại), đăng xuất các phiên khác |
+| POST /api/auth/profile | Mọi vai trò đã đăng nhập; sửa họ tên |
+| GET /api/accounts | Chỉ quản trị viên; danh sách tài khoản tình nguyện viên |
+| POST /api/accounts | Chỉ quản trị viên; tạo tài khoản với mật khẩu tạm (201; 409 nếu trùng email) |
+| POST /api/accounts/reset | Chỉ quản trị viên; đặt lại mật khẩu tạm, buộc đổi ở lần đăng nhập kế tiếp, đăng xuất phiên cũ |
+| POST /api/accounts/status | Chỉ quản trị viên; vô hiệu hóa hoặc kích hoạt lại; vô hiệu hóa đăng xuất phiên cũ |
 | POST /api/progress | Người đăng nhập, chỉ tiến độ của chính mình (đồng bộ, hợp nhất theo giá trị lớn nhất) |
 | POST /api/progress/complete | Người đăng nhập; ghi nhận hoàn thành một bài, idempotent, không đảo ngược |
 | GET /api/progress/son-tra-so | Người đăng nhập; tỷ lệ hoàn thành khóa học của chính mình (401 nếu chưa đăng nhập, 404 nếu sai mã khóa) |
@@ -41,7 +51,8 @@
 
 ## Quy tắc vận hành
 - OWNER_EMAIL là cấu hình phía máy chủ, không đưa vào mã JavaScript trên trình duyệt.
-- Danh tính phải do lớp xác thực Sites cung cấp. Cấp quyền tình nguyện viên không trao quyền xem toàn bộ dữ liệu.
+- Học viên xác định bằng danh tính do lớp xác thực Sites cung cấp. Quản trị viên và tình nguyện viên xác định bằng cookie phiên `st_session` (FR-AUTH). Cấp quyền tình nguyện viên không trao quyền xem toàn bộ dữ liệu.
+- Tình nguyện viên chỉ ghi phiếu khi tài khoản hoạt động, có trong `staff`, và không còn cờ buộc đổi mật khẩu (SRS FR-AUTH-10).
 - API ghi dữ liệu kiểm tra Origin cùng website và kiểm tra quyền phía máy chủ.
 - Tiến độ hợp nhất theo giá trị lớn nhất để tránh mất tiến độ khi hai thiết bị cập nhật xen kẽ; không có chức năng đặt lại tiến độ trực tuyến trong phiên bản này.
 - "Hoàn thành" và "tự thực hành" chỉ là tự xác nhận của học viên, không phải bằng chứng năng lực (quy tắc 4.7). Tỷ lệ khóa học tính trên số bài có done = 1.
@@ -54,7 +65,8 @@
 Dashboard đối chiếu trước–sau trên cùng mã học viên, lấy phiếu mới nhất cho từng lần đo và chỉ đưa vào nhóm đủ cả 5 phép đo ở hai lần. Không xem việc đọc bài là bằng chứng đã thành thạo.
 
 ## Hiện trạng Phase 1
-- Đã có migration `0000`–`0005`. Migration `0005` chỉ thêm chỉ mục cho báo cáo, không đổi dữ liệu hay bảng.
+- Đã có migration `0000`–`0006`. Migration `0005` chỉ thêm chỉ mục cho báo cáo, không đổi dữ liệu hay bảng. Migration `0006` chỉ tạo bảng `accounts` và `sessions` mới, không đổi dữ liệu cũ.
+- Đăng nhập quản trị và tình nguyện viên (FR-AUTH) đã triển khai trong `shared/auth-service.ts`, kiểm thử trong `tests/auth.test.mjs`. Chưa kiểm thử trên Sites (cookie, `Origin`).
 - Báo cáo quản trị: `GET /api/dashboard` lọc theo khoảng thời gian, bài, nhóm và kỳ; giao diện `public/admin-report.js`; CSV UTF-8 có BOM. Kiểm thử: `npm test` và kiểm thử trình duyệt 360px (`tests/admin-page-browser.mjs`, chạy thủ công).
 - Migration `0000`–`0005` đã áp dụng thử trên D1 cục bộ (Wrangler) không lỗi. Chưa áp dụng trên D1 của bản triển khai Sites.
 - Bài kiểm tra trắc nghiệm do máy chủ chấm (`POST /api/quiz/answer`, bảng `quiz_attempts` ở migration `0004`). Đáp án không có trong `GET /api/lessons`. Dashboard hiển thị số lần làm bài và tỷ lệ đúng, ghi chú là "kiểm tra hiểu bài nội bộ".
