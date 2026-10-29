@@ -2,6 +2,7 @@ import { DatabaseSync } from 'node:sqlite';
 import assert from 'node:assert/strict';
 import { applyMigrations } from './migrate-helper.mjs';
 import { loadApi } from './route-harness.mjs';
+import { ownerCookie, volunteerCookie } from './auth-helper.mjs';
 
 // Kiểm thử Mục 2 (bài kiểm tra trắc nghiệm): máy chủ chấm, ẩn đáp án, idempotency theo client_id,
 // lịch sử lượt làm, cô lập học viên, đóng đường nhận điểm từ client, dashboard, migration 0004.
@@ -9,8 +10,9 @@ import { loadApi } from './route-harness.mjs';
 
 const ORIGIN = 'https://site.test';
 
-function request(path, { id, email, body, origin = ORIGIN } = {}) {
+function request(path, { id, email, body, origin = ORIGIN, cookie } = {}) {
   const headers = {};
+  if (cookie) headers.cookie = cookie;
   if (id) {
     headers['oai-authenticated-user-id'] = id;
     headers['oai-authenticated-user-email'] = email;
@@ -164,7 +166,7 @@ const rightA = quizOf(0).answer;
 
 // 12) Dashboard: số lượt và tỷ lệ đúng (quyết định 4). Học viên chưa làm bài có tỷ lệ null, không phải 0.
 {
-  const dash = await (await get('dashboard', { id: 'owner', email: 'owner@example.test' })).json();
+  const dash = await (await get('dashboard', { cookie: await ownerCookie(api) })).json();
   const rowA = dash.learners.find((l) => l.code === a.code);
   const rowB = dash.learners.find((l) => l.code === b.code);
   const rowC = dash.learners.find((l) => l.code === c.code);

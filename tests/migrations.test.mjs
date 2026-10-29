@@ -13,7 +13,10 @@ const tryRun = (fn) => { try { fn(); return null; } catch (error) { return Strin
   const sql = new DatabaseSync(':memory:');
   sql.exec('PRAGMA foreign_keys = ON');
   const tags = applyMigrations(sql);
-  assert.equal(tags.length, 6, 'journal phải có 6 migration (0000–0005)');
+  assert.equal(tags.length, 7, 'journal phải có 7 migration (0000–0006)');
+  // 0006: bảng tài khoản và phiên; session xóa theo tài khoản (ON DELETE CASCADE).
+  assert.ok(columns(sql, 'accounts').includes('password_hash'), 'accounts.password_hash phải tồn tại (0006)');
+  assert.ok(columns(sql, 'sessions').includes('token_hash'), 'sessions.token_hash phải tồn tại (0006)');
   const indexes = (sql, table) => sql.prepare(`PRAGMA index_list(${table})`).all().map((i) => i.name);
   for (const name of ['progress_lesson_idx', 'progress_completed_at_idx']) {
     assert.ok(indexes(sql, 'progress').includes(name), `chỉ mục ${name} phải tồn tại (0005)`);
@@ -97,7 +100,7 @@ const tryRun = (fn) => { try { fn(); return null; } catch (error) { return Strin
   sql.prepare("INSERT INTO quiz_attempts (id, learner, lesson, choice, correct, client_id, created) VALUES ('q1','l1',4,0,1,'idx-test-0001','2026-01-03T00:00:00Z')").run();
   const tablesBefore = sql.prepare("SELECT name, sql FROM sqlite_master WHERE type='table' ORDER BY name").all().map((r) => `${r.name}|${r.sql}`);
 
-  applyMigrations(sql, { from: 5 });
+  applyMigrations(sql, { from: 5, to: 6 }); // chỉ 0005: kiểm thử này không áp dụng 0006
 
   const tablesAfter = sql.prepare("SELECT name, sql FROM sqlite_master WHERE type='table' ORDER BY name").all().map((r) => `${r.name}|${r.sql}`);
   assert.deepEqual(tablesAfter, tablesBefore, '0005 không được đổi định nghĩa bảng (chỉ CREATE INDEX)');

@@ -2,6 +2,7 @@ import { DatabaseSync } from 'node:sqlite';
 import assert from 'node:assert/strict';
 import { applyMigrations } from './migrate-helper.mjs';
 import { loadApi } from './route-harness.mjs';
+import { ownerCookie, volunteerCookie } from './auth-helper.mjs';
 
 // Kiểm thử FR-OBS-04 và quy tắc 4.2, 4.3 (CLAUDE.md mục 4, 7).
 // Lỗi tái hiện: trước commit 1.3, gửi lại cùng phiếu tạo hai bản ghi trùng.
@@ -14,7 +15,9 @@ const api = await loadApi(sql);
 
 const call = (method, path, identity, body) => {
   const headers = {};
-  if (identity) {
+  if (identity?.cookie) {
+    headers.cookie = identity.cookie;
+  } else if (identity?.id) {
     headers['oai-authenticated-user-id'] = identity.id;
     headers['oai-authenticated-user-email'] = identity.email;
   }
@@ -33,6 +36,9 @@ const volunteer = { id: 'vol-1', email: 'v1@test.test' };
 const otherVolunteer = { id: 'vol-2', email: 'v2@test.test' };
 const learner = { id: 'learner-1', email: 'hv1@test.test' };
 const otherLearner = { id: 'learner-2', email: 'hv2@test.test' };
+owner.cookie = await ownerCookie(api);
+volunteer.cookie = await volunteerCookie(api, volunteer.email);
+otherVolunteer.cookie = await volunteerCookie(api, otherVolunteer.email);
 
 // Thiết lập: tạo hai học viên (qua /api/me) và cấp quyền cho hai tình nguyện viên.
 const learnerCode = (await (await call('GET', 'me', learner)).json()).code;

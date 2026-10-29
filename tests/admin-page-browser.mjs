@@ -1,5 +1,5 @@
 import { createServer } from 'node:http';
-import { readFileSync, mkdirSync } from 'node:fs';
+import { readFileSync, mkdirSync, rmSync } from 'node:fs';
 import { join, extname } from 'node:path';
 import { createRequire } from 'node:module';
 import assert from 'node:assert/strict';
@@ -48,7 +48,9 @@ const server = createServer((req, res) => {
   if (url.pathname.startsWith('/api/')) {
     requests.push(url.pathname + url.search);
     const json = (data) => { res.writeHead(200, { 'Content-Type': 'application/json' }); res.end(JSON.stringify(data)); };
-    if (url.pathname === '/api/me') return json({ authenticated: true, admin: true, volunteer: true, code: 'ST-ADMIN', progress: [] });
+    // Luồng đăng nhập mới (SRS FR-AUTH): /api/me trả `account` khi đã đăng nhập; thiếu `account` thì trang hiện màn đăng nhập.
+    if (url.pathname === '/api/me') return json({ authenticated: true, admin: true, volunteer: true, code: 'ST-ADMIN', progress: [], account: { role: 'admin', email: 'chu-website', fullName: 'Quản trị viên', mustChange: false } });
+    if (url.pathname === '/api/accounts') return json({ accounts: [{ id: 'v1', email: 'tnv-thu@example.test', full_name: 'Tình nguyện viên thử', active: 1, must_change: 1, created: new Date().toISOString() }] });
     if (url.pathname === '/api/lessons') return json({ groups: GROUPS, lessons: LESSONS.map((l) => ({ ...l, icon: '', summary: '', steps: [], quiz: { question: '', options: [] }, next_step: '' })) });
     if (url.pathname === '/api/videos') return json([]);
     if (url.pathname === '/api/dashboard') return json({ learners: [], assessments: [], staff: [], at: new Date().toISOString(), report: reportFor(url.searchParams) });
@@ -76,6 +78,8 @@ try {
   page.on('console', (message) => { if (message.type() === 'error') consoleErrors.push(message.text()); });
   await page.goto(base + '/admin.html');
   await page.waitForFunction(() => document.getElementById('rptStatus').textContent.startsWith('Đã cập nhật'), null, { timeout: 5000 });
+  // Phần báo cáo nằm trong panel riêng; phải mở panel trước khi thao tác (fill/click cần phần tử hiển thị).
+  await page.click('#adminNav [data-panel="reportSection"]');
 
   check('360px: không cuộn ngang trang', async () => {
     const width = await page.evaluate(() => document.documentElement.scrollWidth);
@@ -134,8 +138,10 @@ try {
   });
 
   check('xuất CSV: tệp bắt đầu bằng BOM UTF-8, có tiêu đề tiếng Việt', async () => {
-    const [download] = await Promise.all([page.waitForEvent('download'), page.click('#rptExport')]);
     const path = join(shotDir, 'son-tra-bao-cao.csv');
+    // Xóa tệp của lần chạy trước để ca kiểm tra không đạt nhờ dữ liệu cũ.
+    rmSync(path, { force: true });
+    const [download] = await Promise.all([page.waitForEvent('download'), page.click('#rptExport')]);
     await download.saveAs(path);
     const bytes = readFileSync(path);
     assert.deepEqual([...bytes.subarray(0, 3)], [0xef, 0xbb, 0xbf], 'thiếu BOM UTF-8');
@@ -168,6 +174,8 @@ try {
 } finally {
   failedCount = await runChecks();
   await browser.close();
+  // Đóng kết nối keep-alive còn lại; nếu không, tiến trình không thoát sau khi kiểm thử xong.
+  server.closeAllConnections();
   server.close();
 }
 if (failedCount) process.exit(1);

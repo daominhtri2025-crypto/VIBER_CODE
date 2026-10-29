@@ -2,6 +2,7 @@ import { DatabaseSync } from 'node:sqlite';
 import assert from 'node:assert/strict';
 import { applyMigrations } from './migrate-helper.mjs';
 import { loadApi } from './route-harness.mjs';
+import { ownerCookie, volunteerCookie } from './auth-helper.mjs';
 
 // Kiểm thử dịch vụ ghi phiếu quan sát qua route.ts thật trên SQLite thật (CLAUDE.md mục 7).
 // Bổ sung cho assessment-idempotency.test.mjs: 403, 404 khi mã học viên không có, chuẩn hóa mã, phát lại không tạo bản mới.
@@ -16,11 +17,14 @@ applyMigrations(sql);
 const api = await loadApi(sql);
 sql.prepare('INSERT INTO staff(email, created) VALUES (?, ?)').run(VOLUNTEER.email, '2026-10-01T00:00:00.000Z');
 sql.prepare('INSERT INTO learners(id, code, created) VALUES (?, ?, ?)').run(LEARNER.id, 'ST-AS-1', '2026-10-01T00:00:00.000Z');
+VOLUNTEER.cookie = await volunteerCookie(api, VOLUNTEER.email);
 
 const CLIENT = 'as-client-0001';
 function post(who, body) {
   const headers = { origin: ORIGIN, 'Content-Type': 'application/json' };
-  if (who?.id) {
+  if (who?.cookie) {
+    headers.cookie = who.cookie;
+  } else if (who?.id) {
     headers['oai-authenticated-user-id'] = who.id;
     headers['oai-authenticated-user-email'] = who.email;
   }

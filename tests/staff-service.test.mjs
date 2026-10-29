@@ -2,6 +2,7 @@ import { DatabaseSync } from 'node:sqlite';
 import assert from 'node:assert/strict';
 import { applyMigrations } from './migrate-helper.mjs';
 import { loadApi } from './route-harness.mjs';
+import { ownerCookie, volunteerCookie } from './auth-helper.mjs';
 
 // Kiểm thử dịch vụ phân quyền tình nguyện viên (FR-ADM; CLAUDE.md mục 7): chạy route.ts thật trên SQLite thật.
 // Bổ sung cho api.test.mjs: email sai, body hỏng, chuẩn hóa chữ hoa, khoảng trắng bị từ chối, thêm lại không trùng, thu hồi, cross-origin.
@@ -14,10 +15,16 @@ const sql = new DatabaseSync(':memory:');
 sql.exec('PRAGMA foreign_keys = ON');
 applyMigrations(sql);
 const api = await loadApi(sql, { ownerEmail: OWNER.email });
+OWNER.cookie = await ownerCookie(api);
+VOLUNTEER.cookie = await volunteerCookie(api, VOLUNTEER.email);
+// Kiểm thử này chỉ kiểm tra quyền của /api/staff; xóa dòng staff tự tạo để staffEmails() bắt đầu rỗng như trước.
+sql.prepare('DELETE FROM staff').run();
 
 function post(body, who = OWNER, { origin = ORIGIN, raw } = {}) {
   const headers = { origin, 'Content-Type': 'application/json' };
-  if (who?.id) {
+  if (who?.cookie) {
+    headers.cookie = who.cookie;
+  } else if (who?.id) {
     headers['oai-authenticated-user-id'] = who.id;
     headers['oai-authenticated-user-email'] = who.email;
   }

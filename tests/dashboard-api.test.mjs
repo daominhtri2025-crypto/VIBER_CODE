@@ -2,6 +2,7 @@ import { DatabaseSync } from 'node:sqlite';
 import assert from 'node:assert/strict';
 import { applyMigrations } from './migrate-helper.mjs';
 import { loadApi } from './route-harness.mjs';
+import { ownerCookie, volunteerCookie } from './auth-helper.mjs';
 
 // Kiểm thử API GET /api/dashboard với báo cáo lọc (Bước 4; FR-DSH-01 đến 07; FR-OBS-05).
 // Chạy route.ts thật trên SQLite thật (CLAUDE.md mục 7). Dữ liệu được chèn trực tiếp để mọi kết quả tính tay được.
@@ -14,7 +15,9 @@ const LEARNER = { id: 'api-l1', email: 'l1@test.test' };
 
 function request(path, who = {}) {
   const headers = {};
-  if (who.id) {
+  if (who?.cookie) {
+    headers.cookie = who.cookie;
+  } else if (who?.id) {
     headers['oai-authenticated-user-id'] = who.id;
     headers['oai-authenticated-user-email'] = who.email;
   }
@@ -33,6 +36,8 @@ const getJson = async (path, who = OWNER) => {
 
 // Dữ liệu cố định: học viên L1 và L2, lượt làm, hoàn thành và phiếu đánh giá.
 sql.prepare("INSERT INTO staff(email, created) VALUES (?, ?)").run(VOLUNTEER.email, '2026-10-01T00:00:00.000Z');
+OWNER.cookie = await ownerCookie(api);
+VOLUNTEER.cookie = await volunteerCookie(api, VOLUNTEER.email);
 sql.prepare('INSERT INTO learners(id, code, created) VALUES (?, ?, ?)').run('api-l1', 'ST-API-1', '2026-10-01T00:00:00.000Z');
 sql.prepare('INSERT INTO learners(id, code, created) VALUES (?, ?, ?)').run('api-l2', 'ST-API-2', '2026-10-01T00:00:00.000Z');
 const attempt = sql.prepare('INSERT INTO quiz_attempts(id, learner, lesson, choice, correct, client_id, created) VALUES (?, ?, ?, ?, ?, ?, ?)');

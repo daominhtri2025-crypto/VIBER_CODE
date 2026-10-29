@@ -2,6 +2,7 @@ import { DatabaseSync } from 'node:sqlite';
 import assert from 'node:assert/strict';
 import { applyMigrations } from './migrate-helper.mjs';
 import { loadApi, loadShared } from './route-harness.mjs';
+import { ownerCookie, volunteerCookie } from './auth-helper.mjs';
 
 // Kiểm thử giới hạn đọc thân yêu cầu (shared/body-limit.ts; CLAUDE.md mục 2B.2, 2B.11, 7).
 // Mục tiêu: vượt giới hạn thì dừng đọc sớm, không tin Content-Length, và upload-video trả 413 mà không đọc hết.
@@ -89,8 +90,7 @@ function requestWith(stream, headers = {}) {
     method: 'POST',
     headers: {
       origin: ORIGIN,
-      'oai-authenticated-user-id': 'owner',
-      'oai-authenticated-user-email': 'owner@example.test',
+      cookie: await ownerCookie(api),
       'content-type': 'multipart/form-data; boundary=x',
     },
     body: stream,

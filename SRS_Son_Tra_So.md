@@ -3,7 +3,7 @@
 | Thông tin | Nội dung |
 |---|---|
 | Tên sản phẩm | Sơn Trà Số — nền tảng học và thực hành kỹ năng số cơ bản |
-| Phiên bản tài liệu | 1.1 (bản nháp để phê duyệt) |
+| Phiên bản tài liệu | 1.2 (bản nháp để phê duyệt) |
 | Ngày lập | 20/10/2026 |
 | Cấu trúc tham chiếu | ISO/IEC/IEEE 29148:2018, rút gọn cho dự án quy mô nhỏ |
 | Người phê duyệt | [Cần bổ sung: họ tên, chức vụ] |
@@ -19,6 +19,7 @@
 |---|---|---|---|
 | 1.0 | 20/10/2026 | [Cần bổ sung] | Lập bản nháp từ mã nguồn v4 và đặc tả full-stack |
 | 1.1 | 20/10/2026 | [Cần bổ sung] | Thêm quản lý khóa API trong bộ nhớ tạm (FR-KEY, chỉ máy chủ cục bộ); thêm tải lên và ghi âm tệp đọc bài (FR-CNT-10 đến FR-CNT-17); bổ sung NFR-SEC-06 đến NFR-SEC-10; thêm UC-06, UC-07; bổ sung câu hỏi mở 8–10 |
+| 1.2 | 29/10/2026 | [Cần bổ sung] | Thêm đăng nhập bằng email và mật khẩu cho quản trị viên và tình nguyện viên (mục 3.7, FR-AUTH-01 đến FR-AUTH-10); cập nhật vai trò xác thực (Mục 2.2); thay FR-ADM-04 và FR-ADM-05 bằng tham chiếu tới FR-AUTH; đổi NFR-SEC-05 sang SameSite=Lax; bổ sung truy vết và câu hỏi mở 11–12 |
 
 ---
 
@@ -92,8 +93,8 @@ Người dân phường Sơn Trà, đặc biệt người lớn tuổi, cần th
 |---|---|---|
 | Khách | Xem trang chủ, danh sách bài, video công khai | Không cần |
 | Học viên | Học bài, làm kiểm tra, xem tiến độ của mình | Đăng nhập qua Sites (bản Sites) |
-| Tình nguyện viên | Ghi phiếu quan sát | Đăng nhập qua Sites; email trong danh sách được cấp quyền |
-| Chủ website | Toàn quyền: dashboard, cấp quyền, đăng video, quản trị bài | Email được cấu hình là chủ sở hữu (phía máy chủ) |
+| Tình nguyện viên | Ghi phiếu quan sát | Email và mật khẩu do quản trị viên cấp (FR-AUTH); email phải nằm trong danh sách được cấp quyền |
+| Chủ website | Toàn quyền: dashboard, cấp quyền, đăng video, quản trị bài, quản lý tài khoản | Email và mật khẩu; email là email chủ sở hữu cấu hình phía máy chủ; mật khẩu lần đầu lấy từ `ADMIN_PASSWORD` (FR-AUTH-06) |
 | Quản trị cục bộ | Thêm bài, tải video, tạo âm thanh trên máy chủ cục bộ | Mật khẩu đặt qua biến môi trường |
 
 ### 2.3. Ràng buộc
@@ -164,8 +165,8 @@ Người dân phường Sơn Trà, đặc biệt người lớn tuổi, cần th
 | FR-ADM-01 | Cấp quyền tình nguyện viên theo email | M | Email được thêm vào danh sách; có thể kiểm tra quyền ngay |
 | FR-ADM-02 | Thu hồi quyền tình nguyện viên | M | Sau khi thu hồi, yêu cầu ghi phiếu bị từ chối |
 | FR-ADM-03 | Kiểm tra email hợp lệ trước khi lưu | M | Email sai định dạng bị từ chối |
-| FR-ADM-04 | Đăng nhập quản trị cục bộ bằng mật khẩu | M | Sai mật khẩu trả 401; quá 5 lần sai trong 15 phút bị chặn tạm thời |
-| FR-ADM-05 | Phiên quản trị cục bộ hết hạn sau 8 giờ | M | Sau 8 giờ, yêu cầu quản trị bị từ chối |
+| FR-ADM-04 | Đăng nhập quản trị bằng email và mật khẩu | M | Xem FR-AUTH-01 và FR-AUTH-03 |
+| FR-ADM-05 | Phiên quản trị hết hạn sau 12 giờ (đã xác nhận 2026-10-29, thay cho 8 giờ ở bản 1.1) | M | Xem FR-AUTH-05 |
 
 ### 3.5. Quản trị nội dung (FR-CNT)
 
@@ -207,6 +208,25 @@ Khóa API được nhập trực tiếp trên dashboard quản trị của máy 
 | FR-KEY-09 | Kiểm tra đầu vào: từ chối giá trị rỗng, có khoảng trắng hoặc ký tự điều khiển; độ dài tối thiểu 20 ký tự | S | Dữ liệu sai bị từ chối với mã 400 |
 
 **Ghi chú về bản che:** không kiểm tra hay hiển thị tiền tố của khóa (ví dụ `AIza`), vì định dạng có thể thay đổi và tiền tố làm lộ loại khóa. Chỉ hiển thị 4 ký tự cuối.
+
+---
+
+### 3.7. Đăng nhập, phiên và tài khoản (FR-AUTH)
+
+Áp dụng cho quản trị viên (chủ website) và tình nguyện viên trên cả hai môi trường. Mục này thay thế cách xác thực cũ bằng mật khẩu chung và bằng header của Sites đối với hai vai trò này. Học viên vẫn xác định bằng header danh tính của nền tảng Sites (xem Mục 2.5).
+
+| Mã | Yêu cầu | Ưu tiên | Tiêu chí chấp nhận |
+|---|---|---|---|
+| FR-AUTH-01 | Quản trị viên và tình nguyện viên đăng nhập bằng email và mật khẩu; trang điều phối chỉ hiển thị nội dung sau khi đăng nhập | M | Sai email hoặc mật khẩu trả cùng một thông báo chung (401), không tiết lộ email có tồn tại hay không |
+| FR-AUTH-02 | Chính sách mật khẩu khi tạo, đặt lại và đổi: từ 10 đến 200 ký tự. Khi đăng nhập không kiểm tra độ dài để không lộ chính sách cho người thử đoán | M | Mật khẩu 9 ký tự bị từ chối ở các thao tác tạo, đặt lại và đổi |
+| FR-AUTH-03 | Sau 5 lần đăng nhập sai liên tiếp của một tài khoản, khóa tạm 15 phút | M | Yêu cầu trong thời gian khóa trả 423 kèm thời gian chờ; sau khi hết hạn khóa, đăng nhập đúng thì thành công |
+| FR-AUTH-04 | Mật khẩu chỉ lưu dạng băm PBKDF2-SHA256 (100 000 vòng, muối ngẫu nhiên); mã phiên chỉ lưu dạng băm SHA-256 | M | Quét cơ sở dữ liệu không thấy mật khẩu hoặc mã phiên dạng rõ |
+| FR-AUTH-05 | Cookie phiên `st_session` có HttpOnly, Secure, SameSite=Lax; phiên hết hạn sau 12 giờ kể từ khi đăng nhập (đã xác nhận 2026-10-29) | M | Phiên quá hạn bị từ chối; JavaScript không đọc được cookie |
+| FR-AUTH-06 | Tài khoản quản trị (chủ website) được tạo từ biến môi trường `ADMIN_PASSWORD` ở lần đăng nhập đầu tiên duy nhất; sau đó mật khẩu chỉ còn dạng băm và được đổi trong trang tài khoản. Mã nguồn và tài liệu không chứa giá trị mặc định (đã xác nhận 2026-10-29, Mục 9.2, câu 11) | M | Không có mật khẩu trong mã nguồn, tài liệu, nhật ký; đổi `ADMIN_PASSWORD` sau khi tài khoản đã tồn tại không đổi mật khẩu |
+| FR-AUTH-07 | Quản trị viên tạo tài khoản tình nguyện viên với mật khẩu tạm; tài khoản phải đổi mật khẩu ở lần đăng nhập kế tiếp trước khi dùng chức năng khác | M | Khi cờ buộc đổi còn bật, mọi API nghiệp vụ trả 403 và giao diện chỉ mở mục tài khoản của chính mình |
+| FR-AUTH-08 | Quản trị viên đặt lại mật khẩu tạm hoặc vô hiệu hóa tài khoản; thao tác này đăng xuất mọi phiên của tài khoản đó | M | Phiên cũ bị từ chối ngay sau khi đặt lại hoặc vô hiệu hóa |
+| FR-AUTH-09 | Mọi vai trò tự đổi mật khẩu (cần mật khẩu hiện tại) và tự sửa họ tên; đổi mật khẩu đăng xuất các phiên khác | M | Sai mật khẩu hiện tại bị từ chối; phiên khác mất hiệu lực |
+| FR-AUTH-10 | Tình nguyện viên chỉ ghi phiếu quan sát khi tài khoản đang hoạt động, email nằm trong danh sách được cấp quyền và không còn cờ buộc đổi mật khẩu; không xem dashboard tổng hợp và không quản lý tài khoản | M | Kiểm thử riêng từng trường hợp: tài khoản bị vô hiệu hóa, chưa được cấp quyền, còn cờ buộc đổi đều bị từ chối ghi phiếu |
 
 ---
 
@@ -286,7 +306,7 @@ Các endpoint được liệt kê trong `DAC_TA_Son_Tra_So_fullstack.md`, Mục 
 | NFR-SEC-02 | Bảo mật | Chống giả mạo danh tính qua header | Kiểm thử đạt |
 | NFR-SEC-03 | Bảo mật | Kiểm tra `Origin` trên mọi yêu cầu ghi | Kiểm thử đạt |
 | NFR-SEC-04 | Bảo mật | Thông báo lỗi không chứa khóa, stack trace | Kiểm thử đạt |
-| NFR-SEC-05 | Bảo mật | Cookie quản trị: HttpOnly, SameSite=Strict | Kiểm thử đạt |
+| NFR-SEC-05 | Bảo mật | Cookie phiên: HttpOnly, Secure, SameSite=Lax (bản 1.2 đổi từ Strict; xem FR-AUTH-05) | Kiểm thử đạt trên máy chủ; kiểm thử trên Sites `[Cần xác minh]` |
 | NFR-SEC-06 | Bảo mật | Khóa API chỉ tồn tại trong bộ nhớ tiến trình cục bộ; không ghi ra đĩa, cơ sở dữ liệu, bộ nhớ trình duyệt, cookie hoặc nhật ký | Rà soát mã và kiểm thử quét đĩa |
 | NFR-SEC-07 | Bảo mật | Mọi thông báo lỗi và nhật ký che khóa và chuỗi giống khóa (thay bằng `[đã ẩn]`) | Kiểm thử đạt |
 | NFR-SEC-08 | Bảo mật | Tệp tải lên: đếm kích thước khi nhận luồng, dừng ở 10 MB; kiểm tra chữ ký; tên tệp trên đĩa do máy chủ tạo | Kiểm thử đạt |
@@ -402,6 +422,8 @@ Các endpoint được liệt kê trong `DAC_TA_Son_Tra_So_fullstack.md`, Mục 
 | FR-ADM-04 | `server-local/server.mjs` | `local-server.test.mjs` | Ghi trong hồ sơ |
 | FR-KEY-02, FR-KEY-03 | `server-local/` (dự kiến) | Chưa có | Chưa triển khai |
 | FR-CNT-11, FR-CNT-12 | `server-local/` (dự kiến) | Chưa có | Chưa triển khai |
+| FR-AUTH-01 đến FR-AUTH-10 | `shared/auth-service.ts`, `shared/auth-rules.ts`, `shared/password-hash.ts`, `app/api/[...path]/route.ts` | `tests/auth.test.mjs` (qua `npm test`) | Tự động: npm test đạt trên SQLite; chưa kiểm thử trên Sites (cookie, Origin) |
+| FR-AUTH-03, FR-AUTH-07 đến FR-AUTH-10 (giao diện) | `public/admin.js`, `public/admin.html` | `tests/admin-page-browser.mjs` (chỉ kiểm thử trang đã đăng nhập) | Chưa kiểm chứng luồng màn hình đăng nhập và đổi mật khẩu bắt buộc trên trình duyệt |
 
 Cột "Minh chứng" cần cập nhật sau khi có ảnh chụp màn hình hoặc biên bản nghiệm thu.
 
@@ -416,4 +438,7 @@ Cột "Minh chứng" cần cập nhật sau khi có ảnh chụp màn hình ho�
 7. Ai là người phê duyệt tài liệu và nghiệm thu?
 8. **Ghi âm WebM:** Chrome thường xuất WebM khi ghi âm trực tiếp, trong khi danh sách tải lên không có WebM. Chọn một trong ba: (a) chấp nhận WebM chỉ cho ghi âm trực tiếp (khuyến nghị), (b) chuyển WebM sang MP3 phía máy chủ bằng ffmpeg khi có, (c) chỉ cho tải tệp có sẵn, bỏ FR-CNT-13.
 9. **Nguồn `none` và tệp tải lên:** khi nguồn được đặt là `none` nhưng vẫn có tệp đã tải lên, theo FR-CNT-15 bản này không phát. Xác nhận hành vi này, hoặc đổi thành "tệp tải lên luôn được phát".
-10. **Nguồn `tts` và tệp tải lên:** theo yêu cầu, tệp tải lên được ưu tiên. Xác nhận có cần giữ bản TTS đã tạo để dự phòng khi xóa tệp tải lên không.
+10. **Nguồn `tts` và tệp tải lên — ĐÃ QUYẾT ĐỊNH (2026-10-29):** tệp tải lên được ưu tiên hơn TTS. Khi bài không có tệp tải lên, TTS đóng vai trò dự phòng. Áp dụng cho FR-CNT-15 và Mục 4.10 của CLAUDE.md.
+11. **Mật khẩu quản trị lần đầu (FR-AUTH-06) — ĐÃ QUYẾT ĐỊNH (2026-10-29):** hệ thống không có mật khẩu mặc định trong mã. Chủ website đặt `ADMIN_PASSWORD` làm bí mật trên môi trường trước lần đăng nhập đầu, đăng nhập ngay và đổi mật khẩu trong trang tài khoản. Lưu ý: trước lần đăng nhập đầu chưa có tài khoản nên khóa 5 lần sai (FR-AUTH-03) chưa áp dụng; giá trị `ADMIN_PASSWORD` cần đủ mạnh.
+12. **Thời hạn phiên và cookie:** thời hạn phiên 12 giờ — ĐÃ QUYẾT ĐỊNH (2026-10-29), thay cho 8 giờ ở FR-ADM-05 bản 1.1. Thuộc tính cookie SameSite vẫn chờ quyết định: mã dùng `Lax`, NFR-SEC-05 bản 1.1 ghi `Strict`. `[Cần xác nhận: Lax hay Strict]`.
+13. **Đường dẫn không có đuôi `.html` trên Sites — ĐÃ XÁC NHẬN (2026-10-29):** người phụ trách xác nhận đường dẫn `/admin` truy cập được trang quản trị trên Sites. Việc đổi liên kết nội bộ (README, `app/page.tsx`, `online.js`, tài liệu) là thay đổi nhiều tệp, chưa thực hiện, cần phê duyệt riêng.

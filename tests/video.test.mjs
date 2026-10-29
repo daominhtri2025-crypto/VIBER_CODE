@@ -2,6 +2,7 @@ import { DatabaseSync } from 'node:sqlite';
 import assert from 'node:assert/strict';
 import { applyMigrations } from './migrate-helper.mjs';
 import { loadApi, loadShared } from './route-harness.mjs';
+import { ownerCookie, volunteerCookie } from './auth-helper.mjs';
 
 // Kiểm thử Commit 1.5: liên kết video, kiểm tra định dạng và nguồn phát, thay video, dọn R2 (CLAUDE.md mục 4.5, 7;
 // SRS FR-CNT-04, 05, 06, FR-LRN-08). Dùng SQLite thật và R2 giả lập có ghi lại thao tác.
@@ -107,10 +108,14 @@ const api = await loadApi(sql, { bucket });
 
 const owner = { id: 'owner', email: 'owner@example.test' };
 const volunteer = { id: 'vol-1', email: 'v1@test.test' };
+owner.cookie = await ownerCookie(api);
+volunteer.cookie = await volunteerCookie(api, volunteer.email);
 
 function request(method, path, identity, { json, form, origin = ORIGIN } = {}) {
   const headers = {};
-  if (identity) {
+  if (identity?.cookie) {
+    headers.cookie = identity.cookie;
+  } else if (identity?.id) {
     headers['oai-authenticated-user-id'] = identity.id;
     headers['oai-authenticated-user-email'] = identity.email;
   }

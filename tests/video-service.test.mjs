@@ -2,6 +2,7 @@ import { DatabaseSync } from 'node:sqlite';
 import assert from 'node:assert/strict';
 import { applyMigrations } from './migrate-helper.mjs';
 import { loadApi } from './route-harness.mjs';
+import { ownerCookie } from './auth-helper.mjs';
 
 // Kiểm thử nhóm đọc video (shared/video-service.ts): thứ tự danh sách theo bài, danh sách rỗng,
 // và bài chưa có video trả 404. Dùng SQLite thật và route thật (CLAUDE.md mục 7).
@@ -16,10 +17,13 @@ applyMigrations(sql);
 const deletedKeys = [];
 const bucket = { delete: async (key) => { deletedKeys.push(key); } };
 const api = await loadApi(sql, { bucket });
+owner.cookie = await ownerCookie(api);
 
 function request(method, path, identity, json) {
   const headers = {};
-  if (identity) {
+  if (identity?.cookie) {
+    headers.cookie = identity.cookie;
+  } else if (identity?.id) {
     headers['oai-authenticated-user-id'] = identity.id;
     headers['oai-authenticated-user-email'] = identity.email;
   }

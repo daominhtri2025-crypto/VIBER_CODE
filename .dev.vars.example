@@ -1,2 +1,5 @@
 # Local preview only. Copy to .dev.vars.
 OWNER_EMAIL=seedy@sites.test
+
+# Local preview only: mật khẩu ban đầu của chủ website (để trống trong git).
+ADMIN_PASSWORD=

@@ -43,6 +43,13 @@
       "when": 1793079595838,
       "tag": "0005_bao_cao_chi_muc",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1793200000000,
+      "tag": "0006_tai_khoan_phien",
+      "breakpoints": true
     }
   ]
 }

@@ -78,13 +78,28 @@ Tài liệu tham chiếu:
 7. **Thay tệp:** ghi tệp mới → cập nhật bản ghi hoặc manifest → xóa tệp cũ. Nếu bất kỳ bước nào lỗi, tệp cũ vẫn còn và bản ghi không đổi.
 8. **Phục vụ tệp:** `Content-Type` lấy từ chữ ký đã lưu, không lấy từ tên tệp. Thêm `X-Content-Type-Options: nosniff`. Hỗ trợ `Range`.
 9. **Ghi âm trực tiếp (MediaRecorder):** chỉ chạy trong ngữ cảnh an toàn (localhost hoặc HTTPS). Bản ghi đi qua đúng các kiểm tra ở mục 3; trình duyệt không được miễn kiểm tra.
-10. **Thứ tự phát:** theo FR-CNT-15 — nguồn `none` thì không phát; có tệp tải lên thì phát tệp; nguồn `tts` thì phát TTS; còn lại thì không phát. Xem SRS Mục 9.2, câu 9–10 trước khi triển khai phần này.
+10. **Thứ tự phát:** theo FR-CNT-15 — có tệp tải lên thì phát tệp (ưu tiên); không có tệp tải lên và nguồn `tts` thì phát TTS dự phòng; còn lại thì không phát. Quy tắc ưu tiên đã được xác nhận ngày 2026-10-29 (SRS Mục 9.2, câu 10). Trường hợp nguồn `none` có tệp tải lên (SRS Mục 9.2, câu 9) vẫn chờ quyết định.
 11. **Kiểm thử bắt buộc:**
     - Tệp `.txt` đổi tên thành `.mp3` bị 415.
     - Tệp 10 MB + 1 byte bị 413, và không còn tệp tạm trên đĩa.
     - Tệp bắt đầu bằng `RIFF` nhưng không có `WAVE` bị từ chối.
     - Tên chứa `../` không tạo được đường dẫn ngoài thư mục âm thanh.
     - Phục vụ đúng `Content-Type`, có `nosniff`, và trả 206 khi có `Range`.
+
+---
+
+## 2C. Đăng nhập, phiên và tài khoản (SRS FR-AUTH-01 đến FR-AUTH-10)
+
+Áp dụng cho quản trị viên và tình nguyện viên. Học viên vẫn xác định bằng header danh tính của Sites (SRS Mục 2.5). Vi phạm mục này là lỗi bảo mật.
+
+1. **Mật khẩu chỉ lưu dạng băm** PBKDF2-SHA256 (100 000 vòng, muối ngẫu nhiên, module `shared/password-hash.ts`). Không lưu, không ghi nhật ký, không trả về mật khẩu dạng rõ ở bất kỳ đâu.
+2. **Mã phiên chỉ lưu dạng băm SHA-256.** Mã phiên là chuỗi ngẫu nhiên 256 bit, chỉ được gửi một lần trong cookie `st_session`.
+3. **Cookie phiên:** `HttpOnly`, `Secure`, `SameSite=Lax`, `Path=/`, thời hạn 12 giờ. Không đưa mã phiên vào URL, JSON phản hồi hay nhật ký.
+4. **Mật khẩu mặc định của quản trị:** không có giá trị mặc định trong mã, tài liệu, `.env.example` hay kết quả kiểm thử. Tài khoản quản trị chỉ được tạo từ biến môi trường `ADMIN_PASSWORD` ở lần đăng nhập đầu tiên; sau đó biến này bị bỏ qua. Trong kiểm thử, dùng giá trị giả do `tests/route-harness.mjs` cấp, không dùng giá trị thật.
+5. **Khóa tạm:** 5 lần sai liên tiếp → khóa 15 phút; yêu cầu trong thời gian khóa trả 423. Thông báo lỗi đăng nhập không tiết lộ email có tồn tại hay không.
+6. **Thông báo lỗi và nhật ký** không chứa mật khẩu, mã phiên, cookie hoặc giá trị `ADMIN_PASSWORD`; che bằng `[đã ẩn]` (áp dụng mục 2 và NFR-SEC-04).
+7. **Mọi API ghi** (`POST`) kiểm tra phiên, vai trò, `Origin` và dữ liệu đầu vào trước khi xử lý (mục 2, NFR-SEC-03).
+8. **Thay đổi phiên:** đổi mật khẩu, đặt lại mật khẩu hoặc vô hiệu hóa tài khoản đều đăng xuất các phiên liên quan.
 
 ---
 
@@ -110,8 +125,11 @@ Tài liệu tham chiếu:
 7. Không dùng số lượt đọc bài làm bằng chứng năng lực.
 8. Tình nguyện viên không xem được dashboard tổng hợp.
 9. Âm thanh: tối thiểu 21 giây giữa hai lần gọi TTS; lỗi 429 chờ 65 giây rồi thử lại; tối đa 6 lần.
-10. Nguồn âm thanh: `none` tắt phát; tệp tải lên được ưu tiên hơn TTS; mỗi bài có tối đa một tệp tải lên. Quy tắc này chờ xác nhận theo SRS Mục 9.2, câu 9–10.
+10. Nguồn âm thanh: tệp tải lên được ưu tiên hơn TTS, TTS chỉ là dự phòng khi bài chưa có tệp tải lên (đã xác nhận ngày 2026-10-29, SRS Mục 9.2, câu 10); mỗi bài có tối đa một tệp tải lên. Hành vi của nguồn `none` khi đã có tệp tải lên chưa quyết định (SRS Mục 9.2, câu 9).
 11. Khóa API chỉ tồn tại trong bộ nhớ tạm theo Mục 2A; không có đường lưu bền nào được phép.
+12. Tình nguyện viên chỉ ghi phiếu quan sát khi tài khoản đang hoạt động, email nằm trong danh sách được cấp quyền và không còn cờ buộc đổi mật khẩu. Tình nguyện viên không xem dashboard và không quản lý tài khoản (SRS FR-AUTH-10).
+13. Mật khẩu tối thiểu 10 ký tự, tối đa 200 ký tự khi tạo, đặt lại và đổi; đăng nhập không kiểm tra độ dài (SRS FR-AUTH-02). Ngưỡng này đã được chủ website xác nhận; đổi ngưỡng cần phê duyệt.
+14. Tài khoản tạo mới hoặc vừa được đặt lại mật khẩu phải đổi mật khẩu ở lần đăng nhập kế tiếp trước khi dùng mọi chức năng khác (SRS FR-AUTH-07).
 
 ---
 
@@ -189,6 +207,7 @@ Lệnh chuẩn: `npm test` chạy đủ các tệp trong `tests/`.
 11. Dùng đuôi tệp, `Content-Type` hoặc tên tệp do client gửi để quyết định định dạng.
 12. Ghi tệp âm thanh vào đĩa trước khi kiểm tra chữ ký xong.
 13. Đưa khóa, tiền tố khóa hoặc bản che có nhiều hơn 4 ký tự vào nhật ký, thông báo lỗi hay phản hồi.
+14. Đặt mật khẩu mặc định, mật khẩu thử hoặc giá trị `ADMIN_PASSWORD` thật vào mã nguồn, tài liệu, tệp mẫu hoặc kết quả kiểm thử.
 
 ---
 

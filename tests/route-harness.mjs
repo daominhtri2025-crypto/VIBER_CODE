@@ -53,8 +53,10 @@ function rewriteImports(code) {
 
 // Nạp route.ts thật. Mọi tệp trong shared/ được ghi thành .mjs tạm rồi import qua file URL.
 // bucket: đối tượng R2 giả lập (put/get/delete) để kiểm tra việc ghi và xóa tệp. Mặc định là bucket rỗng.
-export async function loadApi(sql, { ownerEmail = 'owner@example.test', bucket = {} } = {}) {
-  globalThis.__testEnv = { DB: createD1Adapter(sql), OWNER_EMAIL: ownerEmail, BUCKET: bucket };
+// adminPassword: mật khẩu ban đầu của chủ website trong môi trường kiểm thử (không phải bí mật thật).
+export const TEST_ADMIN_PASSWORD = 'mat-khau-chu-web-test';
+export async function loadApi(sql, { ownerEmail = 'owner@example.test', bucket = {}, adminPassword = TEST_ADMIN_PASSWORD } = {}) {
+  globalThis.__testEnv = { DB: createD1Adapter(sql), OWNER_EMAIL: ownerEmail, ADMIN_PASSWORD: adminPassword, BUCKET: bucket };
   const dir = mkdtempSync(join(tmpdir(), 'son-tra-so-test-'));
   try {
     for (const file of readdirSync(SHARED_DIR).filter((name) => name.endsWith('.ts'))) {
