@@ -55,8 +55,26 @@ function rewriteImports(code) {
 // bucket: đối tượng R2 giả lập (put/get/delete) để kiểm tra việc ghi và xóa tệp. Mặc định là bucket rỗng.
 // adminPassword: mật khẩu ban đầu của chủ website trong môi trường kiểm thử (không phải bí mật thật).
 export const TEST_ADMIN_PASSWORD = 'mat-khau-chu-web-test';
-export async function loadApi(sql, { ownerEmail = 'owner@example.test', bucket = {}, adminPassword = TEST_ADMIN_PASSWORD } = {}) {
-  globalThis.__testEnv = { DB: createD1Adapter(sql), OWNER_EMAIL: ownerEmail, ADMIN_PASSWORD: adminPassword, BUCKET: bucket };
+// Cấu hình gửi email giả: khóa Resend chỉ là chuỗi dùng cho kiểm thử, không phải khóa thật (CLAUDE.md mục 7, 9.14).
+export const TEST_RESEND_KEY = 're_khong_dung_that_chi_cho_kiem_thu';
+export const TEST_APP_BASE_URL = 'https://site.test';
+export async function loadApi(sql, {
+  ownerEmail = 'owner@example.test',
+  bucket = {},
+  adminPassword = TEST_ADMIN_PASSWORD,
+  resendApiKey = TEST_RESEND_KEY,
+  mailFrom = 'Sơn Trà Số <kiem-thu@site.test>',
+  appBaseUrl = TEST_APP_BASE_URL,
+} = {}) {
+  globalThis.__testEnv = {
+    DB: createD1Adapter(sql),
+    OWNER_EMAIL: ownerEmail,
+    ADMIN_PASSWORD: adminPassword,
+    BUCKET: bucket,
+    RESEND_API_KEY: resendApiKey,
+    MAIL_FROM: mailFrom,
+    APP_BASE_URL: appBaseUrl,
+  };
   const dir = mkdtempSync(join(tmpdir(), 'son-tra-so-test-'));
   try {
     for (const file of readdirSync(SHARED_DIR).filter((name) => name.endsWith('.ts'))) {

@@ -26,6 +26,7 @@
 - videos: bài học, khóa tệp trong R2, loại video, thời lượng và thời gian cập nhật.
 - accounts (migration 0006): tài khoản quản trị và tình nguyện viên; mật khẩu chỉ lưu dạng băm PBKDF2-SHA256, kèm số lần sai, thời điểm khóa tạm và cờ buộc đổi mật khẩu.
 - sessions (migration 0006): phiên đăng nhập; chỉ lưu băm SHA-256 của mã phiên, không lưu mã gốc.
+- password_reset_tokens (migration 0008): token khôi phục mật khẩu qua email. Chỉ lưu băm SHA-256 của token; hết hạn sau 15 phút; `used_at` đánh dấu đã dùng hoặc đã vô hiệu hóa.
 - news (migration 0007): tin tức trang chủ. Quản trị viên đăng, sửa, ẩn tin qua `/api/admin/news`; `GET /api/news` chỉ trả tin chưa ẩn. Liên kết nguồn chỉ nhận https, kiểm tra cả trong CSDL. Không có cào dữ liệu ở giai đoạn này.
 
 ## API
@@ -36,6 +37,8 @@
 | POST /api/auth/logout | Đăng xuất phiên hiện tại và xóa cookie |
 | POST /api/auth/password | Mọi vai trò đã đăng nhập; đổi mật khẩu (cần mật khẩu hiện tại), đăng xuất các phiên khác |
 | POST /api/auth/profile | Mọi vai trò đã đăng nhập; sửa họ tên |
+| POST /api/auth/forgot | Công khai; gửi liên kết đặt lại qua email. Phản hồi giống hệt dù email có tồn tại hay không. Tối đa 3 yêu cầu mỗi tài khoản mỗi giờ (vượt giới hạn: không gửi, phản hồi vẫn giống hệt). 503 khi thiếu cấu hình gửi email |
+| POST /api/auth/reset | Công khai; đặt mật khẩu mới bằng token trong liên kết. Token hiệu lực 15 phút, dùng một lần; thành công thì đăng xuất mọi phiên của tài khoản. 400 khi token sai, hết hạn hoặc đã dùng |
 | GET /api/accounts | Chỉ quản trị viên; danh sách tài khoản tình nguyện viên |
 | POST /api/accounts | Chỉ quản trị viên; tạo tài khoản với mật khẩu tạm (201; 409 nếu trùng email) |
 | POST /api/accounts/reset | Chỉ quản trị viên; đặt lại mật khẩu tạm, buộc đổi ở lần đăng nhập kế tiếp, đăng xuất phiên cũ |
@@ -52,6 +55,7 @@
 
 ## Quy tắc vận hành
 - OWNER_EMAIL là cấu hình phía máy chủ, không đưa vào mã JavaScript trên trình duyệt.
+- RESEND_API_KEY, MAIL_FROM, APP_BASE_URL là cấu hình gửi email khôi phục mật khẩu, chỉ đọc từ secret của nền tảng. Khóa không được ghi trong mã, tài liệu, nhật ký hay kết quả kiểm thử.
 - Học viên xác định bằng danh tính do lớp xác thực Sites cung cấp. Quản trị viên và tình nguyện viên xác định bằng cookie phiên `st_session` (FR-AUTH). Cấp quyền tình nguyện viên không trao quyền xem toàn bộ dữ liệu.
 - Tình nguyện viên chỉ ghi phiếu khi tài khoản hoạt động, có trong `staff`, và không còn cờ buộc đổi mật khẩu (SRS FR-AUTH-10).
 - API ghi dữ liệu kiểm tra Origin cùng website và kiểm tra quyền phía máy chủ.
@@ -68,6 +72,7 @@ Dashboard đối chiếu trước–sau trên cùng mã học viên, lấy phi�
 ## Hiện trạng Phase 1
 - Đã có migration `0000`–`0006`. Migration `0005` chỉ thêm chỉ mục cho báo cáo, không đổi dữ liệu hay bảng. Migration `0006` chỉ tạo bảng `accounts` và `sessions` mới, không đổi dữ liệu cũ.
 - Đăng nhập quản trị và tình nguyện viên (FR-AUTH) đã triển khai trong `shared/auth-service.ts`, kiểm thử trong `tests/auth.test.mjs`. Chưa kiểm thử trên Sites (cookie, `Origin`).
+- Khôi phục mật khẩu qua email (FR-AUTH-11) đã triển khai trong `shared/password-reset-service.ts`, `shared/password-reset-rules.ts`, `shared/mail-sender.ts`; kiểm thử trong `tests/password-reset.test.mjs` bằng email giả. Có giới hạn 10 yêu cầu mỗi IP mỗi giờ (bảng `request_limits`, migration 0009). Chưa gửi email thật qua Resend vì chưa có tên miền gửi đã xác minh.
 - Báo cáo quản trị: `GET /api/dashboard` lọc theo khoảng thời gian, bài, nhóm và kỳ; giao diện `public/admin-report.js`; CSV UTF-8 có BOM. Kiểm thử: `npm test` và kiểm thử trình duyệt 360px (`tests/admin-page-browser.mjs`, chạy thủ công).
 - Migration `0000`–`0005` đã áp dụng thử trên D1 cục bộ (Wrangler) không lỗi. Chưa áp dụng trên D1 của bản triển khai Sites.
 - Bài kiểm tra trắc nghiệm do máy chủ chấm (`POST /api/quiz/answer`, bảng `quiz_attempts` ở migration `0004`). Đáp án không có trong `GET /api/lessons`. Dashboard hiển thị số lần làm bài và tỷ lệ đúng, ghi chú là "kiểm tra hiểu bài nội bộ".

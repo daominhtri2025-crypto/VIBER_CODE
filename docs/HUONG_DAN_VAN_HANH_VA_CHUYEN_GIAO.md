@@ -17,7 +17,7 @@ Tài liệu này dành cho người nhận bàn giao và người vận hành. M
 | `shared/*-service.ts` | Các dịch vụ có truy vấn SQL: `identity`, `quiz`, `progress`, `lesson`, `video`, `staff`, `assessment`, `dashboard-summary`, `dashboard-queries`. |
 | `shared/*-rules.ts` | Quy tắc thuần, không truy vấn: `quiz-rules`, `video-rules`, `progress-rules`, `dashboard-rules`, `assessment-rules`, `lesson-validation`. |
 | `shared/body-limit.ts` | Đọc thân yêu cầu có giới hạn byte. Dùng cho `upload-video`. |
-| `drizzle/` | Migration `0000`–`0007` và snapshot của drizzle-kit. Riêng `0006` và `0007` chưa có snapshot (xem mục 4.2). |
+| `drizzle/` | Migration `0000`–`0008` và snapshot của drizzle-kit. Riêng `0006`, `0007` và `0008` chưa có snapshot (xem mục 4.2). |
 | `tests/` | Kiểm thử tự động, chạy bằng `npm test`. Xem mục 2. |
 | `tests/load/k6-public-reads.js` | Kịch bản đo tải k6 (mục 3). |
 | `public/` | Giao diện tĩnh: trang học, trang điều phối, báo cáo quản trị. |
@@ -30,6 +30,7 @@ Quy ước: route → service → repository (truy vấn SQL trong service). Ser
 | Nhóm | Module chính | Ghi chú |
 |---|---|---|
 | Xác thực, học viên | `identity-service.ts` | `isStaffEmail` tra bảng `staff`; `ensureLearnerCode` tạo mã học viên một lần bằng `INSERT OR IGNORE`. Cờ quản trị `OWNER_EMAIL` vẫn ở route. |
+| Khôi phục mật khẩu qua email (FR-AUTH-11) | `password-reset-service.ts`, `password-reset-rules.ts`, `mail-sender.ts` | Token 256 bit chỉ lưu băm; hiệu lực 15 phút; dùng một lần; yêu cầu mới vô hiệu hóa token cũ; tối đa 3 yêu cầu mỗi tài khoản mỗi giờ; mọi trường hợp trả cùng một phản hồi; gửi qua Resend bằng `fetch`, không thêm thư viện. Liên kết dạng `APP_BASE_URL/admin#dat-lai=<token>`: token nằm ở fragment, trang quản trị xóa khỏi thanh địa chỉ sau khi đọc. |
 | Đăng nhập quản trị và tình nguyện viên (FR-AUTH) | `auth-service.ts`, `auth-rules.ts`, `password-hash.ts` | Email và mật khẩu; băm PBKDF2-SHA256 (100 000 vòng); mã phiên chỉ lưu băm SHA-256; khóa tạm 5 lần sai/15 phút; phiên 12 giờ; cookie `st_session` HttpOnly, Secure, SameSite=Lax. Tài khoản quản trị khởi tạo từ `ADMIN_PASSWORD` ở lần đăng nhập đầu tiên. Route `app/api/[...path]/route.ts` chỉ gọi service. |
 | Trắc nghiệm | `quiz-service.ts`, `quiz-rules.ts` | Chấm trên máy chủ; idempotent theo `(learner, client_id)`; điểm chỉ tăng. |
 | Tiến độ | `progress-service.ts`, `progress-rules.ts` | Hợp nhất `read`/`done` bằng `MAX`; `recordQuizPass` ghi điểm kiểm tra. |
@@ -181,6 +182,9 @@ Kịch bản gồm:
 | 5 | `0004_quiz_attempts.sql` | Tạo `quiz_attempts`; chỉ mục unique `(learner, client_id)` | Tạo bảng mới |
 | 6 | `0005_bao_cao_chi_muc.sql` | Chỉ thêm 4 chỉ mục: `progress_completed_at_idx`, `progress_lesson_idx`, `quiz_attempts_learner_lesson_idx`, `quiz_attempts_lesson_created_idx` | Không đổi dữ liệu |
 | 7 | `0006_tai_khoan_phien.sql` | Tạo `accounts` và `sessions`; chỉ mục `sessions_account_idx`. Không sửa bảng cũ. Tài khoản quản trị không được ghi trước; chỉ được tạo khi đăng nhập đầu tiên bằng `ADMIN_PASSWORD` | Tạo bảng mới; dữ liệu cũ giữ nguyên. Khôi phục (chỉ khi phê duyệt): `DROP TABLE sessions; DROP TABLE accounts;` — làm mất tài khoản và phiên đăng nhập |
+| 8 | `0007_tin_tuc.sql` | Tạo `news` và chỉ mục `news_visible_published_idx`. Không sửa bảng cũ | Tạo bảng mới; dữ liệu cũ giữ nguyên. Khôi phục (chỉ khi phê duyệt): `DROP INDEX news_visible_published_idx; DROP TABLE news;` — làm mất tin đã đăng |
+| 9 | `0008_dat_lai_mat_khau.sql` | Tạo `password_reset_tokens` (token băm SHA-256, hết hạn 15 phút, khóa ngoại tới `accounts`, xóa theo tài khoản) và chỉ mục `password_reset_tokens_account_idx`. Không sửa bảng cũ | Tạo bảng mới; dữ liệu cũ giữ nguyên. Khôi phục (chỉ khi phê duyệt): `DROP INDEX password_reset_tokens_account_idx; DROP TABLE password_reset_tokens;` — chỉ mất lịch sử token, không ảnh hưởng tài khoản |
+| 10 | `0009_gioi_han_yeu_cau.sql` | Tạo `request_limits` (bộ đếm theo cửa sổ giờ, khóa là băm IP). Không sửa bảng cũ | Tạo bảng mới. Khôi phục (chỉ khi phê duyệt): `DROP TABLE request_limits;` — chỉ mất bộ đếm |
 
 Các bước phải chạy theo đúng thứ tự. Khôi phục khi lỗi giữa chừng: **[Cần bổ sung nguồn]** (chưa có quy trình rollback đã kiểm chứng trên D1).
 
@@ -195,7 +199,7 @@ Các bước phải chạy theo đúng thứ tự. Khôi phục khi lỗi giữa
 ### 4.4 Quy trình khuyến nghị
 
 1. **Tạo D1 staging riêng** trên tài khoản Cloudflare của người phụ trách. Không dùng D1 production để thử.
-2. Áp dụng `0000` → `0007` lên staging. Ghi lại mọi cảnh báo hoặc lỗi từ D1.
+2. Áp dụng `0000` → `0008` lên staging. Ghi lại mọi cảnh báo hoặc lỗi từ D1.
 3. Chạy kiểm tra thủ công trên staging: đăng nhập quản trị lần đầu bằng `ADMIN_PASSWORD`, đổi mật khẩu bắt buộc, tạo và đặt lại tài khoản tình nguyện viên, khóa tạm sau 5 lần sai, đăng nhập tình nguyện viên và ghi phiếu, tiến độ hai thiết bị, trắc nghiệm, liên kết video, tải video nhỏ, báo cáo quản trị, xuất CSV.
 4. Chạy kịch bản k6 trên staging theo mục 3.
 5. Chỉ sau khi staging đạt mọi bước, lập kế hoạch áp dụng lên production, với phê duyệt của người giữ `OWNER_EMAIL`.
@@ -217,6 +221,10 @@ Các bước phải chạy theo đúng thứ tự. Khôi phục khi lỗi giữa
 
 ### 4.6 Sau khi triển khai
 
+- Cấu hình gửi email khôi phục mật khẩu (FR-AUTH-11), đặt trong secret của Sites, không ghi giá trị vào mã hoặc tài liệu:
+  - `RESEND_API_KEY`: khóa API của Resend (gói miễn phí: 100 email mỗi ngày, 3 000 mỗi tháng). Nếu thiếu, yêu cầu khôi phục trả 503.
+  - `MAIL_FROM`: địa chỉ gửi thuộc tên miền đã xác minh trên Resend. **[Cần xác định: tên miền gửi của chủ website]**.
+  - `APP_BASE_URL`: gốc https của trang, ví dụ `https://<địa-chỉ-trang>`, không có dấu `/` cuối. Liên kết trong email lấy từ biến này, không lấy từ header của yêu cầu.
 - Kiểm tra đăng nhập, phân quyền, đồng bộ hai thiết bị trên bản triển khai.
 - Kiểm tra cookie `st_session` trên Sites: HttpOnly, Secure, SameSite=Lax, và `Origin` với yêu cầu POST **[Cần xác minh]**.
 - Kiểm tra báo cáo quản trị với dữ liệu thật.
@@ -229,7 +237,7 @@ Các bước phải chạy theo đúng thứ tự. Khôi phục khi lỗi giữa
 | # | Việc | Người phụ trách | Trạng thái |
 |---|---|---|---|
 | 1 | Tạo D1 staging riêng | Người giữ tài khoản Cloudflare | Chưa làm |
-| 2 | Áp dụng `0000`–`0007` lên staging | Chủ website, có kiểm tra của Claude | Chờ bước 1 |
+| 2 | Áp dụng `0000`–`0008` lên staging | Chủ website, có kiểm tra của Claude | Chờ bước 1 |
 | 3 | Kiểm thử thủ công trên staging | Người điều phối | Chờ bước 2 |
 | 4 | Chạy k6 trên staging (01:00–03:00 UTC+7) | Người chạy tải | Chờ bước 2 |
 | 5 | Đánh giá rủi ro upload (giới hạn bộ nhớ, thời lượng do client gửi) | Chủ website | Mốc cải tiến sau |
@@ -237,7 +245,7 @@ Các bước phải chạy theo đúng thứ tự. Khôi phục khi lỗi giữa
 | 7 | Xác minh thư mục `server-local/` | Người viết tài liệu kiến trúc | **[Cần xác minh]** |
 | 8 | Quy trình sao lưu và khôi phục D1 | Chủ website | **[Cần bổ sung nguồn]** |
 | 9 | Đặt `ADMIN_PASSWORD` trên Sites và đăng nhập đầu tiên | Chủ website | Chưa làm |
-| 10 | Quy trình khôi phục khi quên mật khẩu quản trị | Chủ website | **[Cần bổ sung]**: hiện chưa có cơ chế; `ADMIN_PASSWORD` chỉ dùng khi chưa có tài khoản |
+| 10 | Quy trình khôi phục khi quên mật khẩu (FR-AUTH-11) | Chủ website | Đã triển khai trong mã và kiểm thử bằng email giả, gồm giới hạn 10 yêu cầu mỗi IP mỗi giờ. **Chưa gửi thật:** cần tên miền gửi đã xác minh trên Resend và đặt `RESEND_API_KEY`, `MAIL_FROM`, `APP_BASE_URL` trên Sites. |
 | 11 | Kiểm thử trình duyệt cho màn hình đăng nhập và đổi mật khẩu bắt buộc | Người điều phối | Chưa làm |
 | 12 | Chạy `drizzle-kit check` và sinh snapshot `0006` | Người viết migration | Chưa làm |
 

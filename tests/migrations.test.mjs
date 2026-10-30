@@ -13,7 +13,14 @@ const tryRun = (fn) => { try { fn(); return null; } catch (error) { return Strin
   const sql = new DatabaseSync(':memory:');
   sql.exec('PRAGMA foreign_keys = ON');
   const tags = applyMigrations(sql);
-  assert.equal(tags.length, 8, 'journal phải có 8 migration (0000–0007)');
+  assert.equal(tags.length, 10, 'journal phải có 10 migration (0000–0009)');
+  // 0009: bộ đếm yêu cầu theo cửa sổ giờ; khóa là chuỗi, không có cột IP thô.
+  assert.ok(columns(sql, 'request_limits').includes('window_start'), 'request_limits.window_start phải tồn tại (0009)');
+  assert.ok(!columns(sql, 'request_limits').some((c) => /ip/i.test(c)), 'request_limits không có cột IP thô (0009)');
+  // 0008: token khôi phục mật khẩu; chỉ lưu băm, có khóa ngoại tới accounts và chỉ mục theo tài khoản.
+  assert.ok(columns(sql, 'password_reset_tokens').includes('token_hash'), 'password_reset_tokens.token_hash phải tồn tại (0008)');
+  assert.ok(columns(sql, 'password_reset_tokens').includes('expires_at'), 'password_reset_tokens.expires_at phải tồn tại (0008)');
+  assert.ok(sql.prepare('PRAGMA index_list(password_reset_tokens)').all().some((i) => i.name === 'password_reset_tokens_account_idx'), 'chỉ mục token theo tài khoản phải tồn tại (0008)');
   // 0007: bảng tin tức rỗng; chỉ mục hiển thị theo trạng thái ẩn và thời điểm đăng.
   assert.ok(columns(sql, 'news').includes('source_url'), 'news.source_url phải tồn tại (0007)');
   assert.ok(sql.prepare('PRAGMA index_list(news)').all().some((i) => i.name === 'news_visible_published_idx'), 'chỉ mục tin tức phải tồn tại (0007)');

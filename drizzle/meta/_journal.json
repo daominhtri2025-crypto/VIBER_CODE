@@ -57,6 +57,20 @@
       "when": 1793300000000,
       "tag": "0007_tin_tuc",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "6",
+      "when": 1793400000000,
+      "tag": "0008_dat_lai_mat_khau",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "6",
+      "when": 1793500000000,
+      "tag": "0009_gioi_han_yeu_cau",
+      "breakpoints": true
     }
   ]
 }

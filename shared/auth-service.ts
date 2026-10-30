@@ -59,13 +59,14 @@ type AccountRow = {
 const ACCOUNT_COLUMNS = 'id, email, full_name, password_hash, active, must_change, failed_attempts, locked_until';
 const encoder = new TextEncoder();
 
-async function sha256Hex(text: string): Promise<string> {
+// Xuất để dịch vụ khôi phục mật khẩu dùng chung cách băm token (CLAUDE.md mục 2C.2).
+export async function sha256Hex(text: string): Promise<string> {
   const digest = await crypto.subtle.digest('SHA-256', encoder.encode(text));
   return Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, '0')).join('');
 }
 
 // Token phiên 256 bit; DB chỉ lưu băm SHA-256 của token, không lưu token thô.
-function newToken(): string {
+export function newToken(): string {
   const bytes = crypto.getRandomValues(new Uint8Array(32));
   let binary = '';
   for (const byte of bytes) binary += String.fromCharCode(byte);

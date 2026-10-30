@@ -235,7 +235,7 @@ Khóa API được nhập trực tiếp trên dashboard quản trị của máy 
 
 ---
 
-| FR-AUTH-11 | Khôi phục mật khẩu quản trị viên và tình nguyện viên qua email. Người dùng nhập email; hệ thống gửi email chứa liên kết có token bảo mật qua Resend (gói miễn phí: 3 000 email mỗi tháng, 100 email mỗi ngày, 3 tên miền gửi). Liên kết chỉ có hiệu lực trong 15 phút kể từ khi gửi, dùng được một lần; quá hạn hoặc đã dùng thì vô hiệu hóa. Khi có yêu cầu mới, mọi token chưa dùng của cùng tài khoản bị vô hiệu hóa. Token là chuỗi ngẫu nhiên 256 bit, chỉ lưu dạng băm SHA-256. Khi đặt lại thành công, mọi phiên của tài khoản bị đăng xuất. Khóa API gửi email chỉ đặt qua secret của nền tảng, không ghi trong mã | M | Token quá 15 phút bị từ chối; token dùng lần hai bị từ chối; yêu cầu với email không tồn tại trả cùng thông báo như email có tồn tại; cơ sở dữ liệu không chứa token dạng rõ. `[Cần xác định: tên miền gửi đã xác minh của chủ website; giới hạn số yêu cầu mỗi email trong một khoảng thời gian]` |
+| FR-AUTH-11 | Khôi phục mật khẩu quản trị viên và tình nguyện viên qua email. Người dùng nhập email; hệ thống gửi email chứa liên kết có token bảo mật qua Resend (gói miễn phí: 3 000 email mỗi tháng, 100 email mỗi ngày, 3 tên miền gửi). Liên kết chỉ có hiệu lực trong 15 phút kể từ khi gửi, dùng được một lần; quá hạn hoặc đã dùng thì vô hiệu hóa. Khi có yêu cầu mới, mọi token chưa dùng của cùng tài khoản bị vô hiệu hóa. Token là chuỗi ngẫu nhiên 256 bit, chỉ lưu dạng băm SHA-256. Khi đặt lại thành công, mọi phiên của tài khoản bị đăng xuất. Khóa API gửi email chỉ đặt qua secret của nền tảng, không ghi trong mã | M | Token quá 15 phút bị từ chối; token dùng lần hai bị từ chối; yêu cầu với email không tồn tại trả cùng thông báo như email có tồn tại; cơ sở dữ liệu không chứa token dạng rõ. Giới hạn đã quyết định (30/10/2026): tối đa 3 yêu cầu mỗi tài khoản trong 60 phút; yêu cầu vượt giới hạn không gửi thư, phản hồi vẫn giống hệt. Tối đa 10 yêu cầu mỗi IP mỗi giờ (IP lấy từ `CF-Connecting-IP`, lưu dưới dạng băm, migration 0009); vượt giới hạn trả 429. `[Cần xác định: tên miền gửi đã xác minh của chủ website]` |
 
 ### 3.8. Tin tức trang chủ (FR-NEWS)
 
@@ -461,7 +461,7 @@ Các endpoint được liệt kê trong `DAC_TA_Son_Tra_So_fullstack.md`, Mục 
 | FR-AUTH-01 đến FR-AUTH-10 | `shared/auth-service.ts`, `shared/auth-rules.ts`, `shared/password-hash.ts`, `app/api/[...path]/route.ts` | `tests/auth.test.mjs` (qua `npm test`) | Tự động: npm test đạt trên SQLite; chưa kiểm thử trên Sites (cookie, Origin) |
 | FR-AUTH-03, FR-AUTH-07 đến FR-AUTH-10 (giao diện) | `public/admin.js`, `public/admin.html` | `tests/admin-page-browser.mjs` (chỉ kiểm thử trang đã đăng nhập) | Chưa kiểm chứng luồng màn hình đăng nhập và đổi mật khẩu bắt buộc trên trình duyệt |
 
-| FR-AUTH-11 | `shared/` (dự kiến) | Chưa có | Chưa triển khai |
+| FR-AUTH-11 | `shared/password-reset-*.ts`, `shared/mail-sender.ts`, `app/api/[...path]/route.ts`, `public/admin.js` | `tests/password-reset.test.mjs` (email giả) | Tự động: npm test đạt (30/10/2026), gồm giới hạn theo IP (429). Gửi email thật qua Resend chưa kiểm chứng: chưa có tên miền gửi đã xác minh |
 | FR-NEWS-01, FR-NEWS-02, FR-NEWS-04, FR-NEWS-05 | `shared/news-*.ts`, `app/api/[...path]/route.ts` | `tests/news.test.mjs` | Tự động: npm test đạt (30/10/2026) |
 | FR-NEWS-03 | Chưa có | Chưa có | Chưa thực hiện: nguồn chưa cho phép truy cập tự động (30/10/2026) |
 

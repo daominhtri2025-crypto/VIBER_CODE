@@ -4,7 +4,11 @@ import { loadLessonCatalog } from '../../../shared/lesson-service';
 import { findVideoByLesson, listVideos, replaceWithVideoLink, storeUploadedVideo } from '../../../shared/video-service';
 import { ensureLearnerCode } from '../../../shared/identity-service';
 import { login, logout, resolveSession, changePassword, updateProfile, createAccount, resetPassword, setAccountActive, listAccounts, type Session } from '../../../shared/auth-service';
-import { LOCK_MINUTES, SESSION_COOKIE, SESSION_HOURS, validateChangePassword, validateCreateAccount, validateFullName, validateLogin, validateResetPassword, validateStatusChange } from '../../../shared/auth-rules';
+import { LOCK_MINUTES, SESSION_COOKIE, SESSION_HOURS, validateChangePassword, validateCreateAccount, validateFullName, validateLogin, validateNewPassword, validateResetPassword, validateStatusChange } from '../../../shared/auth-rules';
+import { completePasswordReset, requestPasswordReset } from '../../../shared/password-reset-service';
+import { FORGOT_GENERIC_MESSAGE, RESET_MAX_REQUESTS_PER_IP_PER_HOUR, isValidBaseUrl, validateForgotInput, validateResetToken } from '../../../shared/password-reset-rules';
+import { consumeLimitSlot } from '../../../shared/request-limit-service';
+import { createResendSender } from '../../../shared/mail-sender';
 import { readBodyWithLimit } from '../../../shared/body-limit';
 import { LESSON_GROUP_NAMES } from '../../../shared/lessons-seed';
 import { checkVideoLink } from '../../../shared/video-rules';
@@ -37,7 +41,8 @@ interface Bucket {
   put(key: string, value: ReadableStream, options: { httpMetadata: { contentType: string } }): Promise<unknown>;
   delete(key: string): Promise<unknown>;
 }
-interface Env { DB: Db; BUCKET: Bucket; OWNER_EMAIL?: string; ADMIN_PASSWORD?: string }
+// Cấu hình gửi email khôi phục mật khẩu: chỉ đọc từ secret của nền tảng, không ghi trong mã (CLAUDE.md mục 2).
+interface Env { DB: Db; BUCKET: Bucket; OWNER_EMAIL?: string; ADMIN_PASSWORD?: string; RESEND_API_KEY?: string; MAIL_FROM?: string; APP_BASE_URL?: string }
 interface Identity { id: string | null; email: string; admin: boolean; volunteer: boolean }
 interface ProgressBody { code: unknown; read: unknown; done: unknown }
 
@@ -56,6 +61,14 @@ const CLEAR_SESSION_COOKIE=`${SESSION_COOKIE}=; HttpOnly; Secure; SameSite=Lax; 
 // FR-AUTH: đăng nhập. Thông báo lỗi không tiết lộ email có tồn tại hay không và không chứa mật khẩu.
 async function handleLogin(req:Request){const v=validateLogin(await req.json().catch(()=>null));if(!v.ok)return out({error:v.error},400);const res=await login(E.DB,v.value,{ownerEmail:E.OWNER_EMAIL,adminPassword:E.ADMIN_PASSWORD},new Date().toISOString());switch(res.kind){case 'ok':return out({ok:true,role:res.role,must_change:res.mustChange},200,sessionCookie(res.token));case 'invalid':return out({error:'Email hoặc mật khẩu không đúng'},401);case 'locked':return out({error:`Tài khoản tạm khóa do đăng nhập sai nhiều lần. Thử lại sau ${LOCK_MINUTES} phút.`},423);case 'disabled':return out({error:'Tài khoản đã bị vô hiệu hóa'},403);case 'unavailable':return out({error:'Chưa thể đăng nhập. Vui lòng thử lại.'},503)}}
 async function handleLogout(req:Request){await logout(E.DB,sessionToken(req));return out({ok:true},200,CLEAR_SESSION_COOKIE)}
+// FR-AUTH-11: yêu cầu khôi phục. Mọi trường hợp (có hoặc không có tài khoản) đều trả cùng một phản hồi thành công.
+// Chỉ lỗi cấu hình gửi email mới trả 503, và lỗi này không phụ thuộc vào email nhập vào.
+async function handleForgot(req:Request){const email=validateForgotInput(await req.json().catch(()=>null));if(!email.ok)return out({error:email.error},400);const baseUrl=E.APP_BASE_URL;if(!isValidBaseUrl(baseUrl)||!E.RESEND_API_KEY||!E.MAIL_FROM)return out({error:'Chưa cấu hình gửi email. Vui lòng liên hệ chủ website.'},503);const now=new Date().toISOString();
+// Giới hạn theo IP: Cloudflare đặt CF-Connecting-IP, client không tự đặt được. Thiếu header (môi trường cục bộ) dùng một nhóm chung.
+const ip=req.headers.get('cf-connecting-ip')||'khong-xac-dinh';if(!(await consumeLimitSlot(E.DB,'forgot-ip',ip,RESET_MAX_REQUESTS_PER_IP_PER_HOUR,now)))return out({error:'Quá nhiều yêu cầu từ mạng này. Vui lòng thử lại sau ít phút.'},429);
+const mailer=createResendSender({apiKey:E.RESEND_API_KEY,from:E.MAIL_FROM});await requestPasswordReset(E.DB,email.value,{mailer,baseUrl,ownerEmail:E.OWNER_EMAIL,now});return out({ok:true,message:FORGOT_GENERIC_MESSAGE})}
+// FR-AUTH-11: đặt mật khẩu mới bằng token trong liên kết. Kiểm tra mật khẩu trước khi dùng token để lỗi nhập không làm mất liên kết.
+async function handleReset(req:Request){const body=(await req.json().catch(()=>null)) as {token?:unknown;password?:unknown}|null;const token=validateResetToken(body?.token);if(!token.ok)return out({error:token.error},400);const password=validateNewPassword(body?.password);if(!password.ok)return out({error:password.error},400);const res=await completePasswordReset(E.DB,token.value,password,new Date().toISOString());return res==='ok'?out({ok:true}):out({error:'Liên kết đặt lại không hợp lệ hoặc đã hết hạn'},400)}
 // Tài khoản: tự đổi mật khẩu và thông tin cá nhân (mọi vai trò có phiên); tạo, đặt lại, vô hiệu hóa chỉ quản trị viên.
 async function handleAccountPost(p:string,req:Request,s:Session|null){const now=new Date().toISOString();
 if(p==='auth/password'){if(!s)return out({error:'Vui lòng đăng nhập'},401);const v=validateChangePassword(await req.json().catch(()=>null));if(!v.ok)return out({error:v.error},400);const res=await changePassword(E.DB,s,sessionToken(req)??'',v.value,now);if(res==='wrong_current')return out({error:'Mật khẩu hiện tại không đúng'},400);if(res==='unavailable')return out({error:'Chưa thể đổi mật khẩu. Vui lòng thử lại.'},503);return out({ok:true})}
@@ -97,6 +110,8 @@ export async function POST(req:Request){try{if(req.headers.get('origin')!==new U
 // Đăng nhập và đăng xuất không cần phiên trước; các route tài khoản tự kiểm tra phiên và vai trò.
 if(p==='auth/login')return handleLogin(req);
 if(p==='auth/logout')return handleLogout(req);
+if(p==='auth/forgot')return handleForgot(req);
+if(p==='auth/reset')return handleReset(req);
 const s=await sessionOf(req);
 if(p.startsWith('auth/')||p==='accounts'||p.startsWith('accounts/'))return handleAccountPost(p,req,s);
 const r=roleOf(req,s);
