@@ -20,6 +20,7 @@
 | 1.0 | 20/10/2026 | [Cần bổ sung] | Lập bản nháp từ mã nguồn v4 và đặc tả full-stack |
 | 1.1 | 20/10/2026 | [Cần bổ sung] | Thêm quản lý khóa API trong bộ nhớ tạm (FR-KEY, chỉ máy chủ cục bộ); thêm tải lên và ghi âm tệp đọc bài (FR-CNT-10 đến FR-CNT-17); bổ sung NFR-SEC-06 đến NFR-SEC-10; thêm UC-06, UC-07; bổ sung câu hỏi mở 8–10 |
 | 1.2 | 29/10/2026 | [Cần bổ sung] | Thêm đăng nhập bằng email và mật khẩu cho quản trị viên và tình nguyện viên (mục 3.7, FR-AUTH-01 đến FR-AUTH-10); cập nhật vai trò xác thực (Mục 2.2); thay FR-ADM-04 và FR-ADM-05 bằng tham chiếu tới FR-AUTH; đổi NFR-SEC-05 sang SameSite=Lax; bổ sung truy vết và câu hỏi mở 11–12 |
+| 1.3 | 30/10/2026 | [Cần bổ sung] | Ngoài giai đoạn này: FR-KEY và FR-CNT-10 đến FR-CNT-17 (âm thanh, FR-LRN-09). Thêm mục 3.8 tin tức (FR-NEWS-01 đến FR-NEWS-05) và FR-AUTH-11 khôi phục mật khẩu qua email (liên kết hiệu lực 15 phút, nhà cung cấp gửi email là Resend, gói miễn phí). Thêm bảng `password_reset_tokens` (migration 0008) vào mục 4.1. Ghi nhận quyết định câu hỏi mở 8, 9, 14, 15; sửa ma trận truy vết mục 9.1 theo tình trạng tệp thực tế trong repo. |
 
 ---
 
@@ -170,6 +171,8 @@ Người dân phường Sơn Trà, đặc biệt người lớn tuổi, cần th
 
 ### 3.5. Quản trị nội dung (FR-CNT)
 
+> **Phạm vi (quyết định 2026-10-30):** FR-CNT-10 đến FR-CNT-17 (âm thanh đọc bài) và FR-LRN-09 **không thuộc giai đoạn này**. Các yêu cầu giữ nguyên để làm sau. Quyết định về ghi âm và phát âm thanh đã ghi tại mục 9.2, câu 8 và 9.
+
 | Mã | Yêu cầu | Ưu tiên | Tiêu chí chấp nhận |
 |---|---|---|---|
 | FR-CNT-01 | Thêm bài học mới; bài được gắn chỉ số tiếp theo | M | Chỉ số tăng liên tục; bài cũ không đổi |
@@ -191,6 +194,8 @@ Người dân phường Sơn Trà, đặc biệt người lớn tuổi, cần th
 | FR-CNT-17 | Phát tệp âm thanh hỗ trợ tua (Range) | S | Trả 206 với `Content-Range` đúng |
 
 ### 3.6. Quản lý khóa API Gemini (FR-KEY) — chỉ máy chủ cục bộ
+
+> **Ngoài giai đoạn này (quyết định 2026-10-30).** Không có máy chủ cục bộ trong repo tại thời điểm này. Mục này giữ nguyên để làm sau khi có quyết định mở rộng.
 > **Trạng thái: Hoãn.** Không triển khai trong Phase 1, theo quyết định không dùng Gemini TTS (DAC D-02). Chỉ mở lại khi có quyết định mới.
 
 Khóa API được nhập trực tiếp trên dashboard quản trị của máy chủ cục bộ, chỉ lưu trong bộ nhớ tiến trình. Tính năng này không có trên bản Sites.
@@ -230,6 +235,20 @@ Khóa API được nhập trực tiếp trên dashboard quản trị của máy 
 
 ---
 
+| FR-AUTH-11 | Khôi phục mật khẩu quản trị viên và tình nguyện viên qua email. Người dùng nhập email; hệ thống gửi email chứa liên kết có token bảo mật qua Resend (gói miễn phí: 3 000 email mỗi tháng, 100 email mỗi ngày, 3 tên miền gửi). Liên kết chỉ có hiệu lực trong 15 phút kể từ khi gửi, dùng được một lần; quá hạn hoặc đã dùng thì vô hiệu hóa. Khi có yêu cầu mới, mọi token chưa dùng của cùng tài khoản bị vô hiệu hóa. Token là chuỗi ngẫu nhiên 256 bit, chỉ lưu dạng băm SHA-256. Khi đặt lại thành công, mọi phiên của tài khoản bị đăng xuất. Khóa API gửi email chỉ đặt qua secret của nền tảng, không ghi trong mã | M | Token quá 15 phút bị từ chối; token dùng lần hai bị từ chối; yêu cầu với email không tồn tại trả cùng thông báo như email có tồn tại; cơ sở dữ liệu không chứa token dạng rõ. `[Cần xác định: tên miền gửi đã xác minh của chủ website; giới hạn số yêu cầu mỗi email trong một khoảng thời gian]` |
+
+### 3.8. Tin tức trang chủ (FR-NEWS)
+
+Áp dụng từ giai đoạn này. Quyết định 2026-10-30: tin đăng tay là nguồn chính; tự động cào dữ liệu chỉ bổ sung khi đủ điều kiện ghi ở FR-NEWS-03.
+
+| Mã | Yêu cầu | Ưu tiên | Tiêu chí chấp nhận |
+|---|---|---|---|
+| FR-NEWS-01 | Quản trị viên đăng, sửa và ẩn hoặc hiện tin tức trong trang quản trị. Tình nguyện viên và khách không có quyền này | M | Tình nguyện viên nhận 403; khách nhận 401; API ghi kiểm tra Origin |
+| FR-NEWS-02 | Mỗi tin có tiêu đề bắt buộc; tóm tắt tối đa 500 ký tự; nội dung tối đa 5 000 ký tự; liên kết nguồn không bắt buộc, chỉ nhận https, không chứa thông tin đăng nhập, tối đa 500 ký tự | M | Mỗi giới hạn có kiểm thử từ chối; ràng buộc cũng nằm ở cơ sở dữ liệu |
+| FR-NEWS-03 | Tự động lấy tin từ `https://sontra.danang.gov.vn/`. Chỉ thực hiện khi (a) nguồn cho phép truy cập tự động theo `robots.txt` và điều khoản sử dụng, và (b) chủ website xác nhận bằng văn bản. Trạng thái hiện tại: **chưa thực hiện**. Công cụ kiểm tra của dự án không đọc được `robots.txt` của nguồn (bị chặn theo chính sách của trang, ngày 30/10/2026) | S | Không gửi yêu cầu tự động khi chưa đủ hai điều kiện trên; mỗi tin tự động có liên kết nguồn |
+| FR-NEWS-04 | Trang chủ chỉ hiển thị tin chưa ẩn, mới nhất trước, tối đa 20 tin. Tin ẩn không rời máy chủ qua đường công khai | M | Kiểm thử: tin ẩn không xuất hiện trong `GET /api/news` |
+| FR-NEWS-05 | Mỗi tin ghi rõ nguồn khi có (tên nguồn và liên kết https). Nội dung do ban quản lý viết lại hoặc tóm tắt; không sao chép nguyên văn nội dung từ nguồn bên ngoài | M | Tin có nguồn hiển thị liên kết mở tab mới với `rel="noopener noreferrer"` |
+
 ## 4. Yêu cầu dữ liệu
 
 ### 4.1. Thực thể và quan hệ
@@ -238,6 +257,23 @@ Khóa API được nhập trực tiếp trên dashboard quản trị của máy 
 - `learners` (1) — (n) `assessments`
 - `lessons` (1) — (0..1) `videos`
 - `staff` độc lập, lưu email tình nguyện viên.
+- `accounts` (1) — (n) `password_reset_tokens` (migration 0008, FR-AUTH-11).
+
+**Bảng `password_reset_tokens` (migration `0008_dat_lai_mat_khau.sql`):**
+
+| Cột | Kiểu | Ràng buộc | Ghi chú |
+|---|---|---|---|
+| `id` | text | khóa chính | Mã bản ghi, sinh ngẫu nhiên |
+| `account_id` | text | khóa ngoại tới `accounts(id)`, `ON DELETE CASCADE` | Tài khoản được đặt lại |
+| `token_hash` | text | duy nhất, không rỗng | Băm SHA-256 của token gửi qua email; không lưu token dạng rõ |
+| `created` | text | ISO 8601 UTC | Thời điểm gửi |
+| `expires_at` | text | ISO 8601 UTC, `created` + 15 phút | Hết hạn |
+| `used_at` | text, có thể rỗng | ISO 8601 UTC | Điền khi token được dùng hoặc bị vô hiệu hóa |
+
+- Chỉ mục: `password_reset_tokens_account_idx` trên `account_id`.
+- **Tác động dữ liệu:** chỉ thêm bảng mới, rỗng khi áp dụng. Không sửa bảng `accounts`, `sessions` hay dữ liệu hiện có.
+- **Khôi phục:** `DROP TABLE password_reset_tokens;` (không ảnh hưởng tài khoản hay phiên).
+- **Bảo mật:** bản ghi token không chứa mật khẩu. Mật khẩu mới chỉ lưu băm PBKDF2-SHA256 như FR-AUTH-04.
 
 ### 4.2. Yêu cầu toàn vẹn
 
@@ -408,7 +444,7 @@ Các endpoint được liệt kê trong `DAC_TA_Son_Tra_So_fullstack.md`, Mục 
 
 | Yêu cầu | Mã nguồn | Kiểm thử | Minh chứng |
 |---|---|---|---|
-| FR-LRN-06 | `public/online.js`, `route.ts` (`/api/progress`) | `client-progress.test.mjs`, `api.test.mjs` | Ghi trong hồ sơ |
+| FR-LRN-06 | `public/online.js`, `route.ts` (`/api/progress`) | `client-progress.test.mjs`, `api.test.mjs` | Cần kiểm chứng: tệp tham chiếu không có trong repo (30/10/2026) |
 | FR-OBS-04 | `route.ts` (`/api/assessment`), `schema.ts` | `api.test.mjs` | Ghi trong hồ sơ |
 | FR-DSH-01, FR-DSH-05 | `shared/dashboard-rules.ts`, `shared/dashboard-queries.ts`, `route.ts` (`/api/dashboard`) | `dashboard-rules.test.mjs`, `dashboard-queries.test.mjs`, `dashboard-api.test.mjs` | Tự động: npm test đạt |
 | FR-DSH-02 | `public/admin-report.js`, `public/admin.js` (chu kỳ 15 000 ms) | Chưa có | Chưa kiểm chứng: chưa đo khoảng thời gian làm mới |
@@ -416,14 +452,18 @@ Các endpoint được liệt kê trong `DAC_TA_Son_Tra_So_fullstack.md`, Mục 
 | FR-DSH-04 | `public/admin-report.js` (CSV có BOM) | `admin-page.test.mjs`, `admin-page-browser.mjs` (chạy thủ công) | Tự động và trình duyệt 360px: đạt |
 | FR-DSH-07, FR-OBS-05 | `route.ts` (`/api/dashboard`), `shared/dashboard-queries.ts` | `dashboard-api.test.mjs` | Tự động: npm test đạt |
 | NFR-PERF-03 | `shared/dashboard-queries.ts` | `dashboard-queries.test.mjs` (500 học viên, 10.000 lượt) | Đạt trên SQLite; chưa đo trên D1 |
-| FR-CNT-02 | `server-local/server.mjs` | `local-server.test.mjs` | Ghi trong hồ sơ |
-| FR-CNT-05 | `route.ts` (`/api/video-link`) | `local-server.test.mjs` | Ghi trong hồ sơ |
-| FR-CNT-07 | `server-local/narration.mjs` | `narration.test.mjs` | Ghi trong hồ sơ |
-| FR-ADM-04 | `server-local/server.mjs` | `local-server.test.mjs` | Ghi trong hồ sơ |
-| FR-KEY-02, FR-KEY-03 | `server-local/` (dự kiến) | Chưa có | Chưa triển khai |
-| FR-CNT-11, FR-CNT-12 | `server-local/` (dự kiến) | Chưa có | Chưa triển khai |
+| FR-CNT-02 | `server-local/server.mjs` | `local-server.test.mjs` | Cần kiểm chứng: tệp tham chiếu không có trong repo (30/10/2026) |
+| FR-CNT-05 | `route.ts` (`/api/video-link`) | `local-server.test.mjs` | Cần kiểm chứng: tệp tham chiếu không có trong repo (30/10/2026) |
+| FR-CNT-07 | `server-local/narration.mjs` | `narration.test.mjs` | Cần kiểm chứng: tệp tham chiếu không có trong repo (30/10/2026) |
+| FR-ADM-04 | `server-local/server.mjs` | `local-server.test.mjs` | Cần kiểm chứng: tệp tham chiếu không có trong repo (30/10/2026) |
+| FR-KEY-02, FR-KEY-03 | `server-local/` (dự kiến) | Chưa có | Ngoài giai đoạn này (30/10/2026) |
+| FR-CNT-10 đến FR-CNT-17 | Chưa có | Chưa có | Ngoài giai đoạn này (30/10/2026) |
 | FR-AUTH-01 đến FR-AUTH-10 | `shared/auth-service.ts`, `shared/auth-rules.ts`, `shared/password-hash.ts`, `app/api/[...path]/route.ts` | `tests/auth.test.mjs` (qua `npm test`) | Tự động: npm test đạt trên SQLite; chưa kiểm thử trên Sites (cookie, Origin) |
 | FR-AUTH-03, FR-AUTH-07 đến FR-AUTH-10 (giao diện) | `public/admin.js`, `public/admin.html` | `tests/admin-page-browser.mjs` (chỉ kiểm thử trang đã đăng nhập) | Chưa kiểm chứng luồng màn hình đăng nhập và đổi mật khẩu bắt buộc trên trình duyệt |
+
+| FR-AUTH-11 | `shared/` (dự kiến) | Chưa có | Chưa triển khai |
+| FR-NEWS-01, FR-NEWS-02, FR-NEWS-04, FR-NEWS-05 | `shared/news-*.ts`, `app/api/[...path]/route.ts` | `tests/news.test.mjs` | Tự động: npm test đạt (30/10/2026) |
+| FR-NEWS-03 | Chưa có | Chưa có | Chưa thực hiện: nguồn chưa cho phép truy cập tự động (30/10/2026) |
 
 Cột "Minh chứng" cần cập nhật sau khi có ảnh chụp màn hình hoặc biên bản nghiệm thu.
 
@@ -436,9 +476,11 @@ Cột "Minh chứng" cần cập nhật sau khi có ảnh chụp màn hình ho�
 5. Có cần phụ đề cho video không?
 6. Cơ chế xử lý tiến độ khi mất mạng ở bản học (không chỉ phiếu quan sát)?
 7. Ai là người phê duyệt tài liệu và nghiệm thu?
-8. **Ghi âm WebM:** Chrome thường xuất WebM khi ghi âm trực tiếp, trong khi danh sách tải lên không có WebM. Chọn một trong ba: (a) chấp nhận WebM chỉ cho ghi âm trực tiếp (khuyến nghị), (b) chuyển WebM sang MP3 phía máy chủ bằng ffmpeg khi có, (c) chỉ cho tải tệp có sẵn, bỏ FR-CNT-13.
-9. **Nguồn `none` và tệp tải lên:** khi nguồn được đặt là `none` nhưng vẫn có tệp đã tải lên, theo FR-CNT-15 bản này không phát. Xác nhận hành vi này, hoặc đổi thành "tệp tải lên luôn được phát".
+8. **Ghi âm WebM** — **QUYẾT ĐỊNH (2026-10-30), áp dụng khi triển khai âm thanh:** chấp nhận WebM cho ghi âm trực tiếp và cho tệp ghi âm được đẩy lên. `[Cần xác nhận: "đẩy file ghi âm lên" nghĩa là tệp WebM tải lên từ máy, hay chỉ tệp MP3/M4A/WAV/OGG]`. Nội dung gốc câu hỏi: Chrome thường xuất WebM khi ghi âm trực tiếp, trong khi danh sách tải lên không có WebM. Chọn một trong ba: (a) chấp nhận WebM chỉ cho ghi âm trực tiếp (khuyến nghị), (b) chuyển WebM sang MP3 phía máy chủ bằng ffmpeg khi có, (c) chỉ cho tải tệp có sẵn, bỏ FR-CNT-13.
+9. **Nguồn `none` và tệp tải lên** — **QUYẾT ĐỊNH (2026-10-30), áp dụng khi triển khai âm thanh:** tệp âm thanh chỉ được phát khi học viên chủ động yêu cầu phát, không tự phát. `[Cần xác nhận: hành vi này có thay FR-CNT-15 không, vì FR-CNT-15 hiện ghi nguồn none thì không phát]`. Nội dung gốc câu hỏi: khi nguồn được đặt là `none` nhưng vẫn có tệp đã tải lên, theo FR-CNT-15 bản này không phát. Xác nhận hành vi này, hoặc đổi thành "tệp tải lên luôn được phát".
 10. **Nguồn `tts` và tệp tải lên — ĐÃ QUYẾT ĐỊNH (2026-10-29):** tệp tải lên được ưu tiên hơn TTS. Khi bài không có tệp tải lên, TTS đóng vai trò dự phòng. Áp dụng cho FR-CNT-15 và Mục 4.10 của CLAUDE.md.
 11. **Mật khẩu quản trị lần đầu (FR-AUTH-06) — ĐÃ QUYẾT ĐỊNH (2026-10-29):** hệ thống không có mật khẩu mặc định trong mã. Chủ website đặt `ADMIN_PASSWORD` làm bí mật trên môi trường trước lần đăng nhập đầu, đăng nhập ngay và đổi mật khẩu trong trang tài khoản. Lưu ý: trước lần đăng nhập đầu chưa có tài khoản nên khóa 5 lần sai (FR-AUTH-03) chưa áp dụng; giá trị `ADMIN_PASSWORD` cần đủ mạnh.
 12. **Thời hạn phiên và cookie:** thời hạn phiên 12 giờ — ĐÃ QUYẾT ĐỊNH (2026-10-29), thay cho 8 giờ ở FR-ADM-05 bản 1.1. Thuộc tính cookie SameSite vẫn chờ quyết định: mã dùng `Lax`, NFR-SEC-05 bản 1.1 ghi `Strict`. `[Cần xác nhận: Lax hay Strict]`.
 13. **Đường dẫn không có đuôi `.html` trên Sites — ĐÃ XÁC NHẬN (2026-10-29):** người phụ trách xác nhận đường dẫn `/admin` truy cập được trang quản trị trên Sites. Việc đổi liên kết nội bộ (README, `app/page.tsx`, `online.js`, tài liệu) là thay đổi nhiều tệp, chưa thực hiện, cần phê duyệt riêng.
+14. **Phạm vi giai đoạn này — ĐÃ QUYẾT ĐỊNH (2026-10-30):** không triển khai FR-KEY và FR-CNT-10 đến FR-CNT-17 trong giai đoạn này.
+15. **Tin tức tự động và khôi phục mật khẩu — ĐÃ QUYẾT ĐỊNH (2026-10-30):** (a) tin đăng tay kết hợp liên kết đến `https://sontra.danang.gov.vn/`; tự động cào chỉ bổ sung khi đủ điều kiện FR-NEWS-03. (b) Khôi phục mật khẩu qua email với liên kết có token bảo mật, hiệu lực 15 phút, dùng một lần (FR-AUTH-11). **Cập nhật cùng ngày:** chủ website đồng ý tăng thời hạn từ 5 lên 10–15 phút; dự án chọn 15 phút. Nhà cung cấp gửi email là Resend, gói miễn phí. Thay đổi schema được chủ website đồng ý, ghi tại mục 4.1 (migration 0008). `[Cần xác định: tên miền gửi đã xác minh]`.
