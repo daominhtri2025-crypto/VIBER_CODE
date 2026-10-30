@@ -16,6 +16,8 @@ import { loadDashboardSummary } from '../../../shared/dashboard-summary';
 import { applyStaffChange, validateStaffChange } from '../../../shared/staff-service';
 import { completeLesson, loadCourseRows, loadLearnerProgress, syncProgress } from '../../../shared/progress-service';
 import { recordAssessment } from '../../../shared/assessment-service';
+import { createNews, listAllNews, listPublicNews, updateNews } from '../../../shared/news-service';
+import { validateNewsId, validateNewsInput } from '../../../shared/news-rules';
 export const dynamic='force-dynamic';
 
 // Kiểu tối thiểu cho các phương thức route dùng (thay cho any). D1 và R2 đều có cùng dạng ở runtime.
@@ -71,6 +73,8 @@ export async function GET(req:Request){try{const u=new URL(req.url),p=u.pathname
 if(p==='lessons'){const lessons=await loadLessonCatalog(E.DB);if(!lessons)return out({error:'Chưa tải được bài học. Vui lòng thử lại.'},503);return out({groups:LESSON_GROUP_NAMES,lessons})}
 // Danh mục video công khai. Bài dùng liên kết có url (đã chuẩn hóa sang youtube-nocookie); bài tải tệp có url = null.
 if(p==='videos'){return out(await listVideos(E.DB))}
+// Tin tức trang chủ (phase 1): chỉ tin chưa ẩn, không cần đăng nhập. Tin ẩn không rời máy chủ qua đường này.
+if(p==='news'){return out({news:await listPublicNews(E.DB)})}
 // FR-LRN-08: chỉ phát tệp tải lên (hỗ trợ Range). Bài dùng liên kết trả 404 để trình duyệt nhúng trực tiếp từ /api/videos.
 if(/^video\/\d+$/.test(p)){const l=Number(p.split('/')[1]);const v=await findVideoByLesson(E.DB,l);if(!v||v.kind!=='file')return out({error:'Chưa có video tải lên cho bài này'},404);const o=await E.BUCKET.get(v.key,{range:req.headers});if(!o)return out({error:'Không tìm thấy video'},404);const h=new Headers({'Content-Type':v.mime,'Accept-Ranges':'bytes','Cache-Control':'public,max-age=60','X-Content-Type-Options':'nosniff'});h.set('Content-Length',String(o.range?.length??o.size));if(o.range)h.set('Content-Range',`bytes ${o.range.offset}-${o.range.offset+o.range.length-1}/${o.size}`);return new Response(o.body,{headers:h,status:o.range?206:200})}
 const s=await sessionOf(req);const r=roleOf(req,s);
@@ -80,6 +84,8 @@ if(p.startsWith('progress/'))return out({error:'Không tìm thấy khóa học'}
 // Trạng thái đăng nhập của cả ba vai trò. account chỉ có khi có phiên quản trị hoặc tình nguyện viên.
 if(p==='me'){const account=s?{role:s.role,email:s.email,fullName:s.fullName,mustChange:s.mustChange}:null;if(!r.id)return out({authenticated:false,admin:r.admin,volunteer:r.volunteer,account});const l=await me(r.id);const rows=await loadLearnerProgress(E.DB,r.id);return out({authenticated:true,admin:r.admin,volunteer:r.volunteer,code:l.code,progress:rows,account})}
 if(p==='accounts'){if(!r.admin)return out({error:'Không có quyền'},403);return out({accounts:await listAccounts(E.DB)})}
+// Tin tức toàn bộ (kể cả tin ẩn) cho trang quản trị. Chỉ quản trị viên qua phiên đăng nhập.
+if(p==='admin/news'){if(!s)return out({error:'Vui lòng đăng nhập'},401);if(s.role!=='admin')return out({error:'Không có quyền'},403);return out({news:await listAllNews(E.DB)})}
 if(p==='dashboard'){if(!r.admin)return out({error:'Chỉ quản trị viên được xem dashboard'},403);
 // FR-DSH-07: báo cáo lọc theo khoảng thời gian, bài, nhóm và kỳ. Bộ lọc sai trả 400 trước khi chạy truy vấn nào.
 // Truy vấn và quy tắc nằm trong shared/dashboard-queries; route chỉ chuyển tham số.
@@ -105,6 +111,10 @@ if(p==='progress'){if(Number(req.headers.get('content-length')||0)>16000)return 
 // FR-OBS-04, quy tắc 4.3: phiếu idempotent theo (learner, client_id). Gửi lại cùng nội dung trả 200 với bản cũ;
 // khác nội dung trả 409 để không ghi đè phiếu đã có.
 if(p==='assessment'){if(!r.volunteer)return out({error:'Cần quyền người đánh giá'},403);const v=validateAssessment(await req.json().catch(()=>null));if(!v.ok)return out({error:v.error},400);const outcome=await recordAssessment(E.DB,v.value,r.email,{newId:crypto.randomUUID(),now:new Date().toISOString()});switch(outcome.kind){case 'unknown_learner':return out({error:'Không tìm thấy mã học viên. Học viên cần đăng nhập trước.'},404);case 'unavailable':return out({error:'Chưa lưu được dữ liệu. Vui lòng thử lại.'},503);case 'conflict':return out({error:'Mã phiếu này đã dùng cho nội dung khác. Vui lòng tải lại trang và nhập lại phiếu.'},409);case 'stored':return out({ok:true,created:true,id:outcome.id});case 'replayed':return out({ok:true,created:false,id:outcome.id})}}
+// Tin tức (phase 1): chỉ quản trị viên đăng và sửa qua phiên đăng nhập; tình nguyện viên và học viên bị từ chối.
+// Origin đã được kiểm tra ở đầu POST; dữ liệu được kiểm tra trong news-rules trước khi ghi.
+if(p==='admin/news'){if(!s)return out({error:'Vui lòng đăng nhập'},401);if(s.role!=='admin')return out({error:'Không có quyền'},403);const v=validateNewsInput(await req.json().catch(()=>null));if(!v.ok)return out({error:v.error},400);const id=await createNews(E.DB,v.value,s.accountId,new Date().toISOString());return out({ok:true,id},201)}
+if(p==='admin/news/update'){if(!s)return out({error:'Vui lòng đăng nhập'},401);if(s.role!=='admin')return out({error:'Không có quyền'},403);const body=(await req.json().catch(()=>null)) as {id?:unknown}|null;const idv=validateNewsId(body?.id);if(!idv.ok)return out({error:idv.error},400);const v=validateNewsInput(body);if(!v.ok)return out({error:v.error},400);const res=await updateNews(E.DB,idv.value,v.value,new Date().toISOString());return res==='ok'?out({ok:true}):out({error:'Không tìm thấy tin'},404)}
 if(p==='staff'){if(!r.admin)return out({error:'Không có quyền'},403);const change=validateStaffChange(await req.json().catch(()=>null));if(!change.ok)return out({error:change.error},400);await applyStaffChange(E.DB,change,new Date().toISOString());return out({ok:true})}
 // FR-CNT-04, 06: tải tệp. Định dạng lấy từ chữ ký tệp, không tin Content-Type của client. Thay tệp cũ sau khi DB thành công.
 if(p==='upload-video'){if(!r.admin)return out({error:'Không có quyền'},403);const limited=await readBodyWithLimit(req,UPLOAD_BODY_LIMIT);if(!limited.ok)return out({error:'Tệp tối đa 25 MB'},413);const form=await new Response(limited.body,{headers:{'content-type':req.headers.get('content-type')||''}}).formData();const f=form.get('video');if(!(f instanceof File))return out({error:'Chọn tệp MP4 hoặc WebM'},400);const outcome=await storeUploadedVideo(E.DB,{put:async(key,body,contentType)=>{await E.BUCKET.put(key,body as ReadableStream,{httpMetadata:{contentType}})},delete:async(key)=>{await E.BUCKET.delete(key)}},{lesson:Number(form.get('lesson')),duration:Number(form.get('duration')),file:{size:f.size,head:async(length)=>new Uint8Array(await f.slice(0,length).arrayBuffer()),stream:()=>f.stream()}},{newId:crypto.randomUUID(),now:new Date().toISOString()});if(outcome.kind==='rejected')return out({error:outcome.error},outcome.status);return out({ok:true})}

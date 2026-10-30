@@ -13,7 +13,10 @@ const tryRun = (fn) => { try { fn(); return null; } catch (error) { return Strin
   const sql = new DatabaseSync(':memory:');
   sql.exec('PRAGMA foreign_keys = ON');
   const tags = applyMigrations(sql);
-  assert.equal(tags.length, 7, 'journal phải có 7 migration (0000–0006)');
+  assert.equal(tags.length, 8, 'journal phải có 8 migration (0000–0007)');
+  // 0007: bảng tin tức rỗng; chỉ mục hiển thị theo trạng thái ẩn và thời điểm đăng.
+  assert.ok(columns(sql, 'news').includes('source_url'), 'news.source_url phải tồn tại (0007)');
+  assert.ok(sql.prepare('PRAGMA index_list(news)').all().some((i) => i.name === 'news_visible_published_idx'), 'chỉ mục tin tức phải tồn tại (0007)');
   // 0006: bảng tài khoản và phiên; session xóa theo tài khoản (ON DELETE CASCADE).
   assert.ok(columns(sql, 'accounts').includes('password_hash'), 'accounts.password_hash phải tồn tại (0006)');
   assert.ok(columns(sql, 'sessions').includes('token_hash'), 'sessions.token_hash phải tồn tại (0006)');

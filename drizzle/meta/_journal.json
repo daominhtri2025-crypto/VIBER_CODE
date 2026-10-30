@@ -50,6 +50,13 @@
       "when": 1793200000000,
       "tag": "0006_tai_khoan_phien",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "6",
+      "when": 1793300000000,
+      "tag": "0007_tin_tuc",
+      "breakpoints": true
     }
   ]
 }
