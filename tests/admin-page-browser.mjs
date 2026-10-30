@@ -53,6 +53,7 @@ const server = createServer((req, res) => {
     if (url.pathname === '/api/accounts') return json({ accounts: [{ id: 'v1', email: 'tnv-thu@example.test', full_name: 'Tình nguyện viên thử', active: 1, must_change: 1, created: new Date().toISOString() }] });
     if (url.pathname === '/api/lessons') return json({ groups: GROUPS, lessons: LESSONS.map((l) => ({ ...l, icon: '', summary: '', steps: [], quiz: { question: '', options: [] }, next_step: '' })) });
     if (url.pathname === '/api/videos') return json([]);
+    if (url.pathname === '/api/admin/news') return json({ news: [{ id: 1, title: 'Tin thử', summary: 'Tóm tắt thử', content: 'Nội dung thử', source_url: null, hidden: false, published_at: new Date().toISOString(), updated: new Date().toISOString() }] });
     if (url.pathname === '/api/dashboard') return json({ learners: [], assessments: [], staff: [], at: new Date().toISOString(), report: reportFor(url.searchParams) });
     res.writeHead(404); return res.end();
   }

@@ -1,16 +1,192 @@
-<!doctype html><html lang="vi"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Sơn Trà Số — Kỹ năng nhỏ, thay đổi lớn</title><style>
-:root{--green:#17634c;--ink:#183e36;--bg:#f7f8f2}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.6 system-ui,sans-serif}button,input,select{font:inherit}button,a{touch-action:manipulation}button{cursor:pointer}header{display:flex;align-items:center;justify-content:space-between;padding:22px 6%;border-bottom:1px solid #dce5db;background:#fff}a{color:inherit;text-decoration:none}nav{display:flex;gap:26px;align-items:center}.brand{font-size:24px;font-weight:800}.logo{background:var(--green);color:white;padding:7px 12px;border-radius:12px;margin-right:9px}button,.btn{border:0;border-radius:9px;padding:12px 20px;background:var(--green);color:white;font-weight:650;display:inline-block}.secondary{background:#e8eee3;color:var(--ink)}main{max-width:1250px;margin:auto;padding:0 32px}.hero{display:grid;grid-template-columns:1.1fr 1fr;align-items:center;gap:50px;padding:65px 0 45px}.tag{text-transform:uppercase;letter-spacing:2px;font-size:12px;font-weight:800;color:#647d58}.pill{background:#e6eddc;color:#3a663c;border-radius:30px;padding:6px 12px;font-size:13px;display:inline-block}h1{font-size:clamp(40px,5vw,65px);line-height:1.14;letter-spacing:-2px;margin:20px 0}h1 em{font-style:normal;color:#338260}p{color:#5b7167}.hero p{max-width:520px;font-size:19px}.actions{display:flex;gap:12px;flex-wrap:wrap;margin:27px 0}.scene{position:relative;height:350px;background:#e4eddb;border-radius:34px;overflow:hidden;display:flex;align-items:center;justify-content:center}.scene:before{content:'';position:absolute;width:390px;height:390px;border:1px solid #c5d6ba;border-radius:50%;top:50px;left:70px}.phone{position:relative;background:#fff;border:8px solid #254f40;border-radius:30px;width:185px;height:280px;transform:rotate(-8deg);padding:23px 13px;box-shadow:16px 20px 0 #c1d1b5;text-align:center}.phone .screen{background:#eaf1e2;border-radius:12px;padding:16px 4px;margin:12px 0;font-size:40px}.float{position:absolute;background:white;border-radius:14px;padding:12px 18px;box-shadow:0 8px 30px #254f4012;font-size:14px}.f1{left:18px;top:30px}.f2{right:15px;bottom:27px}.stats{display:grid;grid-template-columns:repeat(3,1fr);padding:24px 0;border-top:1px solid #dae3d5;border-bottom:1px solid #dae3d5;text-align:center}.stats strong{font-size:25px;margin-right:8px}.stats span{font-size:14px;color:#637267}.section{padding:48px 0}.sectionhead{display:flex;justify-content:space-between;align-items:end;gap:20px}h2{font-size:31px;letter-spacing:-.8px;margin:5px 0}input,select{border:1px solid #cbd8cc;padding:12px;border-radius:8px;background:white;color:var(--ink)}.filters{display:flex;gap:9px;flex-wrap:wrap;margin:24px 0}.filters button{background:#e9eee4;color:#506655;padding:8px 14px;font-size:14px}.filters button.active{background:var(--green);color:white}.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}.card{background:white;border:1px solid #e0e6db;border-radius:17px;padding:24px;display:flex;flex-direction:column;align-items:start}.icon{height:54px;width:54px;display:grid;place-items:center;background:#edf2e7;border-radius:15px;font-size:26px}.card h3{font-size:20px;line-height:1.4;margin:15px 0 8px}.card p{font-size:15px;margin:0 0 20px}.meta{font-size:12px;color:#6a7d6a;margin-top:17px}.card button{margin-top:auto;background:none;padding:0;color:var(--green)}.banner{padding:32px;background:#173f34;border-radius:20px;color:white;display:flex;justify-content:space-between;gap:25px;align-items:center}.banner p{color:#d0dfd2}.banner button{background:#e7edb2;color:#234c3c}.progress{height:9px;background:#dfe9da;border-radius:10px;margin:18px 0;overflow:hidden}.progress i{display:block;background:#4c8c55;height:100%}footer{padding:32px 6%;border-top:1px solid #dde4d7;color:#697a6d;font-size:14px}dialog{width:min(760px,94vw);max-height:88vh;border:0;border-radius:20px;padding:30px;color:var(--ink)}dialog::backdrop{background:#102e27aa}.close{float:right;background:#edf1e8;color:var(--ink);padding:6px 13px}.steps li{padding:10px 0}.notice{background:#f1f4e9;padding:15px;border-radius:10px;font-size:15px}.options{display:grid;gap:10px;margin:15px 0}.options button{text-align:left;background:#edf2e7;color:var(--ink)}.result{padding:15px;border-left:4px solid #438455;background:#edf3e9;margin:15px 0}.hidden{display:none}textarea{width:100%;font:inherit;min-height:90px;padding:12px;border:1px solid #cbd8cc;border-radius:8px}.field{display:block;margin:15px 0}.field input,.field select{width:100%}.small{font-size:13px} @media(max-width:850px){nav a{display:none}.hero{grid-template-columns:1fr;padding-top:35px;gap:25px}.scene{height:300px}.grid{grid-template-columns:repeat(2,1fr)}.sectionhead{align-items:start;flex-direction:column}.stats span{display:block}.banner{align-items:start;flex-direction:column}}@media(max-width:550px){main{padding:0 20px}.grid{grid-template-columns:1fr}header{padding:17px 20px}.brand{font-size:21px}h1{letter-spacing:-1.3px}.stats strong{font-size:21px}.card{padding:22px}}
-</style><link rel="stylesheet" href="home-polish.css"><header><a class="brand" href="#"><span class="logo">S</span>Sơn Trà Số<span style="color:#72a168">.</span></a><nav><a href="#hoc">Bài học</a><a href="#tienbo">Tiến độ của tôi</a><a href="#tailieu">Tài liệu</a><button class="secondary" onclick="resources()">Bộ triển khai</button><button class="secondary" id="fontsize" aria-label="Tăng hoặc giảm cỡ chữ">A＋</button></nav></header><main><section class="slideshow" id="slideshow" aria-roledescription="carousel" aria-label="Điểm nhấn của Sơn Trà Số">
-<div class="slides">
-<div class="slide active" role="group" aria-roledescription="slide" aria-label="1 trên 4" aria-hidden="false"><span class="badge info">🌱 Bình dân học vụ số</span><h2>Kỹ năng nhỏ, thay đổi lớn</h2><p>Học cách dùng điện thoại an toàn và tự tin, mỗi ngày một chút.</p></div>
-<div class="slide" role="group" aria-roledescription="slide" aria-label="2 trên 4" aria-hidden="true"><span class="badge info">📚 Lộ trình</span><h2>10 bài học thực tế</h2><p>Gồm 5 chủ đề thiết yếu. Mỗi bài khoảng 5–10 phút, làm thử ngay trên điện thoại.</p></div>
-<div class="slide" role="group" aria-roledescription="slide" aria-label="3 trên 4" aria-hidden="true"><span class="badge info">🛡 An toàn số</span><h2>15 tình huống luyện nhận diện rủi ro</h2><p>Luyện cách nhận ra tình huống nguy hiểm trước khi gặp thật và tự bảo vệ bản thân.</p></div>
-<div class="slide" role="group" aria-roledescription="slide" aria-label="4 trên 4" aria-hidden="true"><span class="badge info">✓ Học theo nhịp của bạn</span><h2>Miễn phí, không cần tài khoản</h2><p>Tiến độ lưu trên thiết bị. Đăng nhập để đồng bộ nhiều thiết bị. Đây là bản thí điểm độc lập, chưa phải cổng thông tin chính thức của phường.</p></div>
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Sơn Trà Số — Trang chủ (bản xem trước)</title>
+<meta name="description" content="Khóa học kỹ năng số miễn phí cho cư dân phường Sơn Trà: 10 bài ngắn, học và thực hành ngay trên điện thoại.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="home-polish.css">
+<link rel="stylesheet" href="home-service.css">
+</head>
+<body class="svc">
+
+<!-- Thanh tiện ích: nêu rõ đây không phải cổng chính thức. -->
+<div class="svc-util">
+  <div class="svc-wrap">
+    <p>Bản thí điểm độc lập — chưa phải cổng thông tin chính thức của phường. Miễn phí, không cần tài khoản để học.</p>
+  </div>
 </div>
-<div class="slide-controls">
-<button class="slide-nav" id="slidePrev" aria-label="Slide trước">‹</button>
-<div class="dots" role="group" aria-label="Chọn slide"><button aria-label="Slide 1" aria-current="true"></button><button aria-label="Slide 2" aria-current="false"></button><button aria-label="Slide 3" aria-current="false"></button><button aria-label="Slide 4" aria-current="false"></button></div>
-<button class="slide-nav" id="slideNext" aria-label="Slide tiếp">›</button>
-<button class="slide-play" id="slidePlay" aria-pressed="true" aria-label="Tạm dừng tự chạy">❚❚</button>
-</div>
-</section><section class="hero"><div><span class="pill">● Bình dân học vụ số · Sơn Trà</span><h1>Kỹ năng nhỏ.<br><em>Thay đổi lớn.</em></h1><p>Cùng học cách sử dụng công nghệ an toàn, tự tin. Mỗi ngày một chút, thực hành được ngay trên điện thoại của bạn.</p><div class="actions"><a class="btn" href="#hoc">Bắt đầu học ngay ↗</a><button class="secondary" onclick="showHelp()">Tôi cần hướng dẫn</button></div><span class="small">✓ Miễn phí học liệu &nbsp; ✓ Không cần tài khoản &nbsp; ✓ Học theo nhịp của bạn</span></div><div class="scene" aria-label="Minh họa điện thoại với bài học kỹ năng số"><div class="float f1">🌱 Chậm một chút, hiểu nhiều hơn</div><div class="phone"><b>Sơn Trà Số</b><div class="screen">📱</div><b>Hôm nay bạn học gì?</b><div class="progress"><i style="width:65%"></i></div><small>Mỗi bước là một tiến bộ</small></div><div class="float f2">✓ Bạn làm được mà!</div></div></section><div class="stats"><div><strong>05</strong><span>Chủ đề thiết yếu</span></div><div><strong>10</strong><span>Bài học thực tế</span></div><div><strong>5–10 phút</strong><span>Mỗi bài học</span></div></div><section class="section" id="hoc"><div class="sectionhead"><div><div class="tag">Học để tự làm</div><h2>Bắt đầu từ điều bạn cần</h2><p>Chọn một bài học. Đọc từng bước. Thử làm ngay.</p></div><input id="search" aria-label="Tìm bài học" placeholder="⌕ Tìm bài học…"></div><div class="filters" id="filters"></div><div class="grid" id="lessons"></div></section><section class="section" id="tienbo"><div class="banner"><div><div class="tag" style="color:#c8dca8">Hành trình của bạn</div><h2>Mỗi bước nhỏ đều đáng ghi nhận</h2><p id="progressText"></p><div class="progress"><i id="progressBar"></i></div><span class="small">Đăng nhập để đồng bộ nhiều thiết bị. Tự đánh dấu chưa phải xác nhận kỹ năng.</span></div><button onclick="report()">Xem & xuất kết quả ↓</button></div></section><section class="section" id="tailieu"><div class="tag">Luôn có người đồng hành</div><h2>Học ở nhà, thực hành ở mọi nơi</h2><div class="grid" style="margin-top:24px"><article class="card"><div class="icon">▤</div><h3>Tài liệu mang theo</h3><p>Tổng hợp hướng dẫn 10 bài học, có thể in hoặc lưu PDF từ trình duyệt.</p><button onclick="resources()">Sổ tay, QR và phiếu đánh giá →</button></article><article class="card"><div class="icon">🛡</div><h3>Góc an toàn số</h3><p>15 tình huống để luyện cách nhận diện rủi ro và bảo vệ bản thân.</p><button onclick="safety(0)">Thử một tình huống →</button></article><article class="card"><div class="icon">☏</div><h3>Phiếu nhu cầu hỗ trợ</h3><p>Chuẩn bị phiếu để mang đến điểm hỗ trợ cộng đồng. Chưa có kênh tiếp nhận trực tuyến.</p><button onclick="support()">Tạo phiếu hỗ trợ →</button></article></div></section></main><footer><b>Sơn Trà Số</b> · Học điều hay, làm điều mới.<br>Bản thí điểm độc lập — chưa phải cổng thông tin chính thức của phường. Video thực tế được bổ sung theo từng bài sau khi quản trị viên tải lên.</footer><dialog id="modal"><button class="close" onclick="modal.close()" aria-label="Đóng">×</button><div id="content"></div></dialog><script src="app.js"></script><script src="resources.js"></script><script src="online.js"></script><script src="slideshow.js"></script></html>
+
+<header class="svc-head">
+  <div class="svc-wrap svc-head-row">
+    <a class="svc-brand" href="#top" aria-label="Sơn Trà Số, về đầu trang">
+      <span class="svc-mark" aria-hidden="true">ST</span>
+      <span>Sơn Trà Số</span>
+    </a>
+    <nav class="svc-nav" aria-label="Điều hướng chính">
+      <a href="#hoc">Bài học</a>
+      <a href="#tiep-tuc">Bài đang học</a>
+      <a href="#tin-tuc">Tin tức</a>
+      <a href="#tienbo">Tiến độ</a>
+      <a href="#tailieu">Tài liệu</a>
+      <a href="#hoi-dap">Hỏi đáp</a>
+    </nav>
+    <button class="tool" id="fontsize" aria-label="Tăng hoặc giảm cỡ chữ">A＋</button>
+  </div>
+</header>
+
+<main id="top">
+
+  <!-- Khối tìm kiếm đầu trang: giống bố cục cổng dịch vụ, nhưng chỉ tìm bài học. -->
+  <section class="svc-hero" aria-labelledby="hero-title">
+    <div class="svc-wrap">
+      <h1 id="hero-title">Học điện thoại từng bước một</h1>
+      <p class="svc-lead">Mỗi bài ngắn chỉ vài phút. Đọc từng bước, làm thử ngay trên chính điện thoại của bạn.</p>
+      <form class="svc-search" role="search" onsubmit="event.preventDefault();location.hash='hoc';document.getElementById('search').focus()">
+        <label class="svc-search-label" for="search">Tìm bài học</label>
+        <div class="svc-search-row">
+          <input id="search" type="search" placeholder="Nhập từ khóa, ví dụ: mã QR" autocomplete="off">
+          <button class="btn btn-primary" type="submit">Tìm bài</button>
+        </div>
+      </form>
+      <ul class="svc-quick" aria-label="Lối tắt">
+        <li><a href="#tiep-tuc">Bài đang học</a></li>
+        <li><a href="#chu-de">Chọn theo chủ đề</a></li>
+        <li><a href="#tailieu">Tài liệu in</a></li>
+        <li><a href="#tienbo">Tiến độ của tôi</a></li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- Bài đang học: lấy từ tiến độ trên thiết bị (localStorage), không gửi lên máy chủ. -->
+  <section class="svc-block" id="tiep-tuc" aria-labelledby="tiep-tuc-title">
+    <div class="svc-wrap">
+      <h2 id="tiep-tuc-title">Bài đang học</h2>
+      <div class="svc-panel" id="continueBody" aria-live="polite">
+        <p class="state">Đang tải…</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Chủ đề: năm nhóm bài, bấm để lọc danh sách bài học. -->
+  <section class="svc-block svc-band" id="chu-de" aria-labelledby="chu-de-title">
+    <div class="svc-wrap">
+      <h2 id="chu-de-title">Chọn theo chủ đề</h2>
+      <div class="svc-tiles" id="topics" aria-live="polite">
+        <p class="state">Đang tải chủ đề…</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Tin tức: danh sách do quản trị viên đăng (GET /api/news). Tin ẩn không hiện. -->
+  <section class="svc-block" id="tin-tuc" aria-labelledby="tin-tuc-title">
+    <div class="svc-wrap">
+      <h2 id="tin-tuc-title">Tin tức</h2>
+      <div class="svc-news" id="news" aria-live="polite">
+        <p class="state">Đang tải tin…</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Danh sách bài học: app.js điền vào #filters và #lessons từ GET /api/lessons. -->
+  <section class="svc-block svc-band" id="hoc" aria-labelledby="hoc-title">
+    <div class="svc-wrap">
+      <h2 id="hoc-title">Danh sách bài học</h2>
+      <p class="svc-note">Các bài được chia theo chủ đề. Chọn một bài, đọc, rồi làm thử.</p>
+      <div class="filters" id="filters"></div>
+      <div class="lesson-list" id="lessons"></div>
+    </div>
+  </section>
+
+  <!-- Tiến độ trên thiết bị. -->
+  <section class="svc-block" id="tienbo" aria-labelledby="tienbo-title">
+    <div class="svc-wrap">
+      <h2 id="tienbo-title">Tiến độ của bạn</h2>
+      <p id="progressText"></p>
+      <div class="progress" aria-hidden="true"><i id="progressBar"></i></div>
+      <p class="note">Tự đánh dấu chưa phải là xác nhận kỹ năng. Đăng nhập để đồng bộ nhiều thiết bị.</p>
+      <button class="btn btn-ghost" onclick="report()">Xem và xuất kết quả</button>
+    </div>
+  </section>
+
+  <!-- Tài liệu và hỗ trợ. -->
+  <section class="svc-block svc-band" id="tailieu" aria-labelledby="tailieu-title">
+    <div class="svc-wrap">
+      <h2 id="tailieu-title">Tài liệu và hỗ trợ</h2>
+      <div class="svc-tiles svc-tiles-3">
+        <article class="svc-tile">
+          <h3>Tài liệu mang theo</h3>
+          <p>Sổ tay 10 bài học, mã QR và phiếu đánh giá. In hoặc lưu thành PDF.</p>
+          <button class="btn btn-ghost" onclick="resources()">Mở tài liệu</button>
+        </article>
+        <article class="svc-tile">
+          <h3>Góc an toàn số</h3>
+          <p>15 tình huống để luyện cách nhận diện rủi ro và tự bảo vệ bản thân.</p>
+          <button class="btn btn-ghost" onclick="safety(0)">Thử một tình huống</button>
+        </article>
+        <article class="svc-tile">
+          <h3>Cần người giúp trực tiếp?</h3>
+          <p>Chuẩn bị phiếu nhu cầu để mang đến điểm hỗ trợ. Hiện chưa có kênh tiếp nhận trực tuyến.</p>
+          <button class="btn btn-ghost" onclick="support()">Tạo phiếu hỗ trợ</button>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- Hỏi đáp: nội dung tĩnh, đúng với mô tả của dự án. -->
+  <section class="svc-block" id="hoi-dap" aria-labelledby="hoi-dap-title">
+    <div class="svc-wrap">
+      <h2 id="hoi-dap-title">Câu hỏi thường gặp</h2>
+      <div class="svc-faq">
+        <details>
+          <summary>Học có mất tiền không?</summary>
+          <p>Không. Học liệu miễn phí.</p>
+        </details>
+        <details>
+          <summary>Có cần tài khoản để học không?</summary>
+          <p>Không cần. Bạn xem bài và làm thử ngay. Chỉ khi muốn đồng bộ tiến độ giữa nhiều thiết bị thì mới cần đăng nhập.</p>
+        </details>
+        <details>
+          <summary>Tiến độ được lưu ở đâu?</summary>
+          <p>Trên chính thiết bị bạn đang dùng. Nếu đăng nhập, tiến độ được đồng bộ giữa các thiết bị.</p>
+        </details>
+        <details>
+          <summary>Đây có phải cổng thông tin chính thức của phường không?</summary>
+          <p>Không. Đây là bản thí điểm độc lập, chưa phải cổng thông tin chính thức của phường.</p>
+        </details>
+        <details>
+          <summary>Bài kiểm tra có được chấm không?</summary>
+          <p>Có, nhưng cần đăng nhập và có kết nối máy chủ. Khi chưa đăng nhập, bài kiểm tra chưa được chấm và hệ thống sẽ báo rõ.</p>
+        </details>
+        <details>
+          <summary>Có in tài liệu được không?</summary>
+          <p>Có. Mở “Tài liệu” để xem sổ tay, mã QR và phiếu đánh giá, rồi in hoặc lưu thành PDF từ trình duyệt.</p>
+        </details>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="svc-foot">
+  <div class="svc-wrap">
+    <p><b>Sơn Trà Số</b> · Học điều hay, làm điều mới.</p>
+    <p>Bản thí điểm độc lập — chưa phải cổng thông tin chính thức của phường. Video thực tế được bổ sung theo từng bài sau khi quản trị viên tải lên.</p>
+  </div>
+</footer>
+
+<dialog id="modal">
+  <button class="close" onclick="modal.close()" aria-label="Đóng">×</button>
+  <div id="content"></div>
+</dialog>
+
+<script src="app.js"></script>
+<script src="resources.js"></script>
+<script src="online.js"></script>
+<script src="home-service.js"></script>
+<script src="home-service-art.js"></script>
+</body>
+</html>

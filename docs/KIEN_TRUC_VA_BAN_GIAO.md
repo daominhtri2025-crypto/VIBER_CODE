@@ -7,7 +7,7 @@
 | public/app.js | Nội dung bài học, câu kiểm tra và tiến độ trên thiết bị |
 | public/resources.js | Phiếu đánh giá cục bộ, sao lưu/khôi phục, tài liệu hỗ trợ |
 | public/online.js | Đăng nhập, đồng bộ API, video và nút đánh dấu hoàn thành trong bài học |
-| public/home-polish.css, public/slideshow.js | Giao diện trang chủ (CSS thuần) và slideshow đầu trang |
+| public/home.html, public/home-polish.css, public/home-service.css, public/home-service.js, public/home-service-art.js | Trang chủ theo bố cục dịch vụ công: bài đang học, chủ đề, tin tức, bài học, tiến độ, tài liệu, hỏi đáp. Minh họa là SVG vẽ tay, không dùng ảnh bên ngoài. |
 | shared/ | Quy tắc nghiệp vụ dùng chung (kiểm tra bài học, phiếu, video, tiến độ); được `tsc --strict` kiểm tra |
 | public/admin.html, public/admin.js, public/admin-report.js | Điều phối: đăng nhập email và mật khẩu, menu bên trái, tài khoản tình nguyện viên, báo cáo thống kê (bộ lọc, bảng, CSV có BOM), ghi phiếu quan sát và tải video |
 | public/print.html, public/qr | Sổ tay, poster, phiếu và mã QR |
@@ -26,6 +26,7 @@
 - videos: bài học, khóa tệp trong R2, loại video, thời lượng và thời gian cập nhật.
 - accounts (migration 0006): tài khoản quản trị và tình nguyện viên; mật khẩu chỉ lưu dạng băm PBKDF2-SHA256, kèm số lần sai, thời điểm khóa tạm và cờ buộc đổi mật khẩu.
 - sessions (migration 0006): phiên đăng nhập; chỉ lưu băm SHA-256 của mã phiên, không lưu mã gốc.
+- news (migration 0007): tin tức trang chủ. Quản trị viên đăng, sửa, ẩn tin qua `/api/admin/news`; `GET /api/news` chỉ trả tin chưa ẩn. Liên kết nguồn chỉ nhận https, kiểm tra cả trong CSDL. Không có cào dữ liệu ở giai đoạn này.
 
 ## API
 | Phương thức / đường dẫn | Quyền |

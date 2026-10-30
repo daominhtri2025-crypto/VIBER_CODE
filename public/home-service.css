@@ -1,0 +1,138 @@
+/* Bố cục trang chủ theo mẫu cổng dịch vụ công (bản xem trước).
+   Màu và nhận diện do Sơn Trà Số đặt; không dùng quốc huy, logo hay bảng màu của cơ quan nhà nước.
+   Nạp sau home-polish.css để ghi đè token và giữ nguyên kiểu thẻ bài, cửa sổ chi tiết. */
+
+:root {
+  --bg: #f4f3ee;
+  --surface: #ffffff;
+  --ink: #1c2430;
+  --muted: #4b5563;
+  --accent: #0b6e6a;
+  --accent-ink: #ffffff;
+  --focus: #1c2430;
+  --line: #d7d5cc;
+}
+
+body.svc {
+  background: var(--bg);
+  color: var(--ink);
+  font-size: 18px;
+  line-height: 1.6;
+}
+
+.svc-wrap {
+  max-width: 1200px;
+  margin-inline: auto;
+}
+
+/* Thanh tiện ích và đầu trang */
+.svc-util { background: #e6e4dc; color: var(--muted); font-size: 16px; }
+.svc-util p { margin: 0; padding-block: 8px; }
+.svc-head { background: var(--surface); border-bottom: 1px solid var(--line); }
+.svc-head-row { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 20px; padding-block: 10px; }
+.svc-brand { display: inline-flex; align-items: center; gap: 10px; min-height: 44px; font-weight: 700; font-size: 20px; color: var(--ink); text-decoration: none; }
+.svc-mark { display: inline-grid; place-items: center; width: 40px; height: 40px; border-radius: 8px; background: var(--accent); color: var(--accent-ink); font-size: 16px; font-weight: 700; }
+.svc-nav { display: flex; flex-wrap: wrap; gap: 4px 6px; flex: 1 1 auto; }
+.svc-nav a { display: inline-flex; align-items: center; min-height: 44px; padding: 0 12px; color: var(--ink); text-decoration: none; border-radius: 6px; font-size: 17px; }
+.svc-nav a:hover { background: #ebeae3; }
+.svc-head .tool { margin-left: auto; }
+
+/* Khối tìm kiếm đầu trang */
+.svc-hero { background: var(--accent); color: var(--accent-ink); padding-block: clamp(32px, 6vw, 64px); }
+.svc-hero h1 { margin: 0; font-size: clamp(30px, 5vw, 48px); line-height: 1.15; text-wrap: balance; }
+.svc-lead { margin: 12px 0 24px; max-width: 60ch; font-size: 19px; }
+.svc-search-label { display: block; font-weight: 600; margin-bottom: 8px; }
+.svc-search-row { display: flex; flex-wrap: wrap; gap: 10px; }
+.svc-search input { flex: 1 1 260px; min-height: 52px; padding: 10px 14px; font-size: 18px; border: 2px solid #ffffff; border-radius: 6px; background: #ffffff; color: var(--ink); min-width: 0; max-width: 640px; }
+.svc-hero .btn-primary { background: #ffffff; color: var(--accent); min-height: 52px; }
+.svc-quick { display: flex; flex-wrap: wrap; gap: 8px 18px; list-style: none; padding: 0; margin: 20px 0 0; }
+.svc-quick a { display: inline-flex; align-items: center; min-height: 44px; color: var(--accent-ink); text-decoration: underline; text-underline-offset: 3px; }
+
+/* Khối nội dung */
+.svc-block { padding-block: clamp(32px, 5vw, 56px); }
+.svc-block h2 { margin: 0 0 20px; font-size: clamp(24px, 3vw, 30px); line-height: 1.25; text-wrap: balance; }
+.svc-band { background: var(--surface); border-block: 1px solid var(--line); }
+.svc-note { margin: -8px 0 16px; color: var(--muted); max-width: 60ch; }
+.svc-block p { max-width: 60ch; }
+.state { color: var(--muted); margin: 0; }
+
+/* Bài đang học */
+.svc-panel { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 20px; display: grid; gap: 10px; justify-items: start; }
+.svc-continue-title { margin: 0; font-size: 22px; font-weight: 600; }
+.svc-continue-meta { margin: 0; color: var(--muted); font-size: 17px; }
+
+/* Chủ đề: lưới các ô bấm được */
+.svc-tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 12px; }
+.svc-tiles-3 { grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); }
+.svc-tile { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 18px; display: grid; gap: 6px; align-content: start; min-width: 0; text-align: left; color: var(--ink); font: inherit; }
+.svc-tile h3 { margin: 0; font-size: 20px; line-height: 1.3; }
+.svc-tile p { margin: 0 0 6px; color: var(--muted); font-size: 17px; }
+.svc-tile-button { cursor: pointer; min-height: 96px; }
+.svc-tile-button:hover { border-color: var(--accent); }
+.svc-tile-count { color: var(--muted); font-size: 16px; }
+.svc-tile-name { font-size: 20px; font-weight: 600; line-height: 1.3; }
+
+/* Tin tức: danh sách có ngày, không dùng hình ảnh */
+.svc-news { display: grid; gap: 0; border-top: 2px solid var(--ink); }
+.svc-news-item { padding: 16px 0; border-bottom: 1px solid var(--line); display: grid; gap: 4px; }
+.svc-news-item h3 { margin: 0; font-size: 20px; line-height: 1.35; }
+.svc-news-item p { margin: 0; color: var(--muted); }
+.svc-news-date { font-size: 16px; color: var(--muted); font-weight: 600; }
+.svc-news-link { justify-self: start; min-height: 44px; display: inline-flex; align-items: center; color: var(--accent); font-weight: 600; }
+
+/* Hỏi đáp */
+.svc-faq details { border-top: 1px solid var(--line); padding: 14px 0; }
+.svc-faq details:last-child { border-bottom: 1px solid var(--line); }
+.svc-faq summary { cursor: pointer; font-weight: 600; min-height: 44px; display: flex; align-items: center; }
+
+/* Chân trang */
+.svc-foot { background: #1c2430; color: #e8e6df; padding-block: 28px; font-size: 16px; }
+.svc-foot p { margin: 0 0 8px; max-width: 70ch; }
+
+/* Điều chỉnh nhỏ cho điện thoại (360 px) */
+@media (max-width: 560px) {
+  body.svc { font-size: 17px; }
+  .svc-head .tool { margin-left: 0; }
+  .svc-nav a { font-size: 16px; padding: 0 10px; }
+  .svc-search input { flex-basis: 100%; }
+  .svc-search .btn { width: 100%; }
+}
+
+/* Khoảng cách và kích thước chạm tối thiểu cho mọi liên kết trong trang này */
+body.svc a, body.svc button, body.svc summary { min-height: 44px; }
+body.svc a:focus-visible, body.svc button:focus-visible, body.svc summary:focus-visible, body.svc input:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+
+/* Đợt 2: minh họa theo chủ đề, các nút và khung đều nhau, câu hỏi thường gặp mở ra được. */
+.svc-art { color: var(--ink); }
+.svc-art svg { width: 100%; height: auto; display: block; }
+.svc-tile-button .svc-art { margin-bottom: 8px; }
+.svc-tile-button .svc-art svg { max-height: 96px; width: auto; }
+
+/* Thẻ bài học: minh họa bên trái, nội dung ở giữa, nút bên phải có cùng kích thước. */
+body.svc .card { grid-template-columns: 140px minmax(0, 1fr) 200px; column-gap: 20px; align-items: center; }
+body.svc .card .svc-art { grid-column: 1; grid-row: 1 / span 3; }
+body.svc .card .meta,
+body.svc .card h3,
+body.svc .card p { grid-column: 2; }
+body.svc .card button { grid-column: 3; grid-row: 1 / span 3; width: 100%; min-height: 52px; justify-self: stretch; }
+
+/* Ô hỗ trợ và ô chủ đề: cao bằng nhau, nút luôn nằm đáy và rộng bằng nhau. */
+.svc-tiles-3 .svc-tile { display: flex; flex-direction: column; gap: 8px; }
+.svc-tiles-3 .svc-tile .btn { margin-top: auto; width: 100%; }
+.svc-tile-button { display: flex; flex-direction: column; justify-content: flex-start; }
+
+/* Câu hỏi thường gặp: dấu + mở ra và dấu − khi đang mở; đáp án hiện đầy đủ bên dưới. */
+.svc-faq summary { list-style: none; justify-content: space-between; gap: 16px; font-size: 19px; }
+.svc-faq summary::-webkit-details-marker { display: none; }
+.svc-faq summary::after { content: '+'; font-size: 28px; line-height: 1; flex: none; color: var(--accent); }
+.svc-faq details[open] summary::after { content: '−'; }
+.svc-faq details[open] summary { color: var(--accent); }
+.svc-faq details p { margin: 4px 0 0; padding: 4px 0 8px 0; color: var(--ink); font-size: 18px; }
+
+@media (max-width: 760px) {
+  body.svc .card { grid-template-columns: 96px minmax(0, 1fr); row-gap: 12px; }
+  body.svc .card .svc-art { grid-row: 1; }
+  body.svc .card .meta { grid-column: 2; }
+  body.svc .card h3, body.svc .card p { grid-column: 1 / -1; }
+  body.svc .card button { grid-column: 1 / -1; grid-row: auto; }
+}

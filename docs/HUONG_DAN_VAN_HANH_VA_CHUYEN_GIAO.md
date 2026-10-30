@@ -17,7 +17,7 @@ Tài liệu này dành cho người nhận bàn giao và người vận hành. M
 | `shared/*-service.ts` | Các dịch vụ có truy vấn SQL: `identity`, `quiz`, `progress`, `lesson`, `video`, `staff`, `assessment`, `dashboard-summary`, `dashboard-queries`. |
 | `shared/*-rules.ts` | Quy tắc thuần, không truy vấn: `quiz-rules`, `video-rules`, `progress-rules`, `dashboard-rules`, `assessment-rules`, `lesson-validation`. |
 | `shared/body-limit.ts` | Đọc thân yêu cầu có giới hạn byte. Dùng cho `upload-video`. |
-| `drizzle/` | Migration `0000`–`0006` và snapshot của drizzle-kit. Riêng `0006` chưa có snapshot (xem mục 4.2). |
+| `drizzle/` | Migration `0000`–`0007` và snapshot của drizzle-kit. Riêng `0006` và `0007` chưa có snapshot (xem mục 4.2). |
 | `tests/` | Kiểm thử tự động, chạy bằng `npm test`. Xem mục 2. |
 | `tests/load/k6-public-reads.js` | Kịch bản đo tải k6 (mục 3). |
 | `public/` | Giao diện tĩnh: trang học, trang điều phối, báo cáo quản trị. |
@@ -195,7 +195,7 @@ Các bước phải chạy theo đúng thứ tự. Khôi phục khi lỗi giữa
 ### 4.4 Quy trình khuyến nghị
 
 1. **Tạo D1 staging riêng** trên tài khoản Cloudflare của người phụ trách. Không dùng D1 production để thử.
-2. Áp dụng `0000` → `0006` lên staging. Ghi lại mọi cảnh báo hoặc lỗi từ D1.
+2. Áp dụng `0000` → `0007` lên staging. Ghi lại mọi cảnh báo hoặc lỗi từ D1.
 3. Chạy kiểm tra thủ công trên staging: đăng nhập quản trị lần đầu bằng `ADMIN_PASSWORD`, đổi mật khẩu bắt buộc, tạo và đặt lại tài khoản tình nguyện viên, khóa tạm sau 5 lần sai, đăng nhập tình nguyện viên và ghi phiếu, tiến độ hai thiết bị, trắc nghiệm, liên kết video, tải video nhỏ, báo cáo quản trị, xuất CSV.
 4. Chạy kịch bản k6 trên staging theo mục 3.
 5. Chỉ sau khi staging đạt mọi bước, lập kế hoạch áp dụng lên production, với phê duyệt của người giữ `OWNER_EMAIL`.
@@ -229,7 +229,7 @@ Các bước phải chạy theo đúng thứ tự. Khôi phục khi lỗi giữa
 | # | Việc | Người phụ trách | Trạng thái |
 |---|---|---|---|
 | 1 | Tạo D1 staging riêng | Người giữ tài khoản Cloudflare | Chưa làm |
-| 2 | Áp dụng `0000`–`0006` lên staging | Chủ website, có kiểm tra của Claude | Chờ bước 1 |
+| 2 | Áp dụng `0000`–`0007` lên staging | Chủ website, có kiểm tra của Claude | Chờ bước 1 |
 | 3 | Kiểm thử thủ công trên staging | Người điều phối | Chờ bước 2 |
 | 4 | Chạy k6 trên staging (01:00–03:00 UTC+7) | Người chạy tải | Chờ bước 2 |
 | 5 | Đánh giá rủi ro upload (giới hạn bộ nhớ, thời lượng do client gửi) | Chủ website | Mốc cải tiến sau |

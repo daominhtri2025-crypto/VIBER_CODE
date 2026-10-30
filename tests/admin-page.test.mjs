@@ -69,3 +69,14 @@ const rules = readFileSync('shared/dashboard-rules.ts', 'utf8');
 }
 
 console.log('PASS: giao diện báo cáo (tĩnh): không chèn HTML từ API, nhãn khớp máy chủ, CSV có BOM và chống công thức, UTC+7, ghép trước–sau chỉ ở máy chủ, đủ trạng thái, chống phản hồi cũ');
+
+// 8) Tin tức trang chủ (trang quản trị): mã hiển thị tin dùng DOM API, không chèn HTML từ dữ liệu máy chủ.
+{
+  const start = adminJs.indexOf('// Tin tức trang chủ');
+  const end = adminJs.indexOf('\ninit();setInterval(');
+  assert.ok(start > 0 && end > start, 'thiếu khối mã tin tức trong admin.js');
+  const newsBlock = adminJs.slice(start, end);
+  assert.equal(/innerHTML|insertAdjacentHTML/.test(newsBlock), false, 'khối tin tức không được dùng innerHTML');
+  assert.ok(newsBlock.includes("admin/news'"), 'khối tin tức phải gọi GET/POST /api/admin/news');
+  assert.ok(newsBlock.includes("'admin/news/update'"), 'khối tin tức phải gọi /api/admin/news/update để sửa và ẩn tin');
+}
