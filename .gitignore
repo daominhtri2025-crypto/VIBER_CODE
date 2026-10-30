@@ -61,3 +61,6 @@ next-env.d.ts
 !.dev.vars.example
 !.env.example
 *.tsbuildinfo
+
+# Kết quả kiểm tra giao diện do taste-skill sinh ra; không đưa vào mã nguồn
+.taste-skill/
