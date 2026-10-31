@@ -21,6 +21,7 @@
 | 1.1 | 20/10/2026 | [Cần bổ sung] | Thêm quản lý khóa API trong bộ nhớ tạm (FR-KEY, chỉ máy chủ cục bộ); thêm tải lên và ghi âm tệp đọc bài (FR-CNT-10 đến FR-CNT-17); bổ sung NFR-SEC-06 đến NFR-SEC-10; thêm UC-06, UC-07; bổ sung câu hỏi mở 8–10 |
 | 1.2 | 29/10/2026 | [Cần bổ sung] | Thêm đăng nhập bằng email và mật khẩu cho quản trị viên và tình nguyện viên (mục 3.7, FR-AUTH-01 đến FR-AUTH-10); cập nhật vai trò xác thực (Mục 2.2); thay FR-ADM-04 và FR-ADM-05 bằng tham chiếu tới FR-AUTH; đổi NFR-SEC-05 sang SameSite=Lax; bổ sung truy vết và câu hỏi mở 11–12 |
 | 1.3 | 30/10/2026 | [Cần bổ sung] | Ngoài giai đoạn này: FR-KEY và FR-CNT-10 đến FR-CNT-17 (âm thanh, FR-LRN-09). Thêm mục 3.8 tin tức (FR-NEWS-01 đến FR-NEWS-05) và FR-AUTH-11 khôi phục mật khẩu qua email (liên kết hiệu lực 15 phút, nhà cung cấp gửi email là Resend, gói miễn phí). Thêm bảng `password_reset_tokens` (migration 0008) vào mục 4.1. Ghi nhận quyết định câu hỏi mở 8, 9, 14, 15; sửa ma trận truy vết mục 9.1 theo tình trạng tệp thực tế trong repo. |
+| 1.4 | 31/10/2026 | [Cần bổ sung] | Thêm mục 3.9 quản lý bài học (FR-LES-01 đến FR-LES-09): thêm, sửa, ẩn bài; không xóa cứng; lưu lịch sử phiên bản; ngưỡng đạt 70% tính theo số bài đang hiện. Thêm bảng `lesson_versions` và ràng buộc mã bài 0–999 (migration 0010). Migration 0011 nới ràng buộc `quiz_attempts` để nhận mã bài ngoài 0–9; bổ sung này nằm ngoài kế hoạch đã duyệt ban đầu. Cập nhật mục 4.1. |
 
 ---
 
@@ -249,6 +250,24 @@ Khóa API được nhập trực tiếp trên dashboard quản trị của máy 
 | FR-NEWS-04 | Trang chủ chỉ hiển thị tin chưa ẩn, mới nhất trước, tối đa 20 tin. Tin ẩn không rời máy chủ qua đường công khai | M | Kiểm thử: tin ẩn không xuất hiện trong `GET /api/news` |
 | FR-NEWS-05 | Mỗi tin ghi rõ nguồn khi có (tên nguồn và liên kết https). Nội dung do ban quản lý viết lại hoặc tóm tắt; không sao chép nguyên văn nội dung từ nguồn bên ngoài | M | Tin có nguồn hiển thị liên kết mở tab mới với `rel="noopener noreferrer"` |
 
+### 3.9. Quản lý bài học (FR-LES)
+
+Áp dụng từ 31/10/2026. Căn cứ: quyết định của chủ website ngày 30/10/2026 (thêm, sửa, ẩn bài; không xóa cứng; lưu lịch sử khi sửa nội dung) và phương án ngưỡng 70% tính trên số bài đang hiện đã duyệt trong phiên thiết kế. Thứ tự hiển thị hiện theo mã bài; **[Cần xác nhận với chủ website]** nếu cần thứ tự tùy chỉnh.
+
+| Mã | Yêu cầu | Ưu tiên | Tiêu chí chấp nhận |
+|---|---|---|---|
+| FR-LES-01 | Quản trị viên thêm bài mới với mã bài là số nguyên từ 0 đến 999; mã đã tồn tại bị từ chối | M | Thêm trả 201; trùng mã trả 409; mã ngoài khoảng trả 400 |
+| FR-LES-02 | Quản trị viên sửa tiêu đề, nhóm bài (1–5), biểu tượng, mô tả, các bước, câu hỏi, các phương án, đáp án đúng và bước kế tiếp. Mã bài không đổi khi sửa | M | Kiểm thử cập nhật từng trường; mã bài trong biểu mẫu sửa bị khóa |
+| FR-LES-03 | Đáp án đúng chỉ hiển thị cho quản trị viên; trang công khai không trả đáp án | M | `GET /api/lessons` không chứa đáp án; `GET /api/admin/lessons` chỉ trả cho quản trị viên |
+| FR-LES-04 | Trước mỗi lần sửa nội dung, bản trước được ghi vào lịch sử phiên bản; quản trị viên xem được lịch sử, bản mới nhất ở trên | M | Kiểm thử: sau một lần sửa có đúng một bản cũ, nội dung bản cũ giữ nguyên |
+| FR-LES-05 | Không xóa cứng bài. Ẩn hoặc hiện bài bằng cờ `hidden`. Bài ẩn không hiển thị với học viên, không nhận lượt làm bài và không ghi nhận hoàn thành | M | Bài ẩn trả 409 khi hoàn thành hoặc làm bài; `GET /api/lessons` không có bài ẩn |
+| FR-LES-06 | Ẩn bài không xóa dữ liệu học tập. Báo cáo giữ số liệu lịch sử của bài ẩn và đánh dấu "đã ẩn"; bài ẩn không tính vào mẫu số ngưỡng đạt | M | Số liệu trước và sau khi ẩn không đổi; báo cáo có cờ `hidden` |
+| FR-LES-07 | Ngưỡng đạt kiểm tra hiểu bài là 70% số bài đang hiện, so sánh bằng số nguyên. Tử số là số bài đang hiện có ít nhất một lượt đúng. Khi chưa có lượt làm trên bài hiện, trạng thái là "chưa có dữ liệu", không phải "chưa đạt" | M | Kiểm thử ranh giới: 7/10 đạt, 6/10 không đạt; không có bài hiện nào trả `chua_co_du_lieu` |
+| FR-LES-08 | Bài mới và bài đã sửa lưu trong cơ sở dữ liệu. Bộ dữ liệu khởi tạo chỉ chèn bài còn thiếu theo mã; không ghi đè bài đã có khi migrate hoặc khởi động lại | M | Kiểm thử chạy lại seed không đổi bài đã có |
+| FR-LES-09 | Danh sách bài trong trang quản trị phân trang, 10 bài mỗi trang | M | Chuyển trang đúng; tổng số bài khớp; số trang không hợp lệ trả 400 |
+
+---
+
 ## 4. Yêu cầu dữ liệu
 
 ### 4.1. Thực thể và quan hệ
@@ -258,6 +277,7 @@ Khóa API được nhập trực tiếp trên dashboard quản trị của máy 
 - `lessons` (1) — (0..1) `videos`
 - `staff` độc lập, lưu email tình nguyện viên.
 - `accounts` (1) — (n) `password_reset_tokens` (migration 0008, FR-AUTH-11).
+- `lessons` (1) — (n) `lesson_versions` (migration 0010, FR-LES-04): mỗi lần sửa nội dung bài, bản trước được ghi lại.
 
 **Bảng `password_reset_tokens` (migration `0008_dat_lai_mat_khau.sql`):**
 

@@ -64,7 +64,7 @@ const completionsWithCode = rawCompletions.map((r) => ({ ...r, learner: codeOf.g
 // 2) Theo học viên: SQL khớp learnerQuizResults; học viên chưa làm bài có trạng thái chưa có dữ liệu, rate null.
 {
   const snap = await queries.loadDashboardSnapshot(db);
-  const expected = rules.learnerQuizResults(attemptsWithCode);
+  const expected = rules.learnerQuizResults(attemptsWithCode, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]);
   for (const row of snap.learners) {
     if (expected.has(row.code)) {
       const e = expected.get(row.code);
@@ -82,7 +82,8 @@ const completionsWithCode = rawCompletions.map((r) => ({ ...r, learner: codeOf.g
 // 3) Theo bài: SQL khớp lessonStats; bài chưa có lượt làm có tỷ lệ null.
 {
   const snap = await queries.loadDashboardSnapshot(db);
-  assert.deepEqual(snap.lessons, rules.lessonStats(attemptsWithCode, completionsWithCode));
+  // Bài đang hiển thị nên mọi bài có hidden = false (quy tắc 4.15).
+  assert.deepEqual(snap.lessons, rules.lessonStats(attemptsWithCode, completionsWithCode, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]).map((stat) => ({ ...stat, hidden: false })));
   assert.equal(snap.lessons[8].attemptCorrectRate, null);
 }
 
@@ -125,7 +126,7 @@ const completionsWithCode = rawCompletions.map((r) => ({ ...r, learner: codeOf.g
 {
   assert.throws(() => queries.normalizeFilter({ from: '2026-13-45' }), RangeError);
   assert.throws(() => queries.normalizeFilter({ from: '2026-10-27T00:00:00Z', to: '2026-10-26T00:00:00Z' }), RangeError);
-  assert.throws(() => queries.normalizeFilter({ lesson: 10 }), RangeError);
+  assert.throws(() => queries.normalizeFilter({ lesson: 1000 }), RangeError);
   assert.throws(() => queries.normalizeFilter({ group: 6 }), RangeError);
   assert.throws(() => queries.normalizeFilter({ granularity: 'month' }), RangeError);
   assert.equal(queries.normalizeFilter({ from: '2026-10-27T00:00:00Z' }).from, '2026-10-27T00:00:00.000Z', 'chuẩn hóa về toISOString');

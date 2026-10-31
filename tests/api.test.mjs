@@ -15,7 +15,7 @@ assert.equal((await post('progress','a','a@test',{code:a.code,read:[0],done:[0],
 await post('progress','a','a@test',{code:a.code,read:[1],done:[],scores:{}});
 assert.equal((await post('progress','b','b@test',{code:a.code,read:[0],done:[],scores:{}})).status,409);
 let data=await(await get('me','a','a@test')).json();assert.equal(data.progress.length,2);assert.equal(data.progress.find(p=>p.lesson===0).done,1);assert.equal((await(await get('me','b','b@test')).json()).progress.length,0);
-assert.equal((await post('progress','a','a@test',{read:[20],done:[],scores:{}})).status,400);
+assert.equal((await post('progress','a','a@test',{read:[1000],done:[],scores:{}})).status,400, 'mã bài vượt trần LESSON_CODE_MAX bị từ chối');
 assert.equal((await post('staff','a','a@test',{email:'v@test.test'})).status,403);
 assert.equal((await post('staff',null,null,{email:'v@test.test'},undefined,OWNER)).status,200);
 assert.equal((await get('dashboard',null,null,V)).status,403);

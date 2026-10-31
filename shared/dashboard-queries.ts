@@ -21,7 +21,7 @@ import {
   type LessonStat,
   type PeriodPoint,
 } from './dashboard-rules';
-import { GROUP_MAX, GROUP_MIN, LESSON_MAX, LESSON_MIN } from './lesson-validation';
+import { GROUP_MAX, GROUP_MIN, isLessonCode } from './lesson-validation';
 
 // Giao diện tối thiểu, khớp với prepare/bind/all của D1 (CLAUDE.md mục 3).
 export interface Statement {
@@ -72,8 +72,8 @@ export function normalizeFilter(input: Partial<ReportFilter> = {}): ReportFilter
   const to = canonical(input.to, 'Đến ngày');
   if (from !== null && to !== null && from > to) throw new RangeError('Ngày bắt đầu không được sau ngày kết thúc');
   const lesson = input.lesson ?? null;
-  if (lesson !== null && (!Number.isInteger(lesson) || lesson < LESSON_MIN || lesson > LESSON_MAX)) {
-    throw new RangeError('Bài học phải nằm trong 0–9');
+  if (lesson !== null && !isLessonCode(lesson)) {
+    throw new RangeError('Mã bài học không hợp lệ');
   }
   const group = input.group ?? null;
   if (group !== null && (!Number.isInteger(group) || group < GROUP_MIN || group > GROUP_MAX)) {
@@ -191,13 +191,14 @@ export async function queryDailyCompletions(db: Db, filter: ReportFilter): Promi
 }
 
 // Kết quả kiểm tra theo học viên: số bài đã làm và số bài có ít nhất một lượt đúng.
-// Phạm vi: khoảng thời gian. Không áp bộ lọc bài hoặc nhóm, vì ngưỡng đạt tính trên toàn bộ 10 bài.
+// Phạm vi: khoảng thời gian. Không áp bộ lọc bài hoặc nhóm, vì ngưỡng đạt tính trên toàn bộ bài đang hiển thị.
+// Chỉ đếm bài đang hiển thị (quyết định 30/10/2026): lượt làm trên bài đã ẩn không vào tử số.
 async function queryLearnerAttempts(db: Db, filter: ReportFilter): Promise<Array<{ learner: string; attempted: number; correct_lessons: number }>> {
   const t = timeClause('created', filter);
   const rows = await run<{ learner: string; attempted: number; correct_lessons: number | null }>(
     db,
     `SELECT learner, COUNT(DISTINCT lesson) AS attempted, COUNT(DISTINCT CASE WHEN correct = 1 THEN lesson END) AS correct_lessons ` +
-      `FROM quiz_attempts WHERE 1 = 1${t.sql} GROUP BY learner`,
+      `FROM quiz_attempts WHERE 1 = 1${t.sql} AND lesson IN (SELECT lesson FROM lessons WHERE hidden = 0) GROUP BY learner`,
     t.values,
   );
   return rows.map((row) => ({
@@ -233,8 +234,9 @@ function parseScores(raw: string): (number | null)[] {
   }
 }
 
-async function queryLessonGroups(db: Db): Promise<Array<{ lesson: number; group_no: number }>> {
-  return run<{ lesson: number; group_no: number }>(db, 'SELECT lesson, group_no FROM lessons ORDER BY lesson', []);
+// Mọi bài, kèm trạng thái ẩn: thống kê theo bài giữ bài ẩn (quy tắc 4.15); ngưỡng đạt chỉ dùng bài hiển thị.
+async function queryLessonGroups(db: Db): Promise<Array<{ lesson: number; group_no: number; hidden: number }>> {
+  return run<{ lesson: number; group_no: number; hidden: number }>(db, 'SELECT lesson, group_no, hidden FROM lessons ORDER BY lesson', []);
 }
 
 // Tập hợp toàn bộ số liệu báo cáo cho một bộ lọc. Các hàm thuần trong dashboard-rules quyết định ngưỡng và nhãn.
@@ -252,15 +254,24 @@ export async function loadDashboardSnapshot(db: Db, input: Partial<ReportFilter>
   ]);
 
   const aggByLearner = new Map(learnerAgg.map((row) => [row.learner, row]));
+  // Mẫu số của ngưỡng đạt là số bài đang hiển thị (quyết định 30/10/2026).
+  const visibleCount = groupRows.filter((row) => Number(row.hidden) === 0).length;
   const learnerReports: LearnerReport[] = learners.map((learner) => {
     const agg = aggByLearner.get(learner.id);
     const attempted = agg?.attempted ?? 0;
     const correctLessons = agg?.correct_lessons ?? 0;
-    return { code: learner.code, attempted, correctLessons, quiz: passStatus(correctLessons, attempted) };
+    // Không có bài nào đang hiển thị thì không có mẫu số: trả chưa có dữ liệu, không ném lỗi.
+    const quiz: LearnerReport['quiz'] =
+      visibleCount > 0
+        ? passStatus(correctLessons, attempted, visibleCount)
+        : { status: 'chua_co_du_lieu', rate: null, attemptedLessons: 0, correctLessons: 0 };
+    return { code: learner.code, attempted, correctLessons, quiz };
   });
 
   const groupOf = new Map(groupRows.map((row) => [Number(row.lesson), Number(row.group_no)]));
-  let lessons = lessonStatsFromCounts(attempts, completions);
+  // Bài đã ẩn vẫn nằm trong thống kê theo bài, kèm cờ hidden để giao diện ghi "đã ẩn" (quy tắc 4.15).
+  const hiddenCodes = new Set(groupRows.filter((row) => Number(row.hidden) === 1).map((row) => Number(row.lesson)));
+  let lessons = lessonStatsFromCounts(attempts, completions, groupRows.map((row) => Number(row.lesson)));
   if (filter.lesson !== null) lessons = lessons.filter((stat) => stat.lesson === filter.lesson);
   if (filter.group !== null) lessons = lessons.filter((stat) => groupOf.get(stat.lesson) === filter.group);
   const groups = [...groupStats(lessons, (lesson) => groupOf.get(lesson) ?? 0)]
@@ -278,7 +289,7 @@ export async function loadDashboardSnapshot(db: Db, input: Partial<ReportFilter>
   return {
     filter,
     learners: learnerReports,
-    lessons,
+    lessons: lessons.map((stat) => ({ ...stat, hidden: hiddenCodes.has(stat.lesson) })),
     groups,
     series,
     assessmentTotals: { total: assessments.length, achieved: achievedAssessments },

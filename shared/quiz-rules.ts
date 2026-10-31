@@ -1,7 +1,7 @@
 // Quy tắc bài kiểm tra trắc nghiệm dùng chung (Mục 2 đã duyệt; quyết định 2, 3, 5).
 // Máy chủ là nơi duy nhất chấm điểm. Đáp án chỉ được đọc từ bảng lessons và không bao giờ trả về trình duyệt.
 // Module thuần, không phụ thuộc môi trường: dùng được cho route (Sites) và máy chủ cục bộ.
-import { LESSON_MAX, LESSON_MIN } from './lesson-validation';
+import { isLessonCode } from './lesson-validation';
 import type { LessonQuiz } from './lessons-seed';
 
 export interface QuizAnswerInput {
@@ -29,7 +29,7 @@ export function validateQuizAnswer(input: unknown): QuizInputCheck {
   if (typeof code !== 'string' || code.length === 0 || code.length > MAX_CODE_LENGTH) {
     return { ok: false, status: 400, error: 'Mã học viên không hợp lệ' };
   }
-  if (!Number.isInteger(lesson) || (lesson as number) < LESSON_MIN || (lesson as number) > LESSON_MAX) {
+  if (!isLessonCode(lesson)) {
     return { ok: false, status: 400, error: 'Bài học không hợp lệ' };
   }
   if (!Number.isInteger(choice) || (choice as number) < 0) {

@@ -28,6 +28,8 @@
 - sessions (migration 0006): phiên đăng nhập; chỉ lưu băm SHA-256 của mã phiên, không lưu mã gốc.
 - password_reset_tokens (migration 0008): token khôi phục mật khẩu qua email. Chỉ lưu băm SHA-256 của token; hết hạn sau 15 phút; `used_at` đánh dấu đã dùng hoặc đã vô hiệu hóa.
 - news (migration 0007): tin tức trang chủ. Quản trị viên đăng, sửa, ẩn tin qua `/api/admin/news`; `GET /api/news` chỉ trả tin chưa ẩn. Liên kết nguồn chỉ nhận https, kiểm tra cả trong CSDL. Không có cào dữ liệu ở giai đoạn này.
+- lessons (migration 0010): thêm `updated` và `hidden`; mã bài từ 0 đến 999 (CHECK `lessons_lesson_min`; giới hạn trên do máy chủ kiểm tra). `lesson_versions` (migration 0010): bản trước của bài mỗi lần sửa, khóa ngoại tới `lessons`.
+- Quản lý bài học (`/api/admin/lessons*`, chỉ quản trị viên): danh sách phân trang 10 bài, thêm, sửa, ẩn/hiện, xem lịch sử. Logic nằm ở `shared/lesson-service.ts`, `shared/lesson-admin-rules.ts` và `shared/lesson-repo.ts`.
 
 ## API
 | Phương thức / đường dẫn | Quyền |
@@ -70,12 +72,12 @@
 Dashboard đối chiếu trước–sau trên cùng mã học viên, lấy phiếu mới nhất cho từng lần đo và chỉ đưa vào nhóm đủ cả 5 phép đo ở hai lần. Không xem việc đọc bài là bằng chứng đã thành thạo.
 
 ## Hiện trạng Phase 1
-- Đã có migration `0000`–`0006`. Migration `0005` chỉ thêm chỉ mục cho báo cáo, không đổi dữ liệu hay bảng. Migration `0006` chỉ tạo bảng `accounts` và `sessions` mới, không đổi dữ liệu cũ.
+- Đã có migration `0000`–`0011`. Migration `0010` và `0011` phục vụ quản lý bài học (xem HUONG_DAN mục 7). Migration `0005` chỉ thêm chỉ mục cho báo cáo, không đổi dữ liệu hay bảng. Migration `0006` chỉ tạo bảng `accounts` và `sessions` mới, không đổi dữ liệu cũ.
 - Đăng nhập quản trị và tình nguyện viên (FR-AUTH) đã triển khai trong `shared/auth-service.ts`, kiểm thử trong `tests/auth.test.mjs`. Chưa kiểm thử trên Sites (cookie, `Origin`).
 - Khôi phục mật khẩu qua email (FR-AUTH-11) đã triển khai trong `shared/password-reset-service.ts`, `shared/password-reset-rules.ts`, `shared/mail-sender.ts`; kiểm thử trong `tests/password-reset.test.mjs` bằng email giả. Có giới hạn 10 yêu cầu mỗi IP mỗi giờ (bảng `request_limits`, migration 0009). Chưa gửi email thật qua Resend vì chưa có tên miền gửi đã xác minh.
 - Báo cáo quản trị: `GET /api/dashboard` lọc theo khoảng thời gian, bài, nhóm và kỳ; giao diện `public/admin-report.js`; CSV UTF-8 có BOM. Kiểm thử: `npm test` và kiểm thử trình duyệt 360px (`tests/admin-page-browser.mjs`, chạy thủ công).
 - Migration `0000`–`0005` đã áp dụng thử trên D1 cục bộ (Wrangler) không lỗi. Chưa áp dụng trên D1 của bản triển khai Sites.
-- Bài kiểm tra trắc nghiệm do máy chủ chấm (`POST /api/quiz/answer`, bảng `quiz_attempts` ở migration `0004`). Đáp án không có trong `GET /api/lessons`. Dashboard hiển thị số lần làm bài và tỷ lệ đúng, ghi chú là "kiểm tra hiểu bài nội bộ".
+- Bài kiểm tra trắc nghiệm do máy chủ chấm (`POST /api/quiz/answer`, bảng `quiz_attempts` ở migration `0004`; giới hạn mã bài 0–9 được bỏ ở migration `0011`). Đáp án không có trong `GET /api/lessons`. Dashboard hiển thị số lần làm bài và tỷ lệ đúng, ghi chú là "kiểm tra hiểu bài nội bộ".
 - Đã gỡ mã giao diện mẫu shadcn và các phụ thuộc không dùng; tên package là `son-tra-so`.
 - Chưa làm: Tailwind biên dịch tĩnh (Phase 2); FR-KEY và Gemini TTS đang **Hoãn** (xem SRS mục 3.6 và DAC D-02).
 

@@ -4,27 +4,29 @@ import { loadShared } from './route-harness.mjs';
 // Kiểm thử đơn vị cho shared/dashboard-rules (Bước 2 của báo cáo quản trị).
 // Mỗi quy tắc nghiệp vụ được kiểm bằng ít nhất một ca: ngưỡng 70%, không quy chưa đánh giá thành 0,
 // mốc thời gian completed_at và created, tuần ISO, ghép trước–sau theo phiếu mới nhất.
-const rules = await loadShared('dashboard-rules');
+const rules = await loadShared("dashboard-rules");
+// Danh sách bài đang hiển thị trong kiểm thử: mã 0–9 (quyết định 30/10/2026: mẫu số = số bài hiển thị).
+const VISIBLE = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
 
 // 1) Ngưỡng đạt theo phương án A: tính trên 10 bài, đạt khi ≥ 70% (tức ≥ 7 bài có ít nhất một lượt đúng).
 {
-  assert.deepEqual(rules.passStatus(0, 0), { status: 'chua_co_du_lieu', rate: null, attemptedLessons: 0, correctLessons: 0 }, 'chưa làm bài: không có dữ liệu, rate null (FR-DSH-05)');
-  assert.equal(rules.passStatus(0, 1).status, 'chua_dat');
-  assert.equal(rules.passStatus(6, 10).status, 'chua_dat', '6/10 = 60% chưa đạt');
-  assert.equal(rules.passStatus(7, 10).status, 'dat', '7/10 = 70% đạt đúng ngưỡng');
-  assert.equal(rules.passStatus(7, 10).rate, 70);
-  assert.equal(rules.passStatus(10, 10).status, 'dat');
-  assert.equal(rules.passStatus(3, 3).status, 'chua_dat', '3/3 bài đã làm nhưng chỉ 30% tổng số bài: chưa đạt');
+  assert.deepEqual(rules.passStatus(0, 0, 10), { status: 'chua_co_du_lieu', rate: null, attemptedLessons: 0, correctLessons: 0 }, 'chưa làm bài: không có dữ liệu, rate null (FR-DSH-05)');
+  assert.equal(rules.passStatus(0, 1, 10).status, 'chua_dat');
+  assert.equal(rules.passStatus(6, 10, 10).status, 'chua_dat', '6/10 = 60% chưa đạt');
+  assert.equal(rules.passStatus(7, 10, 10).status, 'dat', '7/10 = 70% đạt đúng ngưỡng');
+  assert.equal(rules.passStatus(7, 10, 10).rate, 70);
+  assert.equal(rules.passStatus(10, 10, 10).status, 'dat');
+  assert.equal(rules.passStatus(3, 3, 10).status, 'chua_dat', '3/3 bài đã làm nhưng chỉ 30% tổng số bài: chưa đạt');
   assert.equal(rules.PASS_PERCENT, 70);
   assert.equal(rules.PASS_LABEL.dat, 'Đạt kiểm tra nội bộ', 'nhãn phải ghi rõ là kiểm tra nội bộ');
 }
 
 // 2) Đầu vào sai bị từ chối bằng lỗi, không trả kết quả đoán.
 {
-  assert.throws(() => rules.passStatus(-1, 0), RangeError);
-  assert.throws(() => rules.passStatus(2, 1), RangeError, 'số bài đúng không được vượt số bài đã làm');
-  assert.throws(() => rules.passStatus(1, 11), RangeError, 'số bài đã làm không được vượt 10');
-  assert.throws(() => rules.passStatus(1.5, 2), RangeError);
+  assert.throws(() => rules.passStatus(-1, 0, 10), RangeError);
+  assert.throws(() => rules.passStatus(2, 1, 10), RangeError, 'số bài đúng không được vượt số bài đã làm');
+  assert.throws(() => rules.passStatus(1, 11, 10), RangeError, 'số bài đã làm không được vượt 10');
+  assert.throws(() => rules.passStatus(1.5, 2, 10), RangeError);
 }
 
 // 3) Theo học viên: mỗi bài đếm một lần dù làm nhiều lượt; bài chỉ làm sai vẫn tính là đã làm nhưng không đúng.
@@ -37,11 +39,11 @@ const rules = await loadShared('dashboard-rules');
     { learner: 'B', lesson: 9, correct: 1, created: '2026-10-02T02:00:00Z' },
     { learner: 'B', lesson: 42, correct: 1, created: '2026-10-02T02:00:00Z' },
   ];
-  const results = rules.learnerQuizResults(attempts);
+  const results = rules.learnerQuizResults(attempts, VISIBLE);
   assert.equal(results.get('A').attemptedLessons, 8, 'bài 0 đếm một lần dù có hai lượt');
   assert.equal(results.get('A').correctLessons, 7);
   assert.equal(results.get('A').status, 'dat', '7/10 bài có lượt đúng là đạt');
-  assert.equal(results.get('B').correctLessons, 1, 'lesson 42 ngoài 0–9 bị bỏ qua');
+  assert.equal(results.get('B').correctLessons, 1, 'lesson 42 không nằm trong danh sách bài hiển thị nên bị bỏ qua');
   assert.equal(results.get('B').status, 'chua_dat');
   assert.equal(results.has('C'), false, 'học viên không có lượt làm không có kết quả');
 }
@@ -57,7 +59,7 @@ const rules = await loadShared('dashboard-rules');
     { learner: 'B', lesson: 0, completed_at: null },
     { learner: 'A', lesson: 3, completed_at: '2026-10-01T03:00:00Z' },
   ];
-  const stats = rules.lessonStats(attempts, completions);
+  const stats = rules.lessonStats(attempts, completions, VISIBLE);
   assert.equal(stats.length, 10);
   assert.deepEqual(stats[0], { lesson: 0, completed: 2, attempts: 2, correct: 1, attemptCorrectRate: 50 });
   assert.equal(stats[5].attemptCorrectRate, null, 'bài chưa có lượt làm: tỷ lệ null');
@@ -69,6 +71,7 @@ const rules = await loadShared('dashboard-rules');
   const stats = rules.lessonStats(
     [{ learner: 'A', lesson: 0, correct: 1, created: '2026-10-01T01:00:00Z' }, { learner: 'A', lesson: 1, correct: 0, created: '2026-10-01T01:00:00Z' }],
     [],
+    VISIBLE,
   );
   const groups = rules.groupStats(stats, (lesson) => (lesson < 2 ? 1 : 2));
   assert.equal(groups.get(1).attempts, 2);

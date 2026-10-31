@@ -185,6 +185,8 @@ Kịch bản gồm:
 | 8 | `0007_tin_tuc.sql` | Tạo `news` và chỉ mục `news_visible_published_idx`. Không sửa bảng cũ | Tạo bảng mới; dữ liệu cũ giữ nguyên. Khôi phục (chỉ khi phê duyệt): `DROP INDEX news_visible_published_idx; DROP TABLE news;` — làm mất tin đã đăng |
 | 9 | `0008_dat_lai_mat_khau.sql` | Tạo `password_reset_tokens` (token băm SHA-256, hết hạn 15 phút, khóa ngoại tới `accounts`, xóa theo tài khoản) và chỉ mục `password_reset_tokens_account_idx`. Không sửa bảng cũ | Tạo bảng mới; dữ liệu cũ giữ nguyên. Khôi phục (chỉ khi phê duyệt): `DROP INDEX password_reset_tokens_account_idx; DROP TABLE password_reset_tokens;` — chỉ mất lịch sử token, không ảnh hưởng tài khoản |
 | 10 | `0009_gioi_han_yeu_cau.sql` | Tạo `request_limits` (bộ đếm theo cửa sổ giờ, khóa là băm IP). Không sửa bảng cũ | Tạo bảng mới. Khôi phục (chỉ khi phê duyệt): `DROP TABLE request_limits;` — chỉ mất bộ đếm |
+| 11 | `0010_quan_ly_bai_hoc.sql` | Dựng lại `lessons` bỏ CHECK 0–9, thêm `updated` và `hidden`; tạo `lesson_versions` (khóa ngoại tới `lessons`); chép nguyên 10 bài đã seed | Không đổi nội dung bài; `hidden = 0`, `updated = created`. Khôi phục (chỉ khi phê duyệt): dựng lại `lessons` theo `0001`, chép cột từ bản sao lưu |
+| 12 | `0011_quiz_attempts_bai_moi.sql` | Dựng lại `quiz_attempts`, thay CHECK `lesson BETWEEN 0 AND 9` bằng `lesson >= 0`; tạo lại 3 chỉ mục. Bổ sung ngoài kế hoạch đã duyệt vì lượt làm trên bài mã từ 10 trở lên bị CHECK cũ chặn | Chép nguyên mọi lượt làm; không đổi `choice`, `correct`, `client_id`, `created`. Khôi phục: dựng lại bảng theo `0004` từ bản sao lưu (mọi lượt cũ có `lesson` 0–9 đều hợp lệ) |
 
 Các bước phải chạy theo đúng thứ tự. Khôi phục khi lỗi giữa chừng: **[Cần bổ sung nguồn]** (chưa có quy trình rollback đã kiểm chứng trên D1).
 
@@ -275,3 +277,14 @@ Các bước phải chạy theo đúng thứ tự. Khôi phục khi lỗi giữa
 - **Bị khóa 423:** chờ 15 phút, hoặc quản trị viên khác đặt lại mật khẩu tạm.
 - **Quên mật khẩu quản trị:** chưa có quy trình đã kiểm chứng (mục 5, việc 10). Không đặt lại bằng cách sửa dữ liệu trực tiếp trong D1 nếu chưa có phê duyệt.
 - **Lộ mật khẩu hoặc nghi lộ:** đặt lại mật khẩu ngay; nếu là `ADMIN_PASSWORD`, đổi giá trị trên Sites và đổi mật khẩu quản trị trong trang tài khoản.
+
+## 7. Quản lý bài học
+
+Áp dụng từ 31/10/2026 (CLAUDE.md mục 4.4, 4.15, 4.16; SRS mục 3.9).
+
+- Mục **Quản lý bài học** trong menu quản trị, chỉ quản trị viên thấy. Danh sách 10 bài mỗi trang.
+- **Thêm bài:** nhập mã bài (số nguyên 0–999, không trùng), tiêu đề, nhóm, biểu tượng, mô tả, các bước (mỗi dòng một bước), câu hỏi, các phương án (mỗi dòng một phương án, tối thiểu 2), đáp án đúng (đánh số từ 1) và bước kế tiếp.
+- **Sửa bài:** mã bài bị khóa. Mỗi lần lưu, bản trước được ghi vào lịch sử; xem bằng nút **Lịch sử**.
+- **Ẩn hoặc hiện bài:** không xóa bài. Bài ẩn không hiện với học viên; số liệu lịch sử giữ nguyên, báo cáo ghi "(đã ẩn)".
+- Bài mới xuất hiện trong dropdown video sau khi lưu.
+- Đổi mã bài đã có không được hỗ trợ, vì tiến độ và lượt làm bài đều trỏ theo mã.

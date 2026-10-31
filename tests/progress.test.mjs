@@ -7,25 +7,28 @@ import { loadApi, loadShared } from './route-harness.mjs';
 // Dùng SQLite thật qua migration, route.ts thật qua harness; không mock tầng dữ liệu.
 
 const { validateComplete, buildCourseProgress, COURSE_ID } = await loadShared('progress-rules');
+// Danh sách bài hiển thị trong kiểm thử: mã 0–9 (quyết định 30/10/2026).
+const VISIBLE_TEN = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
+const buildFor = (rows) => buildCourseProgress(rows, VISIBLE_TEN);
 const summary = (course) => ({ completed_lessons: course.completed_lessons, percent: course.percent });
 const isoUtc = (value) => typeof value === 'string' && new Date(value).toISOString() === value;
 
 // 1) Đầu vào của POST /api/progress/complete: số nguyên 0–9, mã không rỗng và không quá 40 ký tự.
 for (const bad of [null, [], 'x', {}, { code: '', lesson: 0 }, { code: 'a'.repeat(41), lesson: 0 }, { code: 7, lesson: 1 },
-  { code: 'ST-1', lesson: -1 }, { code: 'ST-1', lesson: 10 }, { code: 'ST-1', lesson: 1.5 }, { code: 'ST-1', lesson: '1' }]) {
+  { code: 'ST-1', lesson: -1 }, { code: 'ST-1', lesson: 1000 }, { code: 'ST-1', lesson: 1.5 }, { code: 'ST-1', lesson: '1' }]) {
   assert.equal(validateComplete(bad).ok, false, `phải từ chối ${JSON.stringify(bad)}`);
 }
 assert.deepEqual(validateComplete({ code: 'ST-1', lesson: 9 }), { ok: true, value: { code: 'ST-1', lesson: 9 } });
 assert.equal(COURSE_ID, 'son-tra-so');
 
 // 2) Tính tiến độ khóa học (quy tắc: done = 1 mới là hoàn thành; dòng ngoài 0–9 bị bỏ qua; completed_at chỉ để hiển thị).
-assert.deepEqual(summary(buildCourseProgress([])), { completed_lessons: 0, percent: 0 });
-assert.deepEqual(summary(buildCourseProgress([{ lesson: 0, done: 0, completed_at: '2026-10-27T00:00:00.000Z' }])), { completed_lessons: 0, percent: 0 });
-assert.deepEqual(summary(buildCourseProgress([{ lesson: 12, done: 1, completed_at: null }])), { completed_lessons: 0, percent: 0 });
-assert.deepEqual(summary(buildCourseProgress([{ lesson: 1, done: 1, completed_at: null }])), { completed_lessons: 1, percent: 10 });
+assert.deepEqual(summary(buildFor([])), { completed_lessons: 0, percent: 0 });
+assert.deepEqual(summary(buildFor([{ lesson: 0, done: 0, completed_at: '2026-10-27T00:00:00.000Z' }])), { completed_lessons: 0, percent: 0 });
+assert.deepEqual(summary(buildFor([{ lesson: 12, done: 1, completed_at: null }])), { completed_lessons: 0, percent: 0 });
+assert.deepEqual(summary(buildFor([{ lesson: 1, done: 1, completed_at: null }])), { completed_lessons: 1, percent: 10 });
 const allDone = Array.from({ length: 10 }, (_, lesson) => ({ lesson, done: 1, completed_at: null }));
-assert.deepEqual(summary(buildCourseProgress(allDone)), { completed_lessons: 10, percent: 100 });
-assert.equal(buildCourseProgress([]).lessons.length, 10, 'luôn trả đủ 10 bài');
+assert.deepEqual(summary(buildFor(allDone)), { completed_lessons: 10, percent: 100 });
+assert.equal(buildFor([]).lessons.length, 10, 'luôn trả đủ 10 bài');
 
 // 3) API: phân quyền, đầu vào, idempotency, cô lập giữa học viên.
 const sql = new DatabaseSync(':memory:');
@@ -57,7 +60,7 @@ assert.equal((await post('progress/complete', null, null, { code: codeA, lesson:
 assert.equal((await post('progress/complete', 'a', 'a@test', { code: codeA, lesson: 0 }, 'https://evil.test')).status, 403);
 
 // Đầu vào và khớp mã học viên
-assert.equal((await post('progress/complete', 'a', 'a@test', { code: codeA, lesson: 10 })).status, 400);
+assert.equal((await post('progress/complete', 'a', 'a@test', { code: codeA, lesson: 1000 })).status, 400);
 assert.equal((await post('progress/complete', 'a', 'a@test', { code: codeA, lesson: 1.5 })).status, 400);
 assert.equal((await post('progress/complete', 'a', 'a@test', { lesson: 1 })).status, 400);
 assert.equal((await post('progress/complete', 'b', 'b@test', { code: codeA, lesson: 0 })).status, 409, 'không ghi hoàn thành thay học viên khác');
@@ -135,6 +138,8 @@ assert.equal(courseA.lessons[7].completed_at, null, 'bài cũ vẫn tính đã h
   assert.deepEqual(applied, ['0003_mo_rong_completed_at']);
   const row = { ...old.prepare("SELECT done,updated,completed_at FROM progress WHERE learner='x' AND lesson=2").get() };
   assert.deepEqual(row, { done: 1, updated: '2026-10-02T00:00:00.000Z', completed_at: null }, 'dòng cũ giữ nguyên, completed_at NULL');
+  // Đưa DB cũ lên đến migration hiện tại để API chạy đúng schema (0010 thêm cột hidden).
+  applyMigrations(old, { from: 4 });
   const oldApi = await loadApi(old);
   const course = await (await oldApi.GET(request('progress/son-tra-so', 'x', 'x@test'))).json();
   assert.deepEqual(summary(course), { completed_lessons: 1, percent: 10 }, 'dữ liệu cũ vẫn được tính tiến độ');

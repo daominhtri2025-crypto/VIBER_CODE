@@ -51,8 +51,8 @@ const validInput = (overrides = {}) => ({ lesson: 3, duration: 29.2, file: fakeF
 // 1) Thông tin tải lên sai: từ chối trước khi đọc chữ ký, không ghi R2, không đụng DB.
 {
   const cases = [
-    [{ lesson: 10 }, 400, 'Bài học phải nằm trong 0–9'],
-    [{ lesson: 'x' }, 400, 'Bài học phải nằm trong 0–9'],
+    [{ lesson: 1000 }, 400, 'Mã bài học không hợp lệ'],
+    [{ lesson: 'x' }, 400, 'Mã bài học không hợp lệ'],
     [{ duration: 0 }, 400, 'Video phải dưới 2 phút'],
     [{ duration: 120 }, 400, 'Video phải dưới 2 phút'],
     [{ duration: Number.NaN }, 400, 'Video phải dưới 2 phút'],

@@ -64,7 +64,8 @@ assert.equal(LESSON_GROUP_NAMES.length, 5);
 // 3) Idempotent: chạy lại đúng câu lệnh seed không tạo bản trùng và không báo lỗi.
 {
   const sql = freshDb();
-  applyMigrations(sql);
+  // Chỉ áp dụng đến 0002: câu lệnh seed là migration lịch sử, chạy trên schema trước 0010 (cột updated).
+  applyMigrations(sql, { to: 3 });
   const seedSql = readFileSync('drizzle/0002_seed_bai_hoc.sql', 'utf8').replaceAll('--> statement-breakpoint', '');
   sql.exec(seedSql);
   assert.equal(sql.prepare('SELECT COUNT(*) AS n FROM lessons').get().n, 10, 'chạy lại seed không được tạo bản trùng');
@@ -85,7 +86,7 @@ assert.equal(LESSON_GROUP_NAMES.length, 5);
 {
   const base = LESSONS_SEED[0];
   const cases = [
-    [{ ...base, lesson: 10 }, 'Mã bài'],
+    [{ ...base, lesson: 1000 }, 'Mã bài'],
     [{ ...base, groupNo: 0 }, 'Nhóm'],
     [{ ...base, groupNo: 6 }, 'Nhóm'],
     [{ ...base, title: '   ' }, 'Tiêu đề'],
@@ -148,17 +149,21 @@ assert.equal(LESSON_GROUP_NAMES.length, 5);
   const sql = freshDb();
   applyMigrations(sql);
   const api = await loadApi(sql);
+  // Mã bài không còn liên tục (quyết định 30/10/2026): thiếu bài 4 không còn là lỗi, API trả các bài còn lại.
   sql.prepare('DELETE FROM lessons WHERE lesson = 4').run();
-  assert.equal((await api.GET(new Request('https://site.test/api/lessons'))).status, 503, 'thiếu bài phải trả 503');
+  const afterDelete = await api.GET(new Request('https://site.test/api/lessons'));
+  assert.equal(afterDelete.status, 200, 'thiếu một mã bài vẫn trả danh mục còn lại');
+  assert.equal((await afterDelete.json()).lessons.length, 9);
 
-  sql.prepare("INSERT INTO lessons (lesson, title, group_no, body, quiz, next_step, created) VALUES (4,'T',1,'hỏng','{}','x','2026-01-01T00:00:00Z')").run();
+  sql.prepare("INSERT INTO lessons (lesson, title, group_no, body, quiz, next_step, created, updated, hidden) VALUES (4,'T',1,'hỏng','{}','x','2026-01-01T00:00:00Z','2026-01-01T00:00:00Z',0)").run();
   assert.equal((await api.GET(new Request('https://site.test/api/lessons'))).status, 503, 'hàng hỏng phải trả 503');
 }
 
 // 10) Bảng rỗng (chưa seed): trả 503 để giao diện báo lỗi, không hiện trang trống giả.
 {
   const sql = freshDb();
-  applyMigrations(sql, { to: 2 });
+  applyMigrations(sql);
+  sql.prepare('DELETE FROM lessons').run();
   const api = await loadApi(sql);
   assert.equal((await api.GET(new Request('https://site.test/api/lessons'))).status, 503);
 }

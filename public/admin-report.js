@@ -10,6 +10,7 @@
 
   let groupNames = [];
   const lessonNames = new Map();
+  const hiddenLessons = new Set();
   const lessonGroup = new Map();
   let lastReport = null;
   let lastLegacy = { learners: [], assessments: [] };
@@ -43,7 +44,7 @@
   }
 
   const groupName = (group) => (group ? groupNames[group - 1] || 'Nhóm ' + group : '—');
-  const lessonLabel = (lesson) => (lesson + 1) + '. ' + (lessonNames.get(lesson) || '');
+  const lessonLabel = (lesson) => (lesson + 1) + '. ' + (lessonNames.get(lesson) || '') + (hiddenLessons.has(lesson) ? ' (đã ẩn)' : '');
   const rateText = (rate) => (rate == null ? 'Chưa có lượt làm' : rate + '%');
 
   function option(value, label) {
@@ -80,6 +81,10 @@
   }
 
   function render(report) {
+    for (const s of report.lessons) {
+      if (s.hidden) hiddenLessons.add(s.lesson);
+      else hiddenLessons.delete(s.lesson);
+    }
     fillTable('rptLessons', report.lessons.map((s) => [
       lessonLabel(s.lesson), groupName(lessonGroup.get(s.lesson)), s.completed, s.attempts, s.correct, rateText(s.attemptCorrectRate),
     ]), 6);
@@ -193,12 +198,20 @@
     });
   }
 
+  // Bài đã ẩn không có trong danh mục công khai; quản trị lấy đủ mọi trang để báo cáo vẫn có tên.
+  async function loadAllAdminLessons() {
+    const first = await api('admin/lessons?page=1');
+    const pages = [first];
+    for (let p = 2; p <= first.pages; p += 1) pages.push(await api('admin/lessons?page=' + p));
+    return pages.flatMap((page) => page.lessons);
+  }
+
   async function init() {
     if (ready) return;
     try {
       const data = await api('lessons');
       groupNames = data.groups;
-      for (const lesson of data.lessons) {
+      for (const lesson of await loadAllAdminLessons()) {
         lessonNames.set(lesson.lesson, lesson.title);
         lessonGroup.set(lesson.lesson, lesson.group_no);
       }

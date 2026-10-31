@@ -1,7 +1,7 @@
-// Dữ liệu bài học chuẩn (CLAUDE.md mục 4.4: bài học chỉ thêm, không sửa/xóa qua API).
-// Nguồn gốc: public/app.js trước Commit 1.4. Thứ tự và lesson là khóa ổn định:
-// progress.lesson trỏ tới chỉ số này, nên không đổi thứ tự.
-// Chỉ dùng cho migration 0002 và kiểm thử; trình duyệt đọc qua GET /api/lessons.
+// Dữ liệu bài học khởi tạo (CLAUDE.md mục 4.16). Chỉ dùng cho migration 0002, kiểm thử và seed chèn bài còn thiếu.
+// Bài mới và bài đã sửa nằm trong cơ sở dữ liệu; seed không bao giờ ghi đè bài đã có khi migrate hoặc khởi động lại.
+// Nguồn gốc: public/app.js trước Commit 1.4. Mã bài là khóa ổn định: progress.lesson và quiz_attempts.lesson
+// trỏ tới mã này, không đánh số lại. Trình duyệt đọc qua GET /api/lessons (chỉ bài đang hiện).
 
 export interface LessonQuiz {
   question: string;

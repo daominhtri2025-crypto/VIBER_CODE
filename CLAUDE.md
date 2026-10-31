@@ -119,7 +119,10 @@ Tài liệu tham chiếu:
 1. Tiến độ hợp nhất bằng giá trị lớn nhất từng trường.
 2. `null` trong phiếu quan sát là "chưa đánh giá", **không** được chuyển thành 0.
 3. Phiếu quan sát idempotent theo `(learner, client_id)`.
-4. Bài học chỉ thêm (append-only). Không thêm API sửa hoặc xóa bài.
+4. Bài học: được **thêm, sửa và ẩn** qua giao diện quản trị (đã được chủ website duyệt ngày 2026-10-30). Không xóa cứng bài. Mỗi lần sửa nội dung, bản trước được lưu vào lịch sử phiên bản để đối chiếu; không ghi đè mất dữ liệu cũ. Chỉ quản trị viên được thao tác (FR-AUTH, mục 2C).
+15. Ẩn bài: bài bị ẩn không hiển thị với học viên và không nhận lượt làm mới. Ẩn không xóa dữ liệu học tập. Tiến độ, phiếu quan sát và báo cáo thống kê **giữ nguyên số liệu lịch sử** của bài đã ẩn; báo cáo đánh dấu bài đó là "đã ẩn", không loại khỏi tổng.
+16. Bài mới và bài đã sửa được lưu trong cơ sở dữ liệu (D1/SQLite). `shared/lessons-seed.ts` chỉ là bộ dữ liệu khởi tạo: seed chỉ chèn bài còn thiếu theo mã bài, không bao giờ ghi đè bài đã có khi migrate hoặc khởi động lại.
+17. Ngưỡng đạt kiểm tra hiểu bài: 70% số bài đang hiện, so sánh bằng số nguyên. Tử số là số bài đang hiện có ít nhất một lượt đúng; bài ẩn không vào mẫu số lẫn tử số. Khi chưa có lượt làm trên bài hiện, trạng thái là chưa có dữ liệu (đã duyệt trong phiên thiết kế quản lý bài học; SRS FR-LES-07).
 5. Video: tối đa 25 MB; mỗi bài có đúng một video; liên kết chỉ https, không có thông tin đăng nhập trong URL, tối đa 500 ký tự.
 6. Dashboard đối chiếu trước–sau chỉ đưa vào nhóm đủ 5 nhiệm vụ ở cả hai lần đo.
 7. Không dùng số lượt đọc bài làm bằng chứng năng lực.
@@ -197,7 +200,7 @@ Lệnh chuẩn: `npm test` chạy đủ các tệp trong `tests/`.
 1. Ghi bí mật vào bất kỳ tệp nào, kể cả tệp mẫu.
 2. Sửa migration đã áp dụng.
 3. Xóa dữ liệu trong cơ sở dữ liệu hoặc thư mục `local-data/` mà không hỏi.
-4. Thêm API sửa hoặc xóa bài học.
+4. Xóa cứng bài học, hoặc sửa bài qua API mà không có quyền quản trị viên, lịch sử phiên bản và kiểm tra `Origin` (mục 4.4).
 5. Đổi quy tắc ở Mục 4 để làm kiểm thử qua.
 6. Bịa nguồn, DOI hoặc số liệu trong tài liệu học thuật. Nếu thiếu nguồn, gắn `[Cần bổ sung nguồn]`.
 7. Tự commit, push, hoặc thay đổi cấu hình triển khai khi chưa được yêu cầu.

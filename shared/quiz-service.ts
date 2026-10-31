@@ -7,6 +7,7 @@ import { recordQuizPass, type ProgressDb } from './progress-service';
 // Kết quả để route đổi sang HTTP. Thứ tự các nhánh khớp thứ tự kiểm tra cũ của route.
 export type QuizOutcome =
   | { kind: 'unknown_lesson' }
+  | { kind: 'hidden_lesson' }
   | { kind: 'unreadable_quiz' }
   | { kind: 'invalid_choice' }
   | { kind: 'unavailable' }
@@ -22,10 +23,12 @@ export async function submitQuizAnswer(
   ids: { newId: string; now: string },
 ): Promise<QuizOutcome> {
   const row = await db
-    .prepare('SELECT quiz FROM lessons WHERE lesson=?')
+    .prepare('SELECT quiz, hidden FROM lessons WHERE lesson=?')
     .bind(input.lesson)
-    .first<{ quiz: string }>();
+    .first<{ quiz: string; hidden: number }>();
   if (!row) return { kind: 'unknown_lesson' };
+  // Bài đã ẩn không nhận lượt làm mới (quy tắc 4.15); lượt cũ vẫn được giữ trong lịch sử.
+  if (row.hidden === 1) return { kind: 'hidden_lesson' };
 
   const quiz = parseStoredQuiz(row.quiz);
   if (!quiz) return { kind: 'unreadable_quiz' };

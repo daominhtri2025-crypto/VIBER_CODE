@@ -62,7 +62,10 @@ const { detectVideoFormat, checkVideoLink } = await loadShared('video-rules');
     assert.equal(result.ok, false, `phải từ chối (${why}): ${url.slice(0, 60)}`);
   }
   assert.equal(checkVideoLink({ lesson: 1, url: 12345 }).ok, false, 'url không phải chuỗi');
-  assert.equal(checkVideoLink({ lesson: 10, url: `https://youtu.be/${YOUTUBE_ID}` }).ok, false, 'lesson 10 bị từ chối');
+  // Mã bài không còn cố định 0–9 (quyết định 30/10/2026): 10 hợp lệ, số âm và vượt trần bị từ chối.
+  assert.equal(checkVideoLink({ lesson: 10, url: `https://youtu.be/${YOUTUBE_ID}` }).ok, true, 'lesson 10 được chấp nhận');
+  assert.equal(checkVideoLink({ lesson: -1, url: `https://youtu.be/${YOUTUBE_ID}` }).ok, false, 'lesson âm bị từ chối');
+  assert.equal(checkVideoLink({ lesson: 1000, url: `https://youtu.be/${YOUTUBE_ID}` }).ok, false, 'lesson vượt trần bị từ chối');
 }
 
 // Bucket R2 giả lập: ghi lại put/delete; có thể cho put thất bại để kiểm tra việc giữ tệp cũ.
@@ -151,7 +154,7 @@ assert.equal((await POST('staff', owner, { json: { email: volunteer.email } })).
   assert.equal((await POST('video-link', volunteer, { json: { lesson: 1, url: `https://youtu.be/${YOUTUBE_ID}` } })).status, 403, 'tình nguyện viên không được thêm liên kết');
   assert.equal((await POST('video-link', owner, { json: { lesson: 1, url: `https://youtu.be/${YOUTUBE_ID}` }, origin: 'https://evil.test' })).status, 403, 'sai Origin bị từ chối');
   assert.equal((await POST('video-link', owner, { json: { lesson: 1, url: `http://youtu.be/${YOUTUBE_ID}` } })).status, 400, 'http bị từ chối qua API');
-  assert.equal((await POST('video-link', owner, { json: { lesson: 10, url: `https://youtu.be/${YOUTUBE_ID}` } })).status, 400, 'lesson 10 bị từ chối qua API');
+  assert.equal((await POST('video-link', owner, { json: { lesson: 1000, url: `https://youtu.be/${YOUTUBE_ID}` } })).status, 400, 'lesson 1000 bị từ chối qua API');
 
   const created = await POST('video-link', owner, { json: { lesson: 1, url: `https://youtu.be/${YOUTUBE_ID}` } });
   assert.equal(created.status, 200);
@@ -192,7 +195,7 @@ assert.equal((await POST('staff', owner, { json: { email: volunteer.email } })).
   assert.equal((await POST('upload-video', owner, { form: videoForm({ bytes: Buffer.from('RIFF\0\0\0\0WAVEfmt ') }) })).status, 400, 'WAV bị 400');
   assert.equal((await POST('upload-video', owner, { form: videoForm({ bytes: Buffer.alloc(0) }) })).status, 400, 'tệp rỗng bị 400');
   assert.equal((await POST('upload-video', owner, { form: videoForm({ duration: 120 }) })).status, 400, 'đúng 120 giây bị 400');
-  assert.equal((await POST('upload-video', owner, { form: videoForm({ lesson: 10 }) })).status, 400, 'lesson 10 bị 400');
+  assert.equal((await POST('upload-video', owner, { form: videoForm({ lesson: 1000 }) })).status, 400, 'lesson 1000 bị 400');
   assert.equal(bucket.log.puts.length, putsAfterValid, 'tệp không hợp lệ không được ghi vào R2');
 
   const oversized = Buffer.concat([MP4, Buffer.alloc(25 * 1024 * 1024 + 1 - MP4.length)]);

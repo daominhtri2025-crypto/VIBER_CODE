@@ -80,3 +80,19 @@ console.log('PASS: giao diện báo cáo (tĩnh): không chèn HTML từ API, nh
   assert.ok(newsBlock.includes("admin/news'"), 'khối tin tức phải gọi GET/POST /api/admin/news');
   assert.ok(newsBlock.includes("'admin/news/update'"), 'khối tin tức phải gọi /api/admin/news/update để sửa và ẩn tin');
 }
+
+// 9) Quản lý bài học (quyết định 30/10/2026; CLAUDE.md mục 4.4, 4.15, 4.16): mô-đun riêng,
+// không chèn HTML từ dữ liệu máy chủ, chỉ gọi đúng các endpoint quản trị, và được khởi tạo từ admin.js.
+{
+  const lessonsJs = readFileSync('public/admin-lessons.js', 'utf8');
+  assert.equal(/innerHTML|insertAdjacentHTML|eval\(/.test(lessonsJs), false, 'admin-lessons.js không được dùng innerHTML hay eval');
+  for (const endpoint of ["'admin/lessons?page='", "'admin/lessons/update'", "'admin/lessons'", "'admin/lessons/visibility'", "'admin/lessons/versions?lesson='"]) {
+    assert.ok(lessonsJs.includes(endpoint), `admin-lessons.js phải gọi ${endpoint}`);
+  }
+  assert.ok(adminJs.includes('window.SonTraLessons?.init()'), 'admin.js phải khởi tạo mục bài học khi là quản trị viên');
+  assert.ok(adminJs.includes("'lessons-changed'"), 'admin.js phải làm mới danh sách bài trong video khi bài đổi');
+}
+// 10) Dropdown video dùng mã bài thật: bài ẩn bị loại khỏi danh sách công khai nên chỉ số không còn đúng.
+assert.equal(adminJs.includes('option.value=String(i)'), false, 'dropdown video không được dùng chỉ số làm mã bài');
+assert.ok(adminJs.includes('option.value=String(l.lesson)'), 'dropdown video phải dùng mã bài thật');
+console.log('PASS: giao diện quản lý bài học (tĩnh): không innerHTML/eval, đủ endpoint quản trị, khởi tạo từ admin.js');

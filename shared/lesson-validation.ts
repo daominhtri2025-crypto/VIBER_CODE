@@ -2,11 +2,17 @@
 // Dùng cho: kiểm tra dữ liệu seed trước khi ghi, và kiểm tra hàng D1 trước khi trả về API.
 import { LESSON_GROUP_NAMES, type LessonQuiz, type LessonSeed } from './lessons-seed';
 
+// Mã bài không còn cố định 0–9 (quyết định 30/10/2026, migration 0010). Giới hạn trên là trần an toàn
+// để chặn số quá lớn; không phải số lượng bài. Số bài đang hiển thị do dữ liệu quyết định.
 export const LESSON_MIN = 0;
-export const LESSON_MAX = 9; // Khớp CHECK trong bảng lessons (0001): bộ bài cố định 10 bài.
+export const LESSON_CODE_MAX = 999;
 export const GROUP_MIN = 1;
 export const GROUP_MAX = LESSON_GROUP_NAMES.length; // 5
-export const LESSON_COUNT = LESSON_MAX - LESSON_MIN + 1; // 10
+
+// Mã bài hợp lệ: số nguyên trong khoảng [LESSON_MIN, LESSON_CODE_MAX].
+export function isLessonCode(value: unknown): value is number {
+  return Number.isInteger(value) && (value as number) >= LESSON_MIN && (value as number) <= LESSON_CODE_MAX;
+}
 
 // Hàng bảng lessons (xem db/schema.ts). body và quiz là JSON TEXT.
 export interface LessonRow {
@@ -45,8 +51,8 @@ function isNonEmptyString(value: unknown, max: number): value is string {
 
 // Kiểm tra cấu trúc một bài trước khi seed. Trả lỗi đầu tiên tìm được.
 export function checkLessonSeed(item: LessonSeed): LessonCheck {
-  if (!Number.isInteger(item.lesson) || item.lesson < LESSON_MIN || item.lesson > LESSON_MAX) {
-    return { ok: false, error: 'Mã bài phải nằm trong 0–9' };
+  if (!isLessonCode(item.lesson)) {
+    return { ok: false, error: `Mã bài phải là số nguyên từ 0 đến ${LESSON_CODE_MAX}` };
   }
   if (!isNonEmptyString(item.title, MAX_TITLE)) return { ok: false, error: 'Tiêu đề bài không hợp lệ' };
   if (!Number.isInteger(item.groupNo) || item.groupNo < GROUP_MIN || item.groupNo > GROUP_MAX) {

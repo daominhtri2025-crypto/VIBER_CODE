@@ -1,6 +1,6 @@
 // Quy tắc báo cáo quản trị dùng chung (FR-DSH-01 đến 07; Mục 4.6, 4.7, 4.8 của CLAUDE.md).
 // Module thuần: không truy vấn DB, không đọc môi trường. Route và kiểm thử đều dùng cùng một bản.
-import { LESSON_COUNT, LESSON_MAX, LESSON_MIN } from './lesson-validation';
+import { isLessonCode } from './lesson-validation';
 
 // Ngưỡng "đạt kiểm tra nội bộ" (phương án A đã duyệt): học viên đạt khi số bài có ít nhất một lượt đúng
 // chiếm từ 70% trở lên trên tổng số bài. Đây là kiểm tra hiểu bài nội bộ, không phải đánh giá năng lực (quy tắc 4.7).
@@ -45,7 +45,8 @@ export function isIsoUtc(value: unknown): value is string {
 }
 
 // Kết quả đạt của một học viên. Không có lượt làm nào thì trả chua_co_du_lieu và rate = null, không phải 0 (FR-DSH-05).
-export function passStatus(correctLessons: number, attemptedLessons: number, totalLessons: number = LESSON_COUNT): LearnerQuizResult & { status: PassStatus } {
+// totalLessons là số bài đang hiển thị (quyết định 30/10/2026), không còn mặc định 10.
+export function passStatus(correctLessons: number, attemptedLessons: number, totalLessons: number): LearnerQuizResult & { status: PassStatus } {
   const valid = (n: number) => Number.isInteger(n) && n >= 0;
   if (!valid(correctLessons) || !valid(attemptedLessons) || !Number.isInteger(totalLessons) || totalLessons <= 0) {
     throw new RangeError('Số bài phải là số nguyên không âm');
@@ -67,10 +68,13 @@ export function passStatus(correctLessons: number, attemptedLessons: number, tot
 }
 
 // Tổng hợp theo từng học viên: mỗi bài tính một lần, dù làm nhiều lượt (chỉ cần một lượt đúng).
-export function learnerQuizResults(attempts: AttemptRow[]): Map<string, LearnerQuizResult & { status: PassStatus }> {
+// visibleCodes là các bài đang hiển thị: chỉ lượt làm trên các bài này được tính vào ngưỡng đạt.
+export function learnerQuizResults(attempts: AttemptRow[], visibleCodes: number[]): Map<string, LearnerQuizResult & { status: PassStatus }> {
+  const visible = new Set(visibleCodes);
+  const totalLessons = visible.size;
   const perLearner = new Map<string, { attempted: Set<number>; correct: Set<number> }>();
   for (const row of attempts) {
-    if (!inLessonRange(row.lesson)) continue;
+    if (!visible.has(row.lesson)) continue;
     const entry = perLearner.get(row.learner) ?? { attempted: new Set<number>(), correct: new Set<number>() };
     entry.attempted.add(row.lesson);
     if (row.correct === 1) entry.correct.add(row.lesson);
@@ -78,19 +82,15 @@ export function learnerQuizResults(attempts: AttemptRow[]): Map<string, LearnerQ
   }
   const results = new Map<string, LearnerQuizResult & { status: PassStatus }>();
   for (const [learner, entry] of perLearner) {
-    results.set(learner, passStatus(entry.correct.size, entry.attempted.size));
+    results.set(learner, passStatus(entry.correct.size, entry.attempted.size, totalLessons));
   }
   return results;
 }
 
-function inLessonRange(lesson: number): boolean {
-  return Number.isInteger(lesson) && lesson >= LESSON_MIN && lesson <= LESSON_MAX;
-}
-
-// Thống kê theo bài. Bài chưa có lượt làm có attemptCorrectRate = null, không phải 0.
-export function lessonStats(attempts: AttemptRow[], completions: CompletionRow[]): LessonStat[] {
+// Thống kê theo bài trên mọi bài (kể cả bài ẩn, quy tắc 4.15). Bài chưa có lượt làm có attemptCorrectRate = null, không phải 0.
+export function lessonStats(attempts: AttemptRow[], completions: CompletionRow[], lessonCodes: number[]): LessonStat[] {
   const stats: LessonStat[] = [];
-  for (let lesson = LESSON_MIN; lesson <= LESSON_MAX; lesson++) {
+  for (const lesson of [...new Set(lessonCodes)].filter(isLessonCode).sort((a, b) => a - b)) {
     const lessonAttempts = attempts.filter((row) => row.lesson === lesson);
     const attemptCount = lessonAttempts.length;
     const correct = lessonAttempts.filter((row) => row.correct === 1).length;
@@ -252,9 +252,9 @@ export function seriesFromDaily(attempts: DailyAttempt[], completions: DailyComp
 }
 
 // Thống kê theo bài từ số đếm đã gom. Bài không có lượt làm có attemptCorrectRate = null.
-export function lessonStatsFromCounts(attempts: LessonCount[], completions: LessonCompletion[]): LessonStat[] {
+export function lessonStatsFromCounts(attempts: LessonCount[], completions: LessonCompletion[], lessonCodes: number[]): LessonStat[] {
   const stats: LessonStat[] = [];
-  for (let lesson = LESSON_MIN; lesson <= LESSON_MAX; lesson++) {
+  for (const lesson of [...new Set(lessonCodes)].filter(isLessonCode).sort((a, b) => a - b)) {
     const a = attempts.find((row) => row.lesson === lesson);
     const attemptCount = a?.attempts ?? 0;
     const correct = a?.correct ?? 0;

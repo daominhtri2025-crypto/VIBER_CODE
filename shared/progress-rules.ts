@@ -1,4 +1,4 @@
-import { LESSON_COUNT, LESSON_MAX, LESSON_MIN } from './lesson-validation';
+import { isLessonCode } from './lesson-validation';
 
 // Tiến độ học tập (Commit 1.6). Ứng dụng chỉ có một khóa học cố định gồm 10 bài; không có bảng khóa học riêng.
 export const COURSE_ID = 'son-tra-so';
@@ -26,8 +26,8 @@ export function validateComplete(input: unknown): CompleteCheck {
   if (typeof code !== 'string' || code.length === 0 || code.length > 40) {
     return { ok: false, status: 400, error: 'Mã học viên không hợp lệ' };
   }
-  // Số nguyên trong khoảng bài học: loại bỏ số thực, chuỗi và giá trị ngoài 0–9.
-  if (typeof lesson !== 'number' || !Number.isInteger(lesson) || lesson < LESSON_MIN || lesson > LESSON_MAX) {
+  // Số nguyên không âm trong giới hạn mã bài: loại bỏ số thực, chuỗi và giá trị ngoài giới hạn.
+  if (typeof lesson !== 'number' || !isLessonCode(lesson)) {
     return { ok: false, status: 400, error: 'Bài học không hợp lệ' };
   }
   return { ok: true, value: { code, lesson } };
@@ -53,28 +53,25 @@ export interface CourseProgress {
   lessons: LessonStatus[];
 }
 
-// Tính tiến độ khóa học từ các dòng progress của một học viên.
-// Quy tắc: bài chưa có dòng hoặc done = 0 là chưa hoàn thành; dòng ngoài 0–9 bị bỏ qua.
+// Tính tiến độ khóa học trên danh sách bài đang hiển thị (lessonCodes, quyết định 30/10/2026).
+// Quy tắc: bài chưa có dòng hoặc done = 0 là chưa hoàn thành; dòng của bài không còn hiển thị bị bỏ qua.
 // completed_at chỉ để hiển thị; việc đếm dựa trên done, nên dòng cũ có completed_at NULL vẫn được tính.
-export function buildCourseProgress(rows: CourseRow[]): CourseProgress {
+export function buildCourseProgress(rows: CourseRow[], lessonCodes: number[]): CourseProgress {
+  const visible = [...new Set(lessonCodes)].filter(isLessonCode).sort((a, b) => a - b);
   const byLesson = new Map<number, CourseRow>();
-  for (const row of rows) {
-    if (Number.isInteger(row.lesson) && row.lesson >= LESSON_MIN && row.lesson <= LESSON_MAX) {
-      byLesson.set(row.lesson, row);
-    }
-  }
-  const lessons: LessonStatus[] = [];
-  for (let lesson = LESSON_MIN; lesson <= LESSON_MAX; lesson++) {
+  for (const row of rows) byLesson.set(row.lesson, row);
+  const lessons: LessonStatus[] = visible.map((lesson) => {
     const row = byLesson.get(lesson);
     const completed = row?.done === 1;
-    lessons.push({ lesson, completed, completed_at: completed ? (row?.completed_at ?? null) : null });
-  }
+    return { lesson, completed, completed_at: completed ? (row?.completed_at ?? null) : null };
+  });
+  const total = lessons.length;
   const completedLessons = lessons.filter((item) => item.completed).length;
   return {
     course: COURSE_ID,
-    total: LESSON_COUNT,
+    total,
     completed_lessons: completedLessons,
-    percent: Math.round((completedLessons * 100) / LESSON_COUNT),
+    percent: total === 0 ? 0 : Math.round((completedLessons * 100) / total),
     lessons,
   };
 }

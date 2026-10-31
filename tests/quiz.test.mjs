@@ -74,7 +74,7 @@ const c = await (await get('me', C)).json();
 {
   const valid = { code: a.code, lesson: 0, choice: 0, client_id: 'quiz-input-0001' };
   const cases = [
-    [{ ...valid, lesson: 10 }, 'lesson 10'],
+    [{ ...valid, lesson: 1000 }, 'lesson 1000'],
     [{ ...valid, lesson: -1 }, 'lesson âm'],
     [{ ...valid, lesson: 1.5 }, 'lesson thực'],
     [{ ...valid, choice: -1 }, 'choice âm'],
@@ -193,7 +193,8 @@ const rightA = quizOf(0).answer;
   ).run(id, 'x', lesson, choice, correct, clientId, '2026-01-01T00:00:00Z');
   insert('q1', 0, 0, 1, 'fresh-0001');
   assert.throws(() => insert('q2', 0, 0, 1, 'fresh-0001'), /UNIQUE/, 'trùng (learner, client_id) phải bị từ chối');
-  assert.throws(() => insert('q3', 10, 0, 1, 'fresh-0002'), /CHECK/, 'lesson 10 phải bị từ chối');
+  assert.throws(() => insert('q3', -1, 0, 1, 'fresh-0002'), /CHECK/, 'lesson âm phải bị từ chối');
+  insert('q6', 10, 0, 1, 'fresh-0005'); // Mã bài 10 được nhận sau migration 0011 (quyết định 30/10/2026).
   assert.throws(() => insert('q4', 1, 0, 2, 'fresh-0003'), /CHECK/, 'correct 2 phải bị từ chối');
   assert.throws(() => insert('q5', 1, -1, 0, 'fresh-0004'), /CHECK/, 'choice âm phải bị từ chối');
   assert.equal(fresh.prepare('PRAGMA foreign_key_check').all().length, 0);

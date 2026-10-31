@@ -1,11 +1,10 @@
 // Quy tắc video bài học dùng chung (CLAUDE.md mục 4.5, 2B; SRS FR-CNT-04, 05, 06).
 // Không phụ thuộc môi trường: dùng cho route (Sites) và kiểm thử.
+import { isLessonCode } from './lesson-validation';
 
 export const VIDEO_MAX_BYTES = 25 * 1024 * 1024; // FR-CNT-04
 export const VIDEO_MAX_SECONDS = 120; // Video phải dưới 2 phút.
 export const LINK_MAX_LENGTH = 500; // FR-CNT-05
-export const LESSON_MIN = 0;
-export const LESSON_MAX = 9;
 
 // Chỉ YouTube được phép (quyết định 2). Liên kết được chuẩn hóa sang youtube-nocookie khi lưu.
 const YOUTUBE_HOSTS = new Set(['youtube.com', 'www.youtube.com', 'm.youtube.com', 'youtu.be']);
@@ -25,7 +24,7 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 }
 
 function isLesson(value: unknown): value is number {
-  return Number.isInteger(value) && (value as number) >= LESSON_MIN && (value as number) <= LESSON_MAX;
+  return isLessonCode(value);
 }
 
 // Lấy mã video từ các dạng liên kết YouTube thường gặp.
@@ -44,7 +43,7 @@ function extractYouTubeId(url: URL): string | null {
 // Kiểm tra liên kết video (POST /api/video-link). Liên kết đã qua kiểm tra mới được lưu.
 export function checkVideoLink(input: unknown): LinkResult {
   if (!isRecord(input)) return { ok: false, status: 400, error: 'Yêu cầu không hợp lệ' };
-  if (!isLesson(input.lesson)) return { ok: false, status: 400, error: 'Bài học phải nằm trong 0–9' };
+  if (!isLesson(input.lesson)) return { ok: false, status: 400, error: 'Mã bài học không hợp lệ' };
   const raw = input.url;
   if (typeof raw !== 'string' || raw.length === 0 || raw.length > LINK_MAX_LENGTH) {
     return { ok: false, status: 400, error: `Liên kết phải từ 1 đến ${LINK_MAX_LENGTH} ký tự` };
@@ -72,7 +71,7 @@ export function checkVideoLink(input: unknown): LinkResult {
 
 // Kiểm tra thông tin tải lên trước khi đọc nội dung tệp.
 export function checkVideoUpload(input: { lesson: unknown; duration: unknown; size: number }): CheckResult {
-  if (!isLesson(input.lesson)) return { ok: false, status: 400, error: 'Bài học phải nằm trong 0–9' };
+  if (!isLesson(input.lesson)) return { ok: false, status: 400, error: 'Mã bài học không hợp lệ' };
   if (input.size > VIDEO_MAX_BYTES) return { ok: false, status: 413, error: 'Tệp tối đa 25 MB' };
   if (input.size === 0) return { ok: false, status: 400, error: 'Tệp video trống' };
   const duration = input.duration;

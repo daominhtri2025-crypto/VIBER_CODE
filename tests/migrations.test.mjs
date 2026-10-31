@@ -13,7 +13,7 @@ const tryRun = (fn) => { try { fn(); return null; } catch (error) { return Strin
   const sql = new DatabaseSync(':memory:');
   sql.exec('PRAGMA foreign_keys = ON');
   const tags = applyMigrations(sql);
-  assert.equal(tags.length, 10, 'journal phải có 10 migration (0000–0009)');
+  assert.equal(tags.length, 12, 'journal phải có 12 migration (0000–0011)');
   // 0009: bộ đếm yêu cầu theo cửa sổ giờ; khóa là chuỗi, không có cột IP thô.
   assert.ok(columns(sql, 'request_limits').includes('window_start'), 'request_limits.window_start phải tồn tại (0009)');
   assert.ok(!columns(sql, 'request_limits').some((c) => /ip/i.test(c)), 'request_limits không có cột IP thô (0009)');

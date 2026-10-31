@@ -133,7 +133,7 @@ const lessonsInGroup = (group) => [...groupOf].filter(([, g]) => g === group).ma
 // 9) Tham số sai trả 400 với thông báo tiếng Việt, không chạy truy vấn báo cáo.
 {
   const bad = [
-    'lesson=42', 'lesson=abc', 'lesson=-1', 'group=6', 'group=1.5',
+    'lesson=1000', 'lesson=abc', 'lesson=-1', 'group=6', 'group=1.5',
     'granularity=month', 'from=2026-10-27', 'from=2026-10-28T00:00:00.000Z&to=2026-10-27T00:00:00.000Z',
   ];
   for (const query of bad) {
