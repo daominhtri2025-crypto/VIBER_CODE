@@ -54,6 +54,8 @@ const server = createServer((req, res) => {
     if (url.pathname === '/api/lessons') return json({ groups: GROUPS, lessons: LESSONS.map((l) => ({ ...l, icon: '', summary: '', steps: [], quiz: { question: '', options: [] }, next_step: '' })) });
     if (url.pathname === '/api/videos') return json([]);
     if (url.pathname === '/api/admin/news') return json({ news: [{ id: 1, title: 'Tin thử', summary: 'Tóm tắt thử', content: 'Nội dung thử', source_url: null, hidden: false, published_at: new Date().toISOString(), updated: new Date().toISOString() }] });
+    // Báo cáo đọc đủ danh sách quản trị (kể cả bài ẩn) để có tên bài: fixture phải mô phỏng endpoint này.
+    if (url.pathname === '/api/admin/lessons') return json({ lessons: LESSONS.map((l) => ({ lesson: l.lesson, title: l.title, group_no: l.group_no, icon: '', summary: '', steps: [], quiz: { question: '', options: [], answer: 0 }, next_step: '', hidden: false, updated: '2026-10-30T00:00:00Z' })), page: 1, pageSize: 10, total: LESSONS.length, pages: 1 });
     if (url.pathname === '/api/dashboard') return json({ learners: [], assessments: [], staff: [], at: new Date().toISOString(), report: reportFor(url.searchParams) });
     res.writeHead(404); return res.end();
   }

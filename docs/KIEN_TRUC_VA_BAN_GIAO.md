@@ -54,6 +54,33 @@
 | POST /api/assessment | Chủ website hoặc tình nguyện viên được cấp quyền |
 | POST /api/staff | Chỉ chủ website; cấp/thu hồi quyền đánh giá |
 | POST /api/upload-video | Chỉ chủ website; đếm byte khi đọc (tối đa 27 MB thân yêu cầu, 25 MB tệp); lưu R2 và gắn vào bài học |
+| GET /api/lessons | Công khai; danh mục bài đang hiện (không có đáp án). Trả 503 khi thiếu hoặc hỏng dữ liệu bài |
+| POST /api/quiz/answer | Người đăng nhập; máy chủ chấm đáp án. Bài ẩn trả 409 và không ghi lượt làm |
+| GET /api/news | Công khai; tin chưa ẩn, mới nhất trước, tối đa 20 tin |
+| GET /api/admin/news; POST /api/admin/news; POST /api/admin/news/update | Chỉ quản trị viên; xem toàn bộ tin, đăng, sửa và ẩn/hiện tin; kiểm tra Origin |
+| GET /api/admin/lessons?page=N | Chỉ quản trị viên; danh sách bài phân trang 10 bài mỗi trang, có đáp án |
+| POST /api/admin/lessons | Chỉ quản trị viên; thêm bài (201; 409 nếu trùng mã) |
+| POST /api/admin/lessons/update | Chỉ quản trị viên; sửa bài, lưu bản trước vào lịch sử (200; 404 nếu không có bài) |
+| POST /api/admin/lessons/visibility | Chỉ quản trị viên; ẩn hoặc hiện bài (200 kèm `changed`; 404 nếu không có bài) |
+| GET /api/admin/lessons/versions?lesson=N | Chỉ quản trị viên; lịch sử phiên bản của bài, mới nhất trước |
+
+## Xác thực, phiên và bảo mật
+
+Dữ liệu: các con số dưới đây lấy từ mã nguồn (`shared/auth-rules.ts`, `shared/password-hash.ts`, `shared/password-reset-rules.ts`, `shared/auth-service.ts`).
+
+| Thành phần | Cơ chế đã triển khai |
+|---|---|
+| Mật khẩu | Băm PBKDF2-SHA256 qua WebCrypto, 100 000 vòng, muối ngẫu nhiên. Chỉ lưu chuỗi băm có ghi số vòng. Không ghi nhật ký. |
+| Độ dài mật khẩu | 10 đến 200 ký tự khi tạo, đặt lại và đổi. Đăng nhập không kiểm tra độ dài. |
+| Khóa tạm | 5 lần sai liên tiếp thì khóa 15 phút; yêu cầu trong thời gian khóa trả 423. |
+| Phiên | Mã phiên 32 byte ngẫu nhiên (256 bit). Bảng `sessions` chỉ lưu băm SHA-256 (`token_hash`). Hết hạn sau 12 giờ. |
+| Cookie | `st_session`: `HttpOnly`, `Secure`, `SameSite=Lax`, `Path=/`. Mã phiên không nằm trong URL hay JSON. |
+| Đổi mật khẩu, đặt lại, vô hiệu hóa | Đăng xuất các phiên liên quan. |
+| Buộc đổi mật khẩu | Tài khoản tạo mới hoặc vừa được đặt lại phải đổi mật khẩu ở lần đăng nhập kế tiếp (SRS FR-AUTH-07; kiểm thử trong `tests/auth.test.mjs`). |
+| Quên mật khẩu | Token 15 phút, dùng một lần, chỉ lưu băm. Giới hạn 3 yêu cầu mỗi tài khoản mỗi giờ và 10 yêu cầu mỗi IP mỗi giờ (`request_limits`, migration 0009). Phản hồi giống hệt dù email có tồn tại hay không. |
+| Gửi email | Chưa gửi thật qua Resend, vì chưa có tên miền gửi đã xác minh. Kiểm thử dùng email giả. |
+| Kiểm tra Origin | Mọi API ghi (POST) kiểm tra `Origin` trước khi xử lý. |
+| Hiển thị dữ liệu | Trang quản trị dùng `textContent`. Trang học còn một số chỗ dùng `innerHTML`; xem mục nợ kỹ thuật bên dưới. |
 
 ## Quy tắc vận hành
 - OWNER_EMAIL là cấu hình phía máy chủ, không đưa vào mã JavaScript trên trình duyệt.
@@ -95,6 +122,9 @@ Dashboard đối chiếu trước–sau trên cùng mã học viên, lấy phi�
 - Thẻ tổng quan đầu trang (học viên, phiếu quan sát, phiếu đạt) lấy từ `report` của máy chủ; hàm xuất CSV cũ đã bỏ, khối tự học và phiếu quan sát nằm trong CSV báo cáo và không chịu ảnh hưởng bộ lọc.
 - Truy vấn báo cáo chưa đo trên D1 của bản triển khai và chưa có kiểm thử tải đồng thời. Chỉ tiêu NFR-PERF-03 mới đạt trên SQLite trong bộ nhớ.
 - FR-DSH-02 (làm mới 15 giây) chưa có kiểm thử đo khoảng thời gian.
+
+- Nợ bảo mật hiển thị (CLAUDE.md mục 2 không cho phép `innerHTML` với dữ liệu từ API hoặc người dùng). Hiện trạng đã kiểm: `public/app.js` (trang học) dùng `innerHTML` và nội suy dữ liệu qua hàm `esc()`, nên chưa thấy lỗ hổng chèn mã, nhưng không đạt quy tắc. `public/admin.js` (`el('tasks')`) và `public/home-service-art.js` chỉ chèn chuỗi cố định trong mã. Đề xuất: chuyển `app.js` sang DOM API trong một thay đổi riêng (CLAUDE.md mục 1.4), vì nội dung bài nay do quản trị viên sửa.
+- Kiểm thử trình duyệt `tests/admin-page-browser.mjs` (360 px, bộ lọc, CSV) chưa nằm trong `npm test` vì cần Playwright. Chạy thủ công: 11/11 ca đạt ngày 31/10/2026.
 
 ## Chính sách migration
 - `drizzle/0000_fancy_rogue.sql` là migration gốc, có thể đã áp dụng trên D1. Không đổi tên, không sửa nội dung.

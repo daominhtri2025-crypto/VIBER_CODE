@@ -201,7 +201,7 @@ Các bước phải chạy theo đúng thứ tự. Khôi phục khi lỗi giữa
 ### 4.4 Quy trình khuyến nghị
 
 1. **Tạo D1 staging riêng** trên tài khoản Cloudflare của người phụ trách. Không dùng D1 production để thử.
-2. Áp dụng `0000` → `0008` lên staging. Ghi lại mọi cảnh báo hoặc lỗi từ D1.
+2. Áp dụng `0000` → `0011` lên staging. Ghi lại mọi cảnh báo hoặc lỗi từ D1.
 3. Chạy kiểm tra thủ công trên staging: đăng nhập quản trị lần đầu bằng `ADMIN_PASSWORD`, đổi mật khẩu bắt buộc, tạo và đặt lại tài khoản tình nguyện viên, khóa tạm sau 5 lần sai, đăng nhập tình nguyện viên và ghi phiếu, tiến độ hai thiết bị, trắc nghiệm, liên kết video, tải video nhỏ, báo cáo quản trị, xuất CSV.
 4. Chạy kịch bản k6 trên staging theo mục 3.
 5. Chỉ sau khi staging đạt mọi bước, lập kế hoạch áp dụng lên production, với phê duyệt của người giữ `OWNER_EMAIL`.
@@ -249,7 +249,7 @@ Các bước phải chạy theo đúng thứ tự. Khôi phục khi lỗi giữa
 | 9 | Đặt `ADMIN_PASSWORD` trên Sites và đăng nhập đầu tiên | Chủ website | Chưa làm |
 | 10 | Quy trình khôi phục khi quên mật khẩu (FR-AUTH-11) | Chủ website | Đã triển khai trong mã và kiểm thử bằng email giả, gồm giới hạn 10 yêu cầu mỗi IP mỗi giờ. **Chưa gửi thật:** cần tên miền gửi đã xác minh trên Resend và đặt `RESEND_API_KEY`, `MAIL_FROM`, `APP_BASE_URL` trên Sites. |
 | 11 | Kiểm thử trình duyệt cho màn hình đăng nhập và đổi mật khẩu bắt buộc | Người điều phối | Chưa làm |
-| 12 | Chạy `drizzle-kit check` và sinh snapshot `0006` | Người viết migration | Chưa làm |
+| 12 | Chạy `drizzle-kit check` và sinh snapshot `0006`–`0011` | Người viết migration | Đã làm 31/10/2026: chuỗi snapshot đã kiểm chứng (xem `docs/BIEN_BAN_BAN_GIAO.md`) |
 
 ---
 
@@ -288,3 +288,12 @@ Các bước phải chạy theo đúng thứ tự. Khôi phục khi lỗi giữa
 - **Ẩn hoặc hiện bài:** không xóa bài. Bài ẩn không hiện với học viên; số liệu lịch sử giữ nguyên, báo cáo ghi "(đã ẩn)".
 - Bài mới xuất hiện trong dropdown video sau khi lưu.
 - Đổi mã bài đã có không được hỗ trợ, vì tiến độ và lượt làm bài đều trỏ theo mã.
+
+## 8. Báo cáo thống kê và xuất CSV (quản trị viên)
+
+- Mục **Báo cáo thống kê** lọc theo khoảng ngày (Từ ngày, Đến ngày), nhóm bài, bài học và kỳ (theo ngày hoặc tuần). Ngày được tính theo giờ Việt Nam (UTC+7).
+- Ngưỡng đạt kiểm tra hiểu bài là 70% số bài đang hiện (SRS FR-LES-07). Ngưỡng không đổi theo bộ lọc. Đây là kiểm tra nội bộ, không thay thế đánh giá năng lực chính thức.
+- Bài đã ẩn vẫn nằm trong thống kê theo bài, kèm nhãn "(đã ẩn)" (CLAUDE.md mục 4.15).
+- **Xuất CSV** tải về đang lọc. Tệp có BOM UTF-8 để mở đúng tiếng Việt trong Excel. Ô bắt đầu bằng `=` được thêm dấu nháy để không chạy như công thức.
+- **Bảng gọn** chỉ đổi cách hiển thị, không đổi số liệu.
+- Kiểm chứng: bộ lọc, CSV và ngưỡng được kiểm thử trong `tests/dashboard-*.test.mjs` và `tests/admin-page-browser.mjs`. Nhãn "(đã ẩn)" trên trình duyệt chưa có kiểm thử riêng.
