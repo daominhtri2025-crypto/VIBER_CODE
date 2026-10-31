@@ -128,7 +128,7 @@ Kết quả phải là `True`.
 
 ## 7. Tạo cơ sở dữ liệu cục bộ và áp dụng đủ migration
 
-Đây là bước dễ sai nhất. README cũ chỉ áp dụng `0000`, nhưng dự án hiện có **10 migration** (`0000` đến `0009`). Thiếu `0002` thì không có bài học nào và trang học trả lỗi 503.
+Đây là bước dễ sai nhất. README cũ chỉ áp dụng `0000`, nhưng dự án hiện có **12 migration** (`0000` đến `0011`). Thiếu `0002` thì không có bài học nào và trang học trả lỗi 503. Đã kiểm chứng trên môi trường Linux: áp dụng đủ 12 tệp theo thứ tự không lỗi, bảng `lessons` có 10 bài.
 
 Chạy một lần khi tạo cơ sở dữ liệu mới, theo đúng thứ tự:
 
@@ -140,7 +140,9 @@ foreach ($migration in (Get-ChildItem drizzle\*.sql | Sort-Object Name)) {
 }
 ```
 
-Kiểm tra kết quả: lệnh phải in ra từng tệp `0000` đến `0009` và không có dòng `LỖI`.
+Kiểm tra kết quả: lệnh phải in ra từng tệp `0000` đến `0011` và không có dòng `LỖI`.
+
+> **Điểm dễ sai.** Tham số `--persist-to .wrangler\state` phải có. Máy chủ `pnpm dev` đọc kho tại `.wrangler\state`. Nếu migration ghi vào kho khác, `/api/lessons` vẫn trả 503 dù các lệnh đã báo thành công. **[Cần xác minh trên Windows]**.
 
 > **Không chạy lại migration trên cơ sở dữ liệu đã có dữ liệu thật.** Nếu cần làm lại từ đầu, xóa thư mục `.wrangler\state` trên máy cá nhân trước (đây là dữ liệu cục bộ của anh, không phải dữ liệu thật của website). Việc xóa cần được anh xác nhận trước.
 

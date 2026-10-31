@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="vi" xml:lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Hướng dẫn chạy Sơn Trà Số trên macOS</title>
+  <style>
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      background-color: #1a1a1a;
+      border: none;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+    /* CSS for syntax highlighting */
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { color: #008000; } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { color: #008000; font-weight: bold; } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <style>
+  :root{color-scheme:light;--bg:#f6f7f4;--surface:#fff;--fg:#1d2a24;--muted:#4f5e56;--line:#d5ddd7;--accent:#17634c;--code:#eef5f0;--warn:#fdf4e3;--warnfg:#6b4a00}
+  @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){color-scheme:dark;--bg:#111a16;--surface:#1a2620;--fg:#e6eee9;--muted:#b3c2b9;--line:#34463c;--accent:#7cc7a6;--code:#203029;--warn:#3a2e14;--warnfg:#f3d9a0}}
+  :root[data-theme="dark"]{color-scheme:dark;--bg:#111a16;--surface:#1a2620;--fg:#e6eee9;--muted:#b3c2b9;--line:#34463c;--accent:#7cc7a6;--code:#203029;--warn:#3a2e14;--warnfg:#f3d9a0}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--fg);font:1rem/1.65 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-top:24px;padding-bottom:48px}
+  main{max-width:860px;margin:0 auto;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:20px 22px;min-width:0}
+  h1{font-size:1.6rem;margin:0 0 8px;text-wrap:balance}
+  h2{font-size:1.25rem;margin:28px 0 8px;padding-bottom:4px;border-bottom:1px solid var(--line);text-wrap:balance}
+  h3{font-size:1.05rem;margin:20px 0 6px}
+  p,li{overflow-wrap:anywhere}
+  code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.9em;background:var(--code);padding:1px 5px;border-radius:5px}
+  pre{background:var(--code);padding:12px;border-radius:8px;overflow-x:auto;max-width:100%}
+  pre code{background:none;padding:0;white-space:pre}
+  blockquote{margin:12px 0;padding:10px 14px;border-left:4px solid var(--accent);background:var(--code);border-radius:8px;color:var(--fg)}
+  table{display:block;overflow-x:auto;max-width:100%;border-collapse:collapse;margin:10px 0;width:100%}
+  th,td{text-align:left;padding:7px 9px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{color:var(--muted);font-weight:600}
+  hr{border:0;border-top:1px solid var(--line);margin:24px 0}
+  a{color:var(--accent)}
+  ol,ul{padding-left:1.3em}
+  </style>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">Hướng dẫn chạy Sơn Trà Số trên macOS</h1>
+</header>
+<h1 id="hướng-dẫn-chạy-sơn-trà-số-trên-macos">Hướng dẫn chạy Sơn Trà Số
+trên macOS</h1>
+<p>Tài liệu này dành cho người muốn chạy dự án trên máy Mac để phát
+triển, kiểm thử hoặc xem thử trên máy cá nhân. Hướng dẫn viết cho
+<strong>Mac chip Apple Silicon (M1–M4) chạy macOS 26</strong>. Các lệnh
+chạy trong <strong>Terminal</strong> (ứng dụng có sẵn trong macOS, nằm ở
+<code>Applications &gt; Utilities</code>). Shell mặc định của macOS là
+<code>zsh</code>, các lệnh dưới đây tương thích với
+<code>zsh</code>.</p>
+<blockquote>
+<p><strong>Phạm vi.</strong> Chạy cục bộ không cần tài khoản Cloudflare,
+không gọi Gemini, không gọi YouTube và không gửi email thật. Muốn đưa
+lên mạng, xem tài liệu
+<code>HUONG_DAN_TRIEN_KHAI_CLOUDFLARE.html</code>.</p>
+</blockquote>
+<blockquote>
+<p><strong>Trạng thái kiểm chứng.</strong> Các lệnh về build, migration,
+kiểm thử và <code>wrangler deploy --dry-run</code> đã được chạy thực tế
+trên môi trường Linux của dự án ngày 31/10/2026. Các bước chỉ có trên
+macOS (cài Homebrew, nvm, Terminal, quyền Gatekeeper) <strong>chưa được
+chạy trên máy Mac thật</strong>: đánh dấu <strong>[Cần xác minh trên
+Mac]</strong>. Chỗ nào chưa chắc được ghi rõ, không đoán.</p>
+</blockquote>
+<hr />
+<h2 id="1-yêu-cầu">1. Yêu cầu</h2>
+<table>
+<thead>
+<tr class="header">
+<th>Thành phần</th>
+<th>Phiên bản</th>
+<th>Ghi chú</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Mac</td>
+<td>Apple Silicon (M1–M4), macOS 26</td>
+<td>Chip Intel cũng chạy được nhưng tài liệu này không kiểm chứng</td>
+</tr>
+<tr class="even">
+<td>Node.js</td>
+<td><strong>24</strong> khuyến nghị; tối thiểu
+<strong>22.13</strong></td>
+<td>Cài theo mục 3</td>
+</tr>
+<tr class="odd">
+<td>pnpm</td>
+<td><strong>11.25.0</strong></td>
+<td>Đúng phiên bản trong <code>package.json</code> (trường
+<code>packageManager</code>)</td>
+</tr>
+<tr class="even">
+<td>Git</td>
+<td>Bản mới</td>
+<td>Có sẵn khi cài Xcode Command Line Tools</td>
+</tr>
+<tr class="odd">
+<td>Kết nối Internet</td>
+<td></td>
+<td>Để cài thư viện theo <code>pnpm-lock.yaml</code></td>
+</tr>
+</tbody>
+</table>
+<p>Dung lượng trống cần khoảng 2 GB cho thư viện và cơ sở dữ liệu cục
+bộ.</p>
+<hr />
+<h2 id="2-chuẩn-bị-terminal-và-git">2. Chuẩn bị Terminal và Git</h2>
+<h3 id="21-cài-xcode-command-line-tools">2.1. Cài Xcode Command Line
+Tools</h3>
+<p>Mở Terminal và chạy:</p>
+<div class="sourceCode" id="cb1"><pre
+class="sourceCode zsh"><code class="sourceCode zsh"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">xcode-select</span> <span class="at">--install</span></span></code></pre></div>
+<p>Nếu máy đã cài, macOS báo
+<code>command line tools are already installed</code>; bỏ qua. Nếu hiện
+hộp thoại, bấm <strong>Install</strong> và chờ hoàn tất (vài phút).</p>
+<p>Kiểm tra:</p>
+<div class="sourceCode" id="cb2"><pre
+class="sourceCode zsh"><code class="sourceCode zsh"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> <span class="at">--version</span></span></code></pre></div>
+<p>Kết quả dạng <code>git version 2.x.x</code>.</p>
+<h3 id="22-lấy-mã-nguồn">2.2. Lấy mã nguồn</h3>
+<div class="sourceCode" id="cb3"><pre
+class="sourceCode zsh"><code class="sourceCode zsh"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">mkdir</span> <span class="at">-p</span> ~/Documents/du-an</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> ~/Documents/du-an</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> clone https://github.com/daominhtri2025-crypto/VIBER_CODE.git viber_code</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> viber_code</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> checkout Son_tra_so</span></code></pre></div>
+<ul>
+<li>Nhánh phát triển là <code>Son_tra_so</code>, không phải
+<code>main</code>.</li>
+<li>Thư mục <code>~/Documents/du-an/viber_code</code> là nơi chứa dự án.
+Đừng đặt trong thư mục đồng bộ iCloud Drive
+(<code>~/Library/Mobile Documents</code>) vì iCloud có thể làm hỏng thư
+mục <code>node_modules</code> và <code>.wrangler</code>.</li>
+</ul>
+<hr />
+<h2 id="3-cài-nodejs">3. Cài Node.js</h2>
+<p>Có hai cách. <strong>Cách A</strong> (đơn giản nhất) dùng trang chính
+thức. <strong>Cách B</strong> dùng Homebrew, phù hợp nếu anh đã quen
+Homebrew.</p>
+<h3 id="cách-a-tải-từ-nodejsorg">Cách A: tải từ nodejs.org</h3>
+<ol type="1">
+<li>Mở <code>https://nodejs.org</code>, tải bản <strong>LTS</strong> cho
+macOS (file <code>.pkg</code>, chọn <strong>Apple
+Silicon</strong>).</li>
+<li>Mở file <code>.pkg</code>, làm theo hướng dẫn, nhập mật khẩu máy khi
+được hỏi.</li>
+<li>Đóng và mở lại Terminal.</li>
+</ol>
+<h3 id="cách-b-dùng-homebrew">Cách B: dùng Homebrew</h3>
+<p>Nếu chưa có Homebrew, cài theo hướng dẫn tại
+<code>https://brew.sh</code> (chạy lệnh được đưa ra trên trang đó). Sau
+đó:</p>
+<div class="sourceCode" id="cb4"><pre
+class="sourceCode zsh"><code class="sourceCode zsh"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="ex">brew</span> install node@24</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="ex">brew</span> link <span class="at">--overwrite</span> <span class="at">--force</span> node@24</span></code></pre></div>
+<p>Kiểm tra cả hai cách:</p>
+<div class="sourceCode" id="cb5"><pre
+class="sourceCode zsh"><code class="sourceCode zsh"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="ex">node</span> <span class="at">--version</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="ex">npm</span> <span class="at">--version</span></span></code></pre></div>
+<p>Kết quả <code>node</code> phải từ <code>v22.13.0</code> trở lên
+(khuyến nghị <code>v24.x</code>).</p>
+<blockquote>
+<p><strong>Lưu ý.</strong> Nếu <code>node --version</code> báo phiên bản
+cũ, Terminal đang dùng bản cũ trước đó. Đóng Terminal, mở lại, kiểm tra
+lại. Nếu vẫn sai, chạy <code>which node</code> và gửi kết quả cho người
+phụ trách.</p>
+</blockquote>
+<hr />
+<h2 id="4-cài-pnpm-đúng-phiên-bản">4. Cài pnpm đúng phiên bản</h2>
+<div class="sourceCode" id="cb6"><pre
+class="sourceCode zsh"><code class="sourceCode zsh"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="ex">npm</span> install <span class="at">-g</span> pnpm@11.25.0</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="ex">pnpm</span> <span class="at">--version</span></span></code></pre></div>
+<p>Kết quả phải là <code>11.25.0</code>.</p>
+<p>Nếu báo <code>EACCES: permission denied</code> khi cài toàn cục,
+<strong>không</strong> dùng <code>sudo</code>. Đây là dấu hiệu Node cài
+bằng quyền hệ thống. Cách an toàn: cài bằng Cách B ở mục 3 (Homebrew đặt
+thư mục cài đặt trong <code>/opt/homebrew</code>, người dùng có quyền
+ghi) rồi chạy lại lệnh trên. <strong>[Cần xác minh trên
+Mac]</strong>.</p>
+<hr />
+<h2 id="5-cài-thư-viện">5. Cài thư viện</h2>
+<p>Trong thư mục dự án:</p>
+<div class="sourceCode" id="cb7"><pre
+class="sourceCode zsh"><code class="sourceCode zsh"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> ~/Documents/du-an/viber_code</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="ex">pnpm</span> install <span class="at">--frozen-lockfile</span></span></code></pre></div>
+<ul>
+<li><code>--frozen-lockfile</code> buộc pnpm dùng đúng phiên bản trong
+<code>pnpm-lock.yaml</code>. Nếu báo lỗi lockfile,
+<strong>không</strong> chạy <code>pnpm install</code> không có cờ này;
+hỏi người phụ trách trước.</li>
+<li>Lần cài đầu có thể mất vài phút.</li>
+</ul>
+<p>Nếu macOS hỏi quyền truy cập mạng cho Terminal, chọn
+<strong>Allow</strong>.</p>
+<hr />
+<h2 id="6-tạo-tệp-cấu-hình-cục-bộ-devvars">6. Tạo tệp cấu hình cục bộ
+<code>.dev.vars</code></h2>
+<p><code>.dev.vars</code> chứa biến môi trường cho máy chủ cục bộ.
+<strong>Tệp này không được commit lên Git</strong> (đã có trong
+<code>.gitignore</code>).</p>
+<div class="sourceCode" id="cb8"><pre
+class="sourceCode zsh"><code class="sourceCode zsh"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cp</span> .dev.vars.example .dev.vars</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="ex">open</span> <span class="at">-e</span> .dev.vars</span></code></pre></div>
+<p>Lệnh <code>open -e</code> mở tệp bằng TextEdit. Nội dung cần có:</p>
+<pre><code>OWNER_EMAIL=seedy@sites.test
+ADMIN_PASSWORD=&lt;mật-khẩu-riêng-của-anh-tối-thiểu-10-ký-tự&gt;</code></pre>
+<ul>
+<li><code>OWNER_EMAIL=seedy@sites.test</code> chỉ dùng cho đăng nhập mô
+phỏng trên máy cá nhân.</li>
+<li><code>ADMIN_PASSWORD</code> là mật khẩu ban đầu của quản trị viên,
+chỉ dùng cho <strong>lần đăng nhập đầu tiên</strong>. Đặt giá trị riêng,
+không dùng giá trị mẫu, không ghi vào mã hay tài liệu.</li>
+<li>Không dán <code>ADMIN_PASSWORD</code> vào trò chuyện, ảnh chụp màn
+hình hay commit.</li>
+<li>Lưu tệp, đóng TextEdit.</li>
+</ul>
+<p>Kiểm tra tệp đã tồn tại và không nằm trong Git:</p>
+<div class="sourceCode" id="cb10"><pre
+class="sourceCode zsh"><code class="sourceCode zsh"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ls</span> <span class="at">-la</span> .dev.vars</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> check-ignore <span class="at">-v</span> .dev.vars</span></code></pre></div>
+<p>Lệnh thứ hai phải in ra một dòng chứa <code>.dev.vars</code>. Nếu
+không in gì, <strong>dừng lại</strong> và báo người phụ trách.</p>
+<p>Tùy chọn: để thử chức năng <strong>quên mật khẩu</strong> trên máy cá
+nhân, cần thêm ba biến. Không bắt buộc cho các chức năng khác.</p>
+<pre><code>RESEND_API_KEY=&lt;khóa-resend-của-anh&gt;
+MAIL_FROM=&quot;Sơn Trà Số &lt;khong-tra-loi@&lt;tên-miền-đã-xác-minh&gt;&gt;&quot;
+APP_BASE_URL=https://&lt;địa-chỉ-https-của-anh&gt;</code></pre>
+<ul>
+<li><code>APP_BASE_URL</code> phải là <code>https://</code>. Địa chỉ
+<code>http://localhost:5173</code> làm yêu cầu quên mật khẩu trả
+503.</li>
+<li>Khi chưa có tên miền đã xác minh trên Resend, thư không gửi được đến
+người nhận thật. Đây là hành vi dự kiến.</li>
+</ul>
+<hr />
+<h2 id="7-build-để-sinh-cấu-hình-cơ-sở-dữ-liệu-cục-bộ">7. Build để sinh
+cấu hình cơ sở dữ liệu cục bộ</h2>
+<div class="sourceCode" id="cb12"><pre
+class="sourceCode zsh"><code class="sourceCode zsh"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="ex">pnpm</span> build</span></code></pre></div>
+<p>Lệnh tạo thư mục <code>dist/server/</code> chứa
+<code>wrangler.json</code>. Các lệnh migration ở mục 8 dùng tệp này.</p>
+<p>Kiểm tra:</p>
+<div class="sourceCode" id="cb13"><pre
+class="sourceCode zsh"><code class="sourceCode zsh"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="bu">test</span> <span class="at">-f</span> dist/server/wrangler.json <span class="kw">&amp;&amp;</span> <span class="bu">echo</span> <span class="st">&quot;CÓ wrangler.json&quot;</span></span></code></pre></div>
+<p>Kết quả phải in <code>CÓ wrangler.json</code>.</p>
+<hr />
+<h2 id="8-tạo-cơ-sở-dữ-liệu-cục-bộ-và-áp-dụng-đủ-12-migration">8. Tạo cơ
+sở dữ liệu cục bộ và áp dụng đủ 12 migration</h2>
+<p>Dự án có <strong>12 migration</strong>, từ <code>0000</code> đến
+<code>0011</code>. Áp dụng thiếu bất kỳ tệp nào, trang học sẽ lỗi. Đã
+kiểm chứng trên môi trường Linux: áp dụng đủ 12 tệp theo đúng thứ tự,
+không lỗi, bảng <code>lessons</code> có <strong>10 bài</strong>.</p>
+<p>Chạy một lần khi tạo cơ sở dữ liệu cục bộ mới, theo đúng thứ tự:</p>
+<div class="sourceCode" id="cb14"><pre
+class="sourceCode zsh"><code class="sourceCode zsh"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> f <span class="kw">in</span> drizzle/<span class="pp">*</span>.sql<span class="kw">;</span> <span class="cf">do</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>  <span class="bu">echo</span> <span class="st">&quot;Áp dụng </span><span class="va">$(</span><span class="fu">basename</span> <span class="st">&quot;</span><span class="va">$f</span><span class="st">&quot;</span><span class="va">)</span><span class="st">&quot;</span></span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>  <span class="ex">node</span> <span class="at">--import</span> ./scripts/sites-env.mjs ./node_modules/wrangler/bin/wrangler.js d1 execute DB <span class="at">--local</span> <span class="at">--config</span> dist/server/wrangler.json <span class="at">--persist-to</span> .wrangler/state <span class="at">--file</span> <span class="st">&quot;</span><span class="va">$f</span><span class="st">&quot;</span> <span class="kw">||</span> <span class="kw">{</span> <span class="bu">echo</span> <span class="st">&quot;LỖI ở </span><span class="va">$(</span><span class="fu">basename</span> <span class="st">&quot;</span><span class="va">$f</span><span class="st">&quot;</span><span class="va">)</span><span class="st">, dừng lại&quot;</span><span class="kw">;</span> <span class="cf">break</span><span class="kw">;</span> <span class="kw">}</span></span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a><span class="cf">done</span></span></code></pre></div>
+<p>Kết quả phải in đủ 12 dòng <code>Áp dụng</code> từ
+<code>0000_fancy_rogue.sql</code> đến
+<code>0011_quiz_attempts_bai_moi.sql</code>, không có dòng
+<code>LỖI</code>.</p>
+<blockquote>
+<p><strong>Điểm dễ sai.</strong> Tham số
+<code>--persist-to .wrangler/state</code> phải có. Máy chủ
+<code>pnpm dev</code> đọc kho tại <code>.wrangler/state</code>. Nếu bỏ
+tham số này hoặc dùng đường dẫn khác, migration được ghi vào kho khác và
+<code>/api/lessons</code> sẽ trả 503 dù migration đã "chạy xong".
+<strong>[Cần xác minh trên Mac]</strong>.</p>
+</blockquote>
+<blockquote>
+<p><strong>Không chạy lại migration trên cơ sở dữ liệu đã có dữ
+liệu.</strong> Nếu cần làm lại từ đầu, xóa thư mục
+<code>.wrangler/state</code> trên máy cá nhân trước. Đây là dữ liệu cục
+bộ, không phải dữ liệu của website, nhưng việc xóa cần được người phụ
+trách xác nhận trước.</p>
+</blockquote>
+<h3 id="kiểm-tra-bảng-bài-học">Kiểm tra bảng bài học</h3>
+<div class="sourceCode" id="cb15"><pre
+class="sourceCode zsh"><code class="sourceCode zsh"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="ex">node</span> <span class="at">--import</span> ./scripts/sites-env.mjs ./node_modules/wrangler/bin/wrangler.js d1 execute DB <span class="at">--local</span> <span class="at">--config</span> dist/server/wrangler.json <span class="at">--persist-to</span> .wrangler/state <span class="at">--command</span> <span class="st">&quot;SELECT COUNT(*) AS so_bai FROM lessons&quot;</span></span></code></pre></div>
+<p>Kết quả phải có <code>"so_bai": 10</code>. Nếu bằng <code>0</code>,
+migration <code>0002_seed_bai_hoc.sql</code> chưa được áp dụng; chạy lại
+vòng lặp ở trên.</p>
+<hr />
+<h2 id="9-chạy-ứng-dụng">9. Chạy ứng dụng</h2>
+<div class="sourceCode" id="cb16"><pre
+class="sourceCode zsh"><code class="sourceCode zsh"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="ex">pnpm</span> dev</span></code></pre></div>
+<p>Máy chủ in ra địa chỉ, thường là <code>http://127.0.0.1:5173</code>.
+Mở trình duyệt tới địa chỉ đó.</p>
+<table>
+<thead>
+<tr class="header">
+<th>Đường dẫn</th>
+<th>Nội dung</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>/home.html</code></td>
+<td>Trang học</td>
+</tr>
+<tr class="even">
+<td><code>/admin.html</code></td>
+<td>Trang điều phối (cần đăng nhập email và mật khẩu)</td>
+</tr>
+<tr class="odd">
+<td><code>/print.html</code></td>
+<td>Tài liệu in</td>
+</tr>
+<tr class="even">
+<td><code>/signin-with-chatgpt?return_to=/home.html</code></td>
+<td>Đăng nhập học viên mô phỏng, danh tính mẫu
+<code>seedy@sites.test</code></td>
+</tr>
+</tbody>
+</table>
+<p>Dừng máy chủ: bấm <code>Control + C</code> trong cửa sổ Terminal đang
+chạy <code>pnpm dev</code>.</p>
+<h3 id="kiểm-tra-api-trước-khi-mở-trang">Kiểm tra API trước khi mở
+trang</h3>
+<p>Khi <code>pnpm dev</code> đang chạy, mở Terminal <strong>thứ
+hai</strong> (Terminal đang chạy máy chủ không được đóng) và chạy:</p>
+<div class="sourceCode" id="cb17"><pre
+class="sourceCode zsh"><code class="sourceCode zsh"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="ex">curl</span> <span class="at">-s</span> http://127.0.0.1:5173/api/lessons <span class="kw">|</span> <span class="fu">head</span> <span class="at">-c</span> 300<span class="kw">;</span> <span class="bu">echo</span></span></code></pre></div>
+<ul>
+<li>Kết quả đúng: JSON có khóa <code>lessons</code> và danh sách 10
+bài.</li>
+<li>Kết quả
+<code>{"error":"Chưa thể tải dữ liệu. Vui lòng thử lại."}</code>: máy
+chủ không đọc được cơ sở dữ liệu. Kiểm tra lại mục 8 (đúng tham số
+<code>--persist-to</code>) rồi khởi động lại <code>pnpm dev</code>. Nếu
+vẫn lỗi, chụp dòng đỏ trong Terminal và gửi người phụ trách.</li>
+</ul>
+<p>Trang <code>/home.html</code> chỉ hiển thị bài học khi
+<code>/api/lessons</code> trả về dữ liệu.</p>
+<h3 id="đăng-nhập-quản-trị-lần-đầu">Đăng nhập quản trị lần đầu</h3>
+<ol type="1">
+<li>Mở <code>http://127.0.0.1:5173/admin.html</code>.</li>
+<li>Email: giá trị <code>OWNER_EMAIL</code> trong <code>.dev.vars</code>
+(<code>seedy@sites.test</code>).</li>
+<li>Mật khẩu: giá trị <code>ADMIN_PASSWORD</code> anh đã đặt.</li>
+<li>Hệ thống yêu cầu đổi mật khẩu ngay lần đầu. Đặt mật khẩu mới và ghi
+nhớ ở nơi an toàn (ví dụ <strong>Trình quản lý mật khẩu của
+macOS</strong>, tức Passwords trong Cài đặt hệ thống).</li>
+</ol>
+<p>Sau lần đầu, <code>ADMIN_PASSWORD</code> không còn tác dụng.</p>
+<hr />
+<h2 id="10-chạy-kiểm-thử">10. Chạy kiểm thử</h2>
+<p>Kiểm thử không gọi dịch vụ bên ngoài thật và không cần
+Cloudflare:</p>
+<div class="sourceCode" id="cb18"><pre
+class="sourceCode zsh"><code class="sourceCode zsh"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="ex">npm</span> test</span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a><span class="bu">echo</span> <span class="st">&quot;Mã thoát: </span><span class="va">$?</span><span class="st">&quot;</span></span></code></pre></div>
+<p>Kết quả đạt: có dòng <code>PASS</code> cho từng bộ kiểm thử và mã
+thoát <code>0</code>. Đã kiểm chứng trên môi trường Linux: 27 dòng
+<code>PASS</code>, mã thoát <code>0</code>.</p>
+<p>Chạy riêng một bộ:</p>
+<div class="sourceCode" id="cb19"><pre
+class="sourceCode zsh"><code class="sourceCode zsh"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="ex">node</span> tests/password-reset.test.mjs</span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a><span class="ex">node</span> tests/migrations.test.mjs</span></code></pre></div>
+<p>Kiểm tra kiểu TypeScript:</p>
+<div class="sourceCode" id="cb20"><pre
+class="sourceCode zsh"><code class="sourceCode zsh"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="ex">pnpm</span> exec tsc <span class="at">--noEmit</span></span></code></pre></div>
+<hr />
+<h2 id="11-cập-nhật-mã">11. Cập nhật mã</h2>
+<div class="sourceCode" id="cb21"><pre
+class="sourceCode zsh"><code class="sourceCode zsh"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> ~/Documents/du-an/viber_code</span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> pull origin Son_tra_so</span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a><span class="ex">pnpm</span> install <span class="at">--frozen-lockfile</span></span>
+<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a><span class="ex">pnpm</span> build</span></code></pre></div>
+<p>Nếu có migration mới trong <code>drizzle/</code>, chỉ áp dụng
+<strong>các tệp mới</strong> (những tệp có số lớn hơn
+<code>0011</code>), không chạy lại tệp cũ. Ví dụ khi có
+<code>0012</code>:</p>
+<div class="sourceCode" id="cb22"><pre
+class="sourceCode zsh"><code class="sourceCode zsh"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="ex">node</span> <span class="at">--import</span> ./scripts/sites-env.mjs ./node_modules/wrangler/bin/wrangler.js d1 execute DB <span class="at">--local</span> <span class="at">--config</span> dist/server/wrangler.json <span class="at">--persist-to</span> .wrangler/state <span class="at">--file</span> drizzle/0012_ten_tep.sql</span></code></pre></div>
+<hr />
+<h2 id="12-xử-lý-sự-cố-thường-gặp">12. Xử lý sự cố thường gặp</h2>
+<table>
+<thead>
+<tr class="header">
+<th>Triệu chứng</th>
+<th>Nguyên nhân thường gặp</th>
+<th>Cách xử lý</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>node: command not found</code> hoặc phiên bản cũ</td>
+<td>Terminal mở trước khi cài Node</td>
+<td>Đóng và mở lại Terminal; <code>which node</code></td>
+</tr>
+<tr class="even">
+<td><code>pnpm: command not found</code> sau khi cài</td>
+<td>Terminal mở trước khi cài</td>
+<td>Đóng và mở lại Terminal</td>
+</tr>
+<tr class="odd">
+<td><code>EACCES: permission denied</code> khi
+<code>npm install -g</code></td>
+<td>Node cài bằng quyền hệ thống</td>
+<td>Xem mục 4; không dùng <code>sudo</code></td>
+</tr>
+<tr class="even">
+<td><code>xcrun: error: invalid active developer path</code></td>
+<td>Xcode Command Line Tools hỏng sau khi nâng cấp macOS</td>
+<td>Chạy <code>xcode-select --install</code>, hoặc
+<code>sudo xcode-select --reset</code> rồi thử lại</td>
+</tr>
+<tr class="odd">
+<td>Lỗi <code>frozen-lockfile</code></td>
+<td><code>pnpm-lock.yaml</code> không khớp
+<code>package.json</code></td>
+<td>Kiểm tra đúng nhánh <code>Son_tra_so</code>; không tự chạy
+<code>pnpm install</code> không có cờ</td>
+</tr>
+<tr class="even">
+<td>Trang học báo "Chưa tải được bài học" (503),
+<code>/api/lessons</code> trả "Chưa thể tải dữ liệu"</td>
+<td>Thiếu migration, hoặc migration ghi vào kho khác</td>
+<td>Chạy lại mục 8 với đủ <code>--persist-to .wrangler/state</code></td>
+</tr>
+<tr class="odd">
+<td><code>wrangler</code> báo không tìm thấy
+<code>dist/server/wrangler.json</code></td>
+<td>Chưa build</td>
+<td>Chạy <code>pnpm build</code> (mục 7)</td>
+</tr>
+<tr class="even">
+<td><code>Operation not permitted</code> khi đọc
+<code>~/Documents</code></td>
+<td>macOS chưa cấp quyền cho Terminal</td>
+<td>Vào <strong>Cài đặt hệ thống &gt; Quyền riêng tư và bảo mật &gt;
+Files and Folders</strong> (hoặc <strong>Full Disk Access</strong>), bật
+cho Terminal, rồi mở lại Terminal</td>
+</tr>
+<tr class="odd">
+<td>Cổng 5173 đã bị chiếm</td>
+<td>Ứng dụng khác đang dùng cổng</td>
+<td>Tìm tiến trình bằng <code>lsof -i :5173</code>, đóng ứng dụng đó
+bằng tay; không dùng <code>kill</code> hoặc <code>pkill -f</code> trên
+tiến trình không rõ</td>
+</tr>
+<tr class="even">
+<td>Quên mật khẩu trả 503</td>
+<td>Thiếu <code>RESEND_API_KEY</code>, <code>MAIL_FROM</code>, hoặc
+<code>APP_BASE_URL</code> không phải https</td>
+<td>Xem mục 6</td>
+</tr>
+<tr class="odd">
+<td><code>ADMIN_PASSWORD</code> không hoạt động</td>
+<td>Tài khoản quản trị đã được tạo ở lần đăng nhập trước</td>
+<td>Đăng nhập bằng mật khẩu đã đổi</td>
+</tr>
+<tr class="even">
+<td>Mac báo "không thể xác minh nhà phát triển" khi mở một ứng dụng</td>
+<td>Gatekeeper chặn tệp tải về</td>
+<td>Không gặp trong luồng chạy dự án; nếu gặp, dừng và báo người phụ
+trách</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="13-những-việc-không-nên-làm">13. Những việc không nên làm</h2>
+<ul>
+<li>Không commit <code>.dev.vars</code>, <code>.wrangler/</code>,
+<code>dist/</code> hoặc giá trị bí mật lên Git.</li>
+<li>Không đưa <code>ADMIN_PASSWORD</code>, <code>RESEND_API_KEY</code>
+hay token Cloudflare vào tệp mã, tài liệu, ảnh chụp màn hình hay trò
+chuyện.</li>
+<li>Không dùng <code>sudo</code> để cài thư viện Node.</li>
+<li>Không chạy lại migration trên cơ sở dữ liệu có dữ liệu thật.</li>
+<li>Không đổi <code>OWNER_EMAIL</code> hay cấu hình xác thực trong mã;
+các giá trị này do người phụ trách đặt.</li>
+<li>Không đổi máy chủ cục bộ sang <code>0.0.0.0</code>. Máy chủ chỉ lắng
+nghe <code>127.0.0.1</code>.</li>
+<li>Không đưa thư mục dự án vào iCloud Drive.</li>
+</ul>
+<hr />
+<h2 id="14-liên-quan">14. Liên quan</h2>
+<ul>
+<li><code>HUONG_DAN_CHAY_TREN_WINDOWS.md</code>: bản dành cho
+Windows.</li>
+<li><code>HUONG_DAN_TRIEN_KHAI_CLOUDFLARE.html</code>: đưa dự án lên tên
+miền thật.</li>
+<li><code>HUONG_DAN_VAN_HANH_VA_CHUYEN_GIAO.md</code>: vận hành và
+chuyển giao.</li>
+</ul>
+</body>
+</html>

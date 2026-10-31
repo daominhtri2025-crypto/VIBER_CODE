@@ -1,0 +1,1039 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="vi" xml:lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Hướng dẫn triển khai Sơn Trà Số lên tên miền thật (Cloudflare)</title>
+  <style>
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      background-color: #1a1a1a;
+      border: none;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+    /* CSS for syntax highlighting */
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { color: #008000; } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { color: #008000; font-weight: bold; } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <style>
+  :root{color-scheme:light;--bg:#f6f7f4;--surface:#fff;--fg:#1d2a24;--muted:#4f5e56;--line:#d5ddd7;--accent:#17634c;--code:#eef5f0;--warn:#fdf4e3;--warnfg:#6b4a00}
+  @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){color-scheme:dark;--bg:#111a16;--surface:#1a2620;--fg:#e6eee9;--muted:#b3c2b9;--line:#34463c;--accent:#7cc7a6;--code:#203029;--warn:#3a2e14;--warnfg:#f3d9a0}}
+  :root[data-theme="dark"]{color-scheme:dark;--bg:#111a16;--surface:#1a2620;--fg:#e6eee9;--muted:#b3c2b9;--line:#34463c;--accent:#7cc7a6;--code:#203029;--warn:#3a2e14;--warnfg:#f3d9a0}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--fg);font:1rem/1.65 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-top:24px;padding-bottom:48px}
+  main{max-width:860px;margin:0 auto;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:20px 22px;min-width:0}
+  h1{font-size:1.6rem;margin:0 0 8px;text-wrap:balance}
+  h2{font-size:1.25rem;margin:28px 0 8px;padding-bottom:4px;border-bottom:1px solid var(--line);text-wrap:balance}
+  h3{font-size:1.05rem;margin:20px 0 6px}
+  p,li{overflow-wrap:anywhere}
+  code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.9em;background:var(--code);padding:1px 5px;border-radius:5px}
+  pre{background:var(--code);padding:12px;border-radius:8px;overflow-x:auto;max-width:100%}
+  pre code{background:none;padding:0;white-space:pre}
+  blockquote{margin:12px 0;padding:10px 14px;border-left:4px solid var(--accent);background:var(--code);border-radius:8px;color:var(--fg)}
+  table{display:block;overflow-x:auto;max-width:100%;border-collapse:collapse;margin:10px 0;width:100%}
+  th,td{text-align:left;padding:7px 9px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{color:var(--muted);font-weight:600}
+  hr{border:0;border-top:1px solid var(--line);margin:24px 0}
+  a{color:var(--accent)}
+  ol,ul{padding-left:1.3em}
+  </style>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">Hướng dẫn triển khai Sơn Trà Số lên tên miền thật
+(Cloudflare)</h1>
+</header>
+<h1
+id="hướng-dẫn-triển-khai-sơn-trà-số-lên-tên-miền-thật-cloudflare">Hướng
+dẫn triển khai Sơn Trà Số lên tên miền thật (Cloudflare)</h1>
+<p>Tài liệu này hướng dẫn đưa Sơn Trà Số lên mạng bằng tài khoản
+Cloudflare của chủ website, gắn tên miền riêng. Đây là phương án
+<strong>giữ nguyên kiến trúc hiện tại</strong> (Cloudflare Workers, D1,
+R2), nên không phải viết lại mã.</p>
+<blockquote>
+<p><strong>Đọc trước khi làm.</strong> Tài liệu này có <strong>một chặn
+bảo mật</strong> (mục 1.3). Chưa xử lý chặn này thì <strong>không mở
+tính năng học viên ra công khai</strong>. Chỉ triển khai bản thử
+(staging) riêng tư cho đến khi có phê duyệt.</p>
+</blockquote>
+<hr />
+<h2 id="0-trạng-thái-kiểm-chứng">0. Trạng thái kiểm chứng</h2>
+<table>
+<thead>
+<tr class="header">
+<th>Nội dung</th>
+<th>Trạng thái</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>pnpm build</code> tạo <code>dist/server/wrangler.json</code>
+và <code>dist/client/</code></td>
+<td><strong>Đã kiểm chứng</strong> trên môi trường Linux,
+31/10/2026</td>
+</tr>
+<tr class="even">
+<td><code>wrangler deploy --dry-run --config dist/server/wrangler.json</code></td>
+<td><strong>Đã kiểm chứng</strong>: bundle 37 module, 44 tệp tĩnh, nhận
+diện binding <code>DB</code> và <code>BUCKET</code></td>
+</tr>
+<tr class="odd">
+<td>Áp dụng 12 migration <code>0000</code>–<code>0011</code> lên D1 cục
+bộ</td>
+<td><strong>Đã kiểm chứng</strong>: không lỗi, bảng <code>lessons</code>
+có 10 bài</td>
+</tr>
+<tr class="even">
+<td><code>npm test</code></td>
+<td><strong>Đã kiểm chứng</strong>: 27 <code>PASS</code>, mã thoát
+0</td>
+</tr>
+<tr class="odd">
+<td>Cloudflare Registrar <strong>không hỗ trợ
+<code>.vn</code></strong></td>
+<td><strong>Đã kiểm chứng</strong> trên trang chính thức của Cloudflare
+(TLD Policies), 31/10/2026</td>
+</tr>
+<tr class="even">
+<td>Gói Workers Paid tối thiểu 5 USD/tháng</td>
+<td><strong>Đã kiểm chứng</strong> trên trang giá của Cloudflare</td>
+</tr>
+<tr class="odd">
+<td>R2 cần kích hoạt bằng thanh toán (checkout)</td>
+<td><strong>Đã kiểm chứng</strong> trên trang R2 của Cloudflare</td>
+</tr>
+<tr class="even">
+<td>Gắn custom domain qua <code>routes</code> với
+<code>custom_domain: true</code></td>
+<td><strong>Đã kiểm chứng</strong> trên tài liệu Workers; <strong>chưa
+chạy thực tế</strong> trên tài khoản của anh</td>
+</tr>
+<tr class="odd">
+<td>Triển khai thật lên tài khoản Cloudflare (D1 và R2 thật,
+<code>wrangler deploy</code>)</td>
+<td><strong>Chưa kiểm chứng</strong>. Cần thử trên staging trước</td>
+</tr>
+<tr class="even">
+<td>Custom domain trên gói Workers Free</td>
+<td>Trang giới hạn ghi 100 custom domain mỗi zone cho mọi gói; trang giá
+không nêu rõ gói Free. <strong>[Cần xác minh]</strong> trên tài khoản
+Free</td>
+</tr>
+<tr class="odd">
+<td>Gói Free: D1 dùng được, 5 triệu lượt đọc và 100 000 lượt ghi mỗi
+ngày, 5 GB lưu trữ</td>
+<td><strong>Đã kiểm chứng</strong> trên trang giá D1</td>
+</tr>
+<tr class="even">
+<td>Gói Free: giới hạn CPU 10 ms mỗi lượt gọi Worker</td>
+<td><strong>Đã kiểm chứng</strong>. Rủi ro với ứng dụng, cần thử trên
+Cloudflare thật</td>
+</tr>
+<tr class="odd">
+<td>Gói Free: R2 có hạn mức miễn phí, nhưng có cần thanh toán để tạo
+bucket không</td>
+<td>Hạn mức <strong>đã kiểm chứng</strong>; yêu cầu thanh toán
+<strong>[Cần xác minh]</strong></td>
+</tr>
+<tr class="even">
+<td>Giá mua tên miền <code>.vn</code> và điều kiện đăng ký</td>
+<td><strong>[Cần xác minh]</strong> với nhà đăng ký đã chọn</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="0a-phương-án-demo-miễn-phí-gói-workers-free">0A. Phương án demo
+miễn phí (gói Workers Free)</h2>
+<p>Dùng cho thử nghiệm và demo trước khi công bố rộng rãi. Không cần mua
+tên miền. Khi công bố chính thức, nâng lên gói Paid và gắn tên miền (mục
+2, 4, 6.3 cách A có <code>routes</code>).</p>
+<h3 id="0a1-điều-kiện-gói-free-theo-tài-liệu-cloudflare-31102026">0A.1.
+Điều kiện gói Free (theo tài liệu Cloudflare, 31/10/2026)</h3>
+<table>
+<thead>
+<tr class="header">
+<th>Thành phần</th>
+<th>Giới hạn Free</th>
+<th>Ghi chú cho demo</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Workers</td>
+<td>100 000 yêu cầu mỗi ngày; <strong>10 ms CPU mỗi lượt
+gọi</strong></td>
+<td>Giới hạn CPU là rủi ro chính. Trang SSR, chấm bài, báo cáo có thể
+vượt; phải thử</td>
+</tr>
+<tr class="even">
+<td>D1</td>
+<td>5 triệu lượt đọc mỗi ngày; 100 000 lượt ghi mỗi ngày; 5 GB lưu
+trữ</td>
+<td>Đủ cho demo. Vượt hạn mức ngày, D1 trả lỗi đến 00:00 UTC (07:00 giờ
+Việt Nam) rồi reset</td>
+</tr>
+<tr class="odd">
+<td>R2</td>
+<td>10 GB, 1 triệu thao tác Class A và 10 triệu Class B mỗi tháng (chỉ
+Standard)</td>
+<td>Hạn mức đã kiểm chứng. <strong>[Cần xác minh]</strong> tạo bucket có
+cần thanh toán không (trang R2 nói cần hoàn tất checkout)</td>
+</tr>
+<tr class="even">
+<td>Tên miền</td>
+<td>Địa chỉ <code>*.workers.dev</code> mặc định</td>
+<td><strong>[Cần xác minh]</strong> trên tài khoản Free. Dùng địa chỉ
+này cho demo</td>
+</tr>
+</tbody>
+</table>
+<h3 id="0a2-về-tên-miền-miễn-phí">0A.2. Về tên miền miễn phí</h3>
+<ul>
+<li><strong>Dùng địa chỉ <code>*.workers.dev</code> của
+Cloudflare.</strong> Đây là địa chỉ đi kèm mỗi Worker, không phải dịch
+vụ bên thứ ba.</li>
+<li><strong>Không dùng dịch vụ cấp tên miền miễn phí của bên thứ
+ba</strong> (ví dụ các đuôi như <code>.tk</code>, <code>.ml</code>). Các
+tên này thường bị thu hồi, dễ bị gắn nhãn lừa đảo, và chủ website không
+kiểm soát được DNS. Với một dịch vụ công, rủi ro uy tín lớn hơn lợi ích
+tiết kiệm.</li>
+</ul>
+<h3 id="0a3-các-bước-demo">0A.3. Các bước demo</h3>
+<p>Thực hiện theo mục 3.1 (tạo tài khoản, bật 2FA), rồi:</p>
+<ol type="1">
+<li><p><strong>Kiểm tra R2.</strong> Vào <strong>Storage &amp; databases
+&gt; R2</strong>. Nếu tạo được bucket mà không yêu cầu thanh toán, dùng
+cấu hình có binding <code>BUCKET</code>. Nếu yêu cầu thanh toán,
+<strong>dừng và hỏi người phụ trách</strong> trước khi bỏ binding
+<code>BUCKET</code>, vì mã có tham chiếu <code>env.BUCKET</code> cho
+tính năng tải video; bỏ binding có thể làm tính năng video lỗi.
+<strong>[Cần xác minh]</strong>.</p></li>
+<li><p><strong>Tạo D1 demo:</strong></p>
+<div class="sourceCode" id="cb1"><pre
+class="sourceCode zsh"><code class="sourceCode zsh"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">npx</span> wrangler d1 create sontra-so-demo</span></code></pre></div>
+<p>Ghi lại <code>database_id</code>.</p></li>
+<li><p><strong>Tạo bucket R2 demo</strong> (chỉ khi bước 1 cho phép):
+<code>sontra-so-demo-r2</code>. <strong>[Cần xác minh]</strong> lệnh tạo
+bucket.</p></li>
+<li><p><strong>Cấu hình triển khai demo</strong> theo mục 6.3 cách A,
+với:</p>
+<ul>
+<li><code>name</code>: <code>son-tra-so-demo</code>.</li>
+<li><code>database_name</code>: <code>sontra-so-demo</code>,
+<code>database_id</code>: giá trị ở bước 2.</li>
+<li><code>bucket_name</code>: <code>sontra-so-demo-r2</code> (nếu
+có).</li>
+<li><strong>Không</strong> có <code>routes</code>. Worker dùng địa chỉ
+<code>workers.dev</code>.</li>
+</ul></li>
+<li><p><strong>Áp dụng 12 migration</strong> lên D1 demo bằng mục 7, với
+cấu hình ở bước 4. Kiểm tra
+<code>SELECT COUNT(*) ... FROM lessons</code> ra
+<code>10</code>.</p></li>
+<li><p><strong>Đặt bí mật:</strong> <code>ADMIN_PASSWORD</code> và
+<code>OWNER_EMAIL</code> (mục 8.1). Không đặt <code>APP_BASE_URL</code>
+nếu chưa dùng email khôi phục.</p></li>
+<li><p><strong>Triển khai:</strong></p>
+<div class="sourceCode" id="cb2"><pre
+class="sourceCode zsh"><code class="sourceCode zsh"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ex">pnpm</span> build</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="ex">npx</span> wrangler deploy <span class="at">--config</span> <span class="op">&lt;</span>CAU-HINH<span class="op">&gt;</span></span></code></pre></div>
+<p>Lệnh in địa chỉ dạng
+<code>https://son-tra-so-demo.&lt;tên-tài-khoản&gt;.workers.dev</code>.
+Tên tài khoản con (subdomain) hiện trong <strong>Workers &amp;
+Pages</strong> của Cloudflare.</p></li>
+<li><p><strong>Kiểm tra</strong> theo bảng ở mục 9 trên địa chỉ
+<code>workers.dev</code>. Với tài khoản tình nguyện viên và học viên,
+<strong>chỉ dùng dữ liệu thử</strong> (ví dụ mã học viên
+<code>ST-DEMO-01</code>, email thử).</p></li>
+</ol>
+<h3 id="0a4-giới-hạn-khi-demo-và-lưu-ý">0A.4. Giới hạn khi demo và lưu
+ý</h3>
+<ul>
+<li><strong>Chặn 1.2 vẫn áp dụng.</strong> Học viên có thể gửi header
+tùy ý và đọc hoặc ghi tiến độ của mã học viên khác. Trong demo: không
+cho người ngoài nhập dữ liệu thật; không đăng địa chỉ demo công khai;
+chỉ chia sẻ cho người được phê duyệt.</li>
+<li><strong>Giới hạn CPU 10 ms.</strong> Nếu trang hoặc API báo lỗi ngẫu
+nhiên khi tải cao, nguyên nhân có thể là vượt CPU. Ghi lại thời điểm và
+thao tác, rồi cân nhắc chuyển lên gói Paid. <strong>[Cần thử]</strong>
+để biết mức độ thực tế.</li>
+<li><strong>Hạn mức D1 theo ngày.</strong> Khi hết hạn mức ghi, các thao
+tác ghi thất bại đến 00:00 UTC.</li>
+<li><strong>Không dùng dữ liệu thật</strong> trong bản demo. Khi chuyển
+sang công bố chính thức, dùng cơ sở dữ liệu production mới, không chuyển
+dữ liệu demo sang.</li>
+</ul>
+<h3 id="0a5-khi-nâng-cấp-lên-công-bố-chính-thức">0A.5. Khi nâng cấp lên
+công bố chính thức</h3>
+<ol type="1">
+<li>Nâng gói Workers lên Paid (tối thiểu 5 USD mỗi tháng, mục 3.3).</li>
+<li>Mua hoặc chọn tên miền (mục 2), đưa vào Cloudflare (mục 4).</li>
+<li>Tạo D1 và R2 production riêng, không dùng lại D1 demo (mục 10).</li>
+<li>Xử lý chặn 1.2 và có phê duyệt của người giữ
+<code>OWNER_EMAIL</code>.</li>
+</ol>
+<hr />
+<h2 id="1-các-điểm-phải-biết-trước">1. Các điểm phải biết trước</h2>
+<h3 id="11-tài-nguyên-trong-cấu-hình-là-chỗ-giữ-chỗ">1.1. Tài nguyên
+trong cấu hình là chỗ giữ chỗ</h3>
+<p>Cấu hình sinh ra sau <code>pnpm build</code>
+(<code>dist/server/wrangler.json</code>) có:</p>
+<ul>
+<li><code>database_id</code> là
+<code>00000000-0000-4000-8000-000000000000</code>, một giá trị giả.</li>
+<li>Tên D1 <code>site-creator-d1</code> và tên R2
+<code>site-creator-r2</code>, là tên của nền tảng Sites, không phải tài
+nguyên của anh.</li>
+<li><code>name</code> là <code>son-tra-so</code>. Nếu triển khai staging
+với cùng tên này, bản staging <strong>ghi đè</strong> bản production nếu
+có.</li>
+</ul>
+<p>Tài liệu vận hành (mục 4.5) ghi rằng giá trị thật do nền tảng Sites
+cấp. Khi tự triển khai, anh phải tạo D1 và R2 riêng rồi thay các giá trị
+trên. Cách làm đề xuất ở mục 6, và phải được phê duyệt vì đây là thay
+đổi cấu hình triển khai (CLAUDE.md mục 8).</p>
+<h3 id="12-học-viên-đang-được-nhận-diện-bằng-header-của-sites">1.2. Học
+viên đang được nhận diện bằng header của Sites</h3>
+<p>Route đọc danh tính học viên từ header
+<code>oai-authenticated-user-id</code> (xem
+<code>app/api/[...path]/route.ts</code>, hàm <code>roleOf</code>). Trên
+Sites, nền tảng đặt header này. <strong>Khi triển khai trên tài khoản
+Cloudflare riêng, không có nền tảng nào đặt header đó</strong>, và bất
+kỳ client nào cũng có thể gửi một giá trị tùy ý.</p>
+<p>Hệ quả, nếu mở công khai ở trạng thái hiện tại:</p>
+<ul>
+<li>Một người có thể gửi header với mã học viên bất kỳ và <strong>đọc
+tiến độ</strong> của học viên đó (<code>/api/progress/...</code>,
+<code>/api/me</code>).</li>
+<li>Có thể <strong>ghi lượt làm bài kiểm tra và tiến độ</strong> thay
+cho học viên khác.</li>
+</ul>
+<p>Đây là lỗi bảo mật, không phải lỗi giao diện. CLAUDE.md mục 2 yêu cầu
+xóa mọi header danh tính từ client trước khi xử lý; hiện chưa đáp ứng
+khi chạy ngoài Sites.</p>
+<p><strong>Quyết định cần có trước khi mở công khai:</strong> thay cơ
+chế nhận diện học viên bằng một cơ chế của chính hệ thống (ví dụ phiên
+riêng có băm, như đã làm với quản trị và tình nguyện viên). Việc này
+thay đổi phân quyền và cần kế hoạch được phê duyệt (CLAUDE.md mục
+1.3).</p>
+<h3 id="13-cách-xử-lý-trong-hướng-dẫn-này">1.3. Cách xử lý trong hướng
+dẫn này</h3>
+<ul>
+<li>Giai đoạn 1 (staging): chỉ dùng để kiểm tra kỹ thuật, không công bố
+địa chỉ cho học viên, chỉ quản trị viên truy cập.</li>
+<li>Giai đoạn 2 (production): chỉ bật sau khi chặn 1.2 được xử lý và có
+phê duyệt của người giữ <code>OWNER_EMAIL</code>.</li>
+</ul>
+<hr />
+<h2 id="2-chọn-và-mua-tên-miền">2. Chọn và mua tên miền</h2>
+<blockquote>
+<p>Với bản demo miễn phí, <strong>không cần mục này</strong>: dùng địa
+chỉ <code>workers.dev</code> theo mục 0A. Mục này dành cho công bố chính
+thức.</p>
+</blockquote>
+<h3 id="21-đề-xuất">2.1. Đề xuất</h3>
+<table>
+<thead>
+<tr class="header">
+<th>Lựa chọn</th>
+<th>Tên miền đề xuất</th>
+<th>Lý do</th>
+<th>Ghi chú</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>Chính</strong></td>
+<td><code>sontraso.vn</code></td>
+<td>Đuôi <code>.vn</code> phù hợp dịch vụ công của địa phương Đà Nẵng;
+tên ngắn, dễ nhớ</td>
+<td>Phải mua qua nhà đăng ký <code>.vn</code>, vì Cloudflare Registrar
+không hỗ trợ <code>.vn</code>. <strong>[Cần xác minh]</strong> còn trống
+không</td>
+</tr>
+<tr class="even">
+<td>Dự phòng</td>
+<td><code>sontraso.com</code></td>
+<td>Có thể mua trực tiếp trên Cloudflare Registrar, giá gốc, không phụ
+phí</td>
+<td><strong>[Cần xác minh]</strong> còn trống và giá hiện tại</td>
+</tr>
+</tbody>
+</table>
+<p>Trước khi mua, kiểm tra tình trạng tên miền bằng công cụ tra cứu
+chính thức của nhà đăng ký. <strong>Không</strong> mua nếu chưa xác nhận
+tên còn trống.</p>
+<p>Tên miền dùng cho hai môi trường:</p>
+<ul>
+<li><code>staging.sontraso.vn</code>: bản thử riêng tư.</li>
+<li><code>sontraso.vn</code> hoặc <code>www.sontraso.vn</code>: bản
+chính thức, sau khi được phê duyệt.</li>
+</ul>
+<h3 id="22-mua-vn">2.2. Mua <code>.vn</code></h3>
+<ol type="1">
+<li>Chọn một nhà đăng ký <code>.vn</code> được VNNIC công nhận. Danh
+sách tại <code>https://vnnic.vn</code>. <strong>[Cần xác minh]</strong>
+nhà đăng ký nào phù hợp và giá năm đầu.</li>
+<li>Tạo tài khoản bằng email của chủ website.</li>
+<li>Tra cứu <code>sontraso.vn</code>. Nếu còn trống, thêm vào giỏ và
+thanh toán.</li>
+<li>Với <code>.vn</code>, nhà đăng ký có thể yêu cầu giấy tờ xác minh
+chủ thể đăng ký. <strong>[Cần xác minh]</strong> yêu cầu cụ thể trước
+khi mua.</li>
+<li>Ghi lại: tên nhà đăng ký, ngày hết hạn, email nhận thông báo gia
+hạn. Đặt chế độ tự gia hạn nếu có.</li>
+</ol>
+<h3 id="23-mua-com-qua-cloudflare-registrar-dự-phòng">2.3. Mua
+<code>.com</code> qua Cloudflare Registrar (dự phòng)</h3>
+<ol type="1">
+<li>Đăng nhập Cloudflare (mục 3), vào <strong>Domain Registration &gt;
+Register Domains</strong>.</li>
+<li>Tìm <code>sontraso.com</code>, thêm vào giỏ, thanh toán.</li>
+<li>Cloudflare Registrar không tính phụ phí so với giá gốc của đăng ký.
+<strong>[Cần xác minh]</strong> giá thời điểm mua.</li>
+<li>Tên miền mua qua Cloudflare Registrar đã dùng Cloudflare làm DNS,
+không cần bước đổi nameserver ở mục 4.</li>
+</ol>
+<hr />
+<h2 id="3-tạo-tài-khoản-cloudflare-và-kích-hoạt-dịch-vụ">3. Tạo tài
+khoản Cloudflare và kích hoạt dịch vụ</h2>
+<h3 id="31-tạo-tài-khoản">3.1. Tạo tài khoản</h3>
+<ol type="1">
+<li>Mở <code>https://dash.cloudflare.com/sign-up</code>, đăng ký bằng
+email chủ website.</li>
+<li>Bật <strong>xác thực hai yếu tố</strong> trong <strong>My Profile
+&gt; Authentication</strong>. Lưu mã khôi phục ở nơi an toàn.</li>
+<li>Ghi lại <strong>Account ID</strong> trong trang tổng quan (dùng khi
+cần). Không ghi vào tệp mã.</li>
+</ol>
+<h3 id="32-kích-hoạt-r2">3.2. Kích hoạt R2</h3>
+<p>R2 cần thêm phương thức thanh toán để kích hoạt, dù có hạn mức miễn
+phí hàng tháng.</p>
+<ol type="1">
+<li>Vào <strong>Storage &amp; databases &gt; R2 &gt;
+Overview</strong>.</li>
+<li>Chọn <strong>Get started</strong> và hoàn tất thanh toán.</li>
+<li>Chi phí phát sinh theo mức sử dụng. Hạn mức miễn phí cụ thể:
+<strong>[Cần xác minh]</strong> tại trang giá R2.</li>
+</ol>
+<h3 id="33-gói-workers">3.3. Gói Workers</h3>
+<ul>
+<li>Gói <strong>Workers Free</strong>: 100 000 yêu cầu mỗi ngày, 10 ms
+CPU mỗi lần gọi.</li>
+<li>Gói <strong>Workers Paid</strong>: tối thiểu <strong>5 USD mỗi
+tháng</strong>, 10 triệu yêu cầu mỗi tháng và 30 triệu mili giây CPU mỗi
+tháng.</li>
+<li>Dự án có tải xử lý nặng (chấm bài, báo cáo, tải video). Khuyến nghị
+dùng Workers Paid cho production. Quyết định gói là của chủ
+website.</li>
+<li>Custom domain trên gói Free: <strong>[Cần xác minh]</strong> (xem
+mục 0A.1). Demo dùng địa chỉ <code>workers.dev</code> nên không phụ
+thuộc điều này.</li>
+<li>Khuyến nghị: demo trên gói Free (mục 0A), công bố chính thức trên
+gói Paid.</li>
+</ul>
+<hr />
+<h2 id="4-đưa-tên-miền-vào-cloudflare">4. Đưa tên miền vào
+Cloudflare</h2>
+<p>Bỏ qua mục này nếu tên miền mua qua Cloudflare Registrar (mục
+2.3).</p>
+<h3 id="41-thêm-tên-miền-làm-zone">4.1. Thêm tên miền làm zone</h3>
+<ol type="1">
+<li>Trong Cloudflare, chọn <strong>Websites &gt; Add a
+domain</strong>.</li>
+<li>Nhập <code>sontraso.vn</code>, chọn gói <strong>Free</strong> cho
+zone (gói này dùng để quản lý DNS, không phải gói Workers).</li>
+<li>Cloudflare quét bản ghi DNS hiện có (nếu có). Kiểm tra lại.</li>
+<li>Cloudflare cấp <strong>hai máy chủ tên</strong> (nameserver), dạng
+<code>&lt;tên&gt;.ns.cloudflare.com</code>. Ghi lại cả hai.</li>
+</ol>
+<h3 id="42-đổi-nameserver-tại-nhà-đăng-ký">4.2. Đổi nameserver tại nhà
+đăng ký</h3>
+<ol type="1">
+<li>Đăng nhập tài khoản ở nhà đăng ký <code>.vn</code>.</li>
+<li>Mở quản lý tên miền <code>sontraso.vn</code>, chọn <strong>DNS /
+Nameserver</strong>.</li>
+<li>Thay hai nameserver mặc định bằng hai nameserver của
+Cloudflare.</li>
+<li>Lưu. Thời gian có hiệu lực thường từ vài phút đến vài giờ.
+<strong>[Cần xác minh]</strong> thời gian cụ thể của nhà đăng ký đã
+chọn.</li>
+</ol>
+<h3 id="43-kiểm-tra">4.3. Kiểm tra</h3>
+<p>Trong Cloudflare, zone <code>sontraso.vn</code> chuyển sang trạng
+thái <strong>Active</strong> khi nameserver đã đổi xong. Nếu vẫn
+<strong>Pending</strong> sau một ngày, kiểm tra lại nameserver đã nhập
+đúng chưa.</p>
+<hr />
+<h2 id="5-cài-và-đăng-nhập-wrangler-trên-mac">5. Cài và đăng nhập
+Wrangler trên Mac</h2>
+<p>Thực hiện trong Terminal, tại thư mục dự án
+(<code>~/Documents/du-an/viber_code</code>). Môi trường máy đã có Node
+và pnpm theo <code>HUONG_DAN_CHAY_TREN_MAC.html</code>.</p>
+<div class="sourceCode" id="cb3"><pre
+class="sourceCode zsh"><code class="sourceCode zsh"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="ex">pnpm</span> install <span class="at">--frozen-lockfile</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="ex">npx</span> wrangler <span class="at">--version</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="ex">npx</span> wrangler login</span></code></pre></div>
+<ul>
+<li><code>npx wrangler login</code> mở trình duyệt để cấp quyền. Chọn
+đúng tài khoản Cloudflare của chủ website, rồi bấm
+<strong>Allow</strong>.</li>
+<li>Kiểm tra đăng nhập:</li>
+</ul>
+<div class="sourceCode" id="cb4"><pre
+class="sourceCode zsh"><code class="sourceCode zsh"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="ex">npx</span> wrangler whoami</span></code></pre></div>
+<p>Kết quả phải hiện tên tài khoản và Account ID. <strong>Không</strong>
+chia sẻ đầu ra này.</p>
+<p><strong>[Cần xác minh trên Mac]</strong> các bước trên trình duyệt.
+Lệnh <code>wrangler</code> là phiên bản 4.92.0 đã cài trong dự án.</p>
+<hr />
+<h2 id="6-tạo-tài-nguyên-staging-và-sửa-cấu-hình-triển-khai">6. Tạo tài
+nguyên staging và sửa cấu hình triển khai</h2>
+<blockquote>
+<p><strong>Cần phê duyệt trước khi thực hiện mục này.</strong> Thay đổi
+cấu hình triển khai thuộc CLAUDE.md mục 8. Các lệnh dưới đây chỉ ghi tài
+nguyên trên tài khoản của anh, không đụng mã nguồn.</p>
+</blockquote>
+<h3 id="61-tạo-cơ-sở-dữ-liệu-d1-staging">6.1. Tạo cơ sở dữ liệu D1
+staging</h3>
+<div class="sourceCode" id="cb5"><pre
+class="sourceCode zsh"><code class="sourceCode zsh"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="ex">npx</span> wrangler d1 create sontra-so-staging</span></code></pre></div>
+<p>Lệnh in ra <code>database_id</code> (một chuỗi UUID). <strong>Ghi lại
+giá trị này</strong>. Đây không phải bí mật, nhưng không đưa vào tài
+liệu hay mã nguồn.</p>
+<h3 id="62-tạo-bucket-r2-staging">6.2. Tạo bucket R2 staging</h3>
+<div class="sourceCode" id="cb6"><pre
+class="sourceCode zsh"><code class="sourceCode zsh"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="ex">npx</span> wrangler r2 bucket create sontra-so-staging-r2</span></code></pre></div>
+<p><strong>[Cần xác minh]</strong> cú pháp lệnh
+<code>r2 bucket create</code> với phiên bản wrangler đang dùng; có thể
+tạo bằng giao diện <strong>R2 &gt; Create bucket</strong> thay thế.</p>
+<h3 id="63-cấu-hình-triển-khai-staging">6.3. Cấu hình triển khai
+staging</h3>
+<p>Sau mỗi lần <code>pnpm build</code>, tệp
+<code>dist/server/wrangler.json</code> được tạo lại. Vì vậy
+<strong>không sửa tay tệp này rồi quên</strong>. Đề xuất hai cách; anh
+chọn một:</p>
+<p><strong>Cách A (đề xuất):</strong> một tệp cấu hình riêng cho triển
+khai, đặt ngoài <code>dist/</code> và không commit (thêm vào
+<code>.gitignore</code> sau khi được phê duyệt). Tệp này chứa:</p>
+<ul>
+<li><code>name</code>: <code>son-tra-so-staging</code> (khác với
+production).</li>
+<li><code>d1_databases</code>: binding <code>DB</code>,
+<code>database_name</code> là <code>sontra-so-staging</code>,
+<code>database_id</code> là giá trị ở mục 6.1.</li>
+<li><code>r2_buckets</code>: binding <code>BUCKET</code>,
+<code>bucket_name</code> là <code>sontra-so-staging-r2</code>.</li>
+<li><code>routes</code>:
+<code>[{ "pattern": "staging.sontraso.vn", "custom_domain": true }]</code>.</li>
+<li><code>main</code>: đường dẫn tới <code>dist/server/index.js</code>,
+và <code>assets.directory</code> tới <code>dist/client</code>.</li>
+</ul>
+<p><strong>[Cần xác minh]</strong> tệp này có tương thích với bundle
+<code>dist/</code> hay không; cần thử bằng
+<code>wrangler deploy --dry-run</code> trước khi triển khai thật.</p>
+<p><strong>Cách B (tạm thời):</strong> sau mỗi <code>pnpm build</code>,
+mở <code>dist/server/wrangler.json</code> và thay ba giá trị:
+<code>database_id</code>, <code>bucket_name</code>, và thêm
+<code>routes</code>. Cách này dễ sai và không đề xuất lâu dài.</p>
+<hr />
+<h2 id="7-áp-dụng-12-migration-lên-d1-staging">7. Áp dụng 12 migration
+lên D1 staging</h2>
+<p>Dùng cấu hình đã sửa ở mục 6.3 (ký hiệu
+<code>&lt;CAU-HINH&gt;</code>). Migration phải áp dụng <strong>theo đúng
+thứ tự</strong> và <strong>không chạy lại</strong> tệp đã áp dụng.</p>
+<div class="sourceCode" id="cb7"><pre
+class="sourceCode zsh"><code class="sourceCode zsh"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> f <span class="kw">in</span> drizzle/<span class="pp">*</span>.sql<span class="kw">;</span> <span class="cf">do</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>  <span class="bu">echo</span> <span class="st">&quot;Áp dụng </span><span class="va">$(</span><span class="fu">basename</span> <span class="st">&quot;</span><span class="va">$f</span><span class="st">&quot;</span><span class="va">)</span><span class="st"> lên staging&quot;</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>  <span class="ex">npx</span> wrangler d1 execute DB <span class="at">--remote</span> <span class="at">--config</span> <span class="op">&lt;</span>CAU-HINH<span class="op">&gt;</span> --file <span class="st">&quot;</span><span class="va">$f</span><span class="st">&quot;</span> <span class="kw">||</span> <span class="kw">{</span> <span class="bu">echo</span> <span class="st">&quot;LỖI ở </span><span class="va">$(</span><span class="fu">basename</span> <span class="st">&quot;</span><span class="va">$f</span><span class="st">&quot;</span><span class="va">)</span><span class="st">, dừng lại&quot;</span><span class="kw">;</span> <span class="cf">break</span><span class="kw">;</span> <span class="kw">}</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="cf">done</span></span></code></pre></div>
+<ul>
+<li>Vòng lặp này dùng <code>d1 execute</code> vì các tệp
+<code>drizzle/*.sql</code> không theo cấu trúc của lệnh
+<code>d1 migrations apply</code> (lệnh đó đọc thư mục
+<code>migrations/</code> riêng). <strong>[Cần xác minh]</strong> trên
+staging.</li>
+<li>Sau khi xong, đếm bài học trên staging:</li>
+</ul>
+<div class="sourceCode" id="cb8"><pre
+class="sourceCode zsh"><code class="sourceCode zsh"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="ex">npx</span> wrangler d1 execute DB <span class="at">--remote</span> <span class="at">--config</span> <span class="op">&lt;</span>CAU-HINH<span class="op">&gt;</span> --command <span class="st">&quot;SELECT COUNT(*) AS so_bai FROM lessons&quot;</span></span></code></pre></div>
+<p>Kết quả phải là <code>10</code>.</p>
+<blockquote>
+<p><strong>Không áp dụng lên production</strong> cho đến khi staging đạt
+mọi bước ở mục 9.</p>
+</blockquote>
+<hr />
+<h2 id="8-đặt-bí-mật-và-triển-khai">8. Đặt bí mật và triển khai</h2>
+<h3 id="81-đặt-bí-mật-trên-worker-staging">8.1. Đặt bí mật trên Worker
+staging</h3>
+<p>Bí mật chỉ đặt qua Wrangler, không ghi vào tệp:</p>
+<div class="sourceCode" id="cb9"><pre
+class="sourceCode zsh"><code class="sourceCode zsh"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="ex">npx</span> wrangler secret put ADMIN_PASSWORD <span class="at">--config</span> <span class="op">&lt;</span>CAU-HINH<span class="op">&gt;</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="ex">npx</span> wrangler secret put OWNER_EMAIL <span class="at">--config</span> <span class="op">&lt;</span>CAU-HINH<span class="op">&gt;</span></span></code></pre></div>
+<ul>
+<li>Wrangler hỏi giá trị và <strong>không hiện ký tự</strong> khi gõ.
+Nhập giá trị, nhấn Enter.</li>
+<li><code>OWNER_EMAIL</code> là email chủ website. Tài liệu này không
+ghi giá trị.</li>
+<li>Nếu cần thử quên mật khẩu trên staging: <code>RESEND_API_KEY</code>,
+<code>MAIL_FROM</code>, <code>APP_BASE_URL</code> (xem
+<code>HUONG_DAN_CHAY_TREN_MAC.html</code>, mục 6).
+<code>APP_BASE_URL</code> phải là
+<code>https://staging.sontraso.vn</code>.</li>
+</ul>
+<p><strong>[Cần xác minh]</strong> Worker đã triển khai đọc các biến này
+từ <code>env</code> đúng cách; kiểm tra bằng đăng nhập quản trị ở mục
+9.</p>
+<h3 id="82-triển-khai">8.2. Triển khai</h3>
+<div class="sourceCode" id="cb10"><pre
+class="sourceCode zsh"><code class="sourceCode zsh"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="ex">pnpm</span> build</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="ex">npx</span> wrangler deploy <span class="at">--config</span> <span class="op">&lt;</span>CAU-HINH<span class="op">&gt;</span></span></code></pre></div>
+<ul>
+<li>Lệnh in địa chỉ <code>workers.dev</code> và, nếu đã cấu hình
+<code>routes</code>, tên miền tùy chỉnh.</li>
+<li>Cloudflare tự tạo bản ghi DNS và chứng chỉ TLS cho custom domain.
+Điều kiện: tên <code>staging.sontraso.vn</code> chưa có bản ghi CNAME.
+Nếu báo lỗi, xóa bản ghi trùng trong zone rồi triển khai lại.</li>
+<li>Thử trước:
+<code>npx wrangler deploy --dry-run --config &lt;CAU-HINH&gt;</code>
+không tải lên, chỉ kiểm tra.</li>
+</ul>
+<hr />
+<h2 id="9-kiểm-tra-sau-triển-khai-staging">9. Kiểm tra sau triển khai
+staging</h2>
+<p>Thực hiện từ trình duyệt trên Mac. Ghi lại kết quả từng bước.</p>
+<table>
+<thead>
+<tr class="header">
+<th>#</th>
+<th>Bước</th>
+<th>Kết quả mong đợi</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>1</td>
+<td>Mở <code>https://staging.sontraso.vn/api/lessons</code></td>
+<td>JSON với 10 bài, HTTP 200</td>
+</tr>
+<tr class="even">
+<td>2</td>
+<td>Mở <code>https://staging.sontraso.vn/home.html</code></td>
+<td>Hiện danh sách bài học</td>
+</tr>
+<tr class="odd">
+<td>3</td>
+<td>Mở <code>https://staging.sontraso.vn/admin.html</code>, đăng nhập
+bằng <code>OWNER_EMAIL</code> và <code>ADMIN_PASSWORD</code></td>
+<td>Yêu cầu đổi mật khẩu ngay</td>
+</tr>
+<tr class="even">
+<td>4</td>
+<td>Đổi mật khẩu, đăng nhập lại</td>
+<td>Vào được trang điều phối</td>
+</tr>
+<tr class="odd">
+<td>5</td>
+<td>Sai mật khẩu 5 lần liên tiếp</td>
+<td>Khóa tạm 15 phút (HTTP 423)</td>
+</tr>
+<tr class="even">
+<td>6</td>
+<td>Tạo một tài khoản tình nguyện viên thử bằng email của anh</td>
+<td>Tài khoản tạo thành công, buộc đổi mật khẩu</td>
+</tr>
+<tr class="odd">
+<td>7</td>
+<td>Đăng nhập bằng tài khoản đó, đổi mật khẩu, ghi một phiếu quan sát
+thử</td>
+<td>Phiếu lưu được; bấm lại không tạo phiếu trùng</td>
+</tr>
+<tr class="even">
+<td>8</td>
+<td>Mở <strong>Báo cáo thống kê</strong> và xuất CSV</td>
+<td>Có bảng và tệp CSV</td>
+</tr>
+<tr class="odd">
+<td>9</td>
+<td>Đăng một tin thử, rồi ẩn tin</td>
+<td>Tin hiện, rồi biến mất khỏi trang học</td>
+</tr>
+<tr class="even">
+<td>10</td>
+<td>Tải một video MP4 nhỏ (dưới 25 MB) vào một bài</td>
+<td>Video xem được trong bài</td>
+</tr>
+</tbody>
+</table>
+<p>Sau khi xong, xóa các tài khoản và tin thử bằng giao diện quản trị
+(không xóa cơ sở dữ liệu trực tiếp).</p>
+<p><strong>Không đạt bước nào:</strong> dừng, chụp dòng lỗi và gửi người
+phụ trách. Không chuyển sang production.</p>
+<hr />
+<h2 id="10-triển-khai-production-sau-phê-duyệt">10. Triển khai
+production (sau phê duyệt)</h2>
+<p>Chỉ thực hiện khi:</p>
+<ul>
+<li>Mục 9 đạt đủ 10 bước trên staging.</li>
+<li>Chặn 1.2 (nhận diện học viên) đã được xử lý và kiểm thử.</li>
+<li>Người giữ <code>OWNER_EMAIL</code> đã phê duyệt bằng văn bản.</li>
+<li>Đã sao lưu D1 và R2 theo quy trình được xác nhận: <strong>[Cần bổ
+sung nguồn]</strong>. Hiện chưa có quy trình sao lưu đã kiểm chứng.</li>
+</ul>
+<p>Các bước giống mục 6–8, thay:</p>
+<ul>
+<li><code>sontra-so-production</code> và
+<code>sontra-so-production-r2</code>, tạo mới.</li>
+<li><code>name</code>: <code>son-tra-so</code>.</li>
+<li><code>routes</code>: <code>sontraso.vn</code> (và
+<code>www.sontraso.vn</code> nếu cần).</li>
+<li><code>APP_BASE_URL</code>: <code>https://sontraso.vn</code>.</li>
+<li>Migration áp dụng lên D1 production: cùng vòng lặp ở mục 7, với cấu
+hình production.</li>
+</ul>
+<hr />
+<h2 id="11-chi-phí-và-giới-hạn-tóm-tắt">11. Chi phí và giới hạn (tóm
+tắt)</h2>
+<table>
+<thead>
+<tr class="header">
+<th>Khoản</th>
+<th>Mức</th>
+<th>Trạng thái</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Demo: gói Workers Free, D1, địa chỉ <code>workers.dev</code></td>
+<td>0 USD trong hạn mức</td>
+<td>Hạn mức <strong>đã kiểm chứng</strong>; yêu cầu thanh toán của R2
+<strong>[Cần xác minh]</strong></td>
+</tr>
+<tr class="even">
+<td>Tên miền <code>.vn</code> (chỉ cho công bố chính thức)</td>
+<td>Theo nhà đăng ký</td>
+<td><strong>[Cần xác minh]</strong></td>
+</tr>
+<tr class="odd">
+<td>Tên miền <code>.com</code> qua Cloudflare Registrar</td>
+<td>Giá gốc</td>
+<td><strong>[Cần xác minh]</strong></td>
+</tr>
+<tr class="even">
+<td>Cloudflare Workers Paid</td>
+<td>Tối thiểu 5 USD/tháng</td>
+<td>Đã kiểm chứng</td>
+</tr>
+<tr class="odd">
+<td>R2</td>
+<td>Thanh toán theo sử dụng, có hạn mức miễn phí</td>
+<td>Đã kiểm chứng việc cần thanh toán; hạn mức <strong>[Cần xác
+minh]</strong></td>
+</tr>
+<tr class="even">
+<td>D1</td>
+<td>Theo gói</td>
+<td><strong>[Cần xác minh]</strong></td>
+</tr>
+<tr class="odd">
+<td>Resend (email khôi phục mật khẩu)</td>
+<td>Gói miễn phí 100 email/ngày, 3 000 email/tháng</td>
+<td>Theo <code>docs/HUONG_DAN_VAN_HANH_VA_CHUYEN_GIAO.md</code> mục
+4.6</td>
+</tr>
+</tbody>
+</table>
+<p>Theo dõi chi phí trong <strong>Billing</strong> của Cloudflare và đặt
+cảnh báo khi vượt ngưỡng.</p>
+<hr />
+<h2 id="12-xử-lý-sự-cố">12. Xử lý sự cố</h2>
+<table>
+<thead>
+<tr class="header">
+<th>Triệu chứng</th>
+<th>Nguyên nhân thường gặp</th>
+<th>Cách xử lý</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Zone báo <strong>Pending</strong></td>
+<td>Nameserver chưa đổi hoặc chưa có hiệu lực</td>
+<td>Kiểm tra lại mục 4.2; chờ thêm</td>
+</tr>
+<tr class="even">
+<td><code>routes</code> báo lỗi CNAME</td>
+<td>Tên đã có bản ghi CNAME</td>
+<td>Xóa bản ghi trùng trong DNS của zone, triển khai lại</td>
+</tr>
+<tr class="odd">
+<td><code>/api/lessons</code> trả 503 trên staging</td>
+<td>Chưa áp dụng đủ migration lên <strong>remote</strong></td>
+<td>Chạy lại mục 7, đếm bài học</td>
+</tr>
+<tr class="even">
+<td>Wrangler báo <code>database_id</code> không hợp lệ</td>
+<td>Còn giá trị giả <code>00000000-…</code></td>
+<td>Thay bằng giá trị từ mục 6.1</td>
+</tr>
+<tr class="odd">
+<td>Đăng nhập quản trị báo đã có tài khoản, <code>ADMIN_PASSWORD</code>
+không dùng được</td>
+<td>Tài khoản đã được tạo ở lần trước</td>
+<td>Dùng mật khẩu đã đổi; xem
+<code>HUONG_DAN_VAN_HANH_VA_CHUYEN_GIAO.md</code> mục 6</td>
+</tr>
+<tr class="even">
+<td>Staging ghi đè production</td>
+<td>Hai môi trường cùng <code>name</code></td>
+<td>Đặt <code>name</code> khác nhau (mục 6.3) trước khi triển khai</td>
+</tr>
+<tr class="odd">
+<td>Email khôi phục không gửi được</td>
+<td>Thiếu <code>RESEND_API_KEY</code>, <code>MAIL_FROM</code> không
+thuộc tên miền đã xác minh, hoặc <code>APP_BASE_URL</code> không phải
+https</td>
+<td>Xem mục 8.1</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="13-những-việc-không-nên-làm">13. Những việc không nên làm</h2>
+<ul>
+<li>Không mở tính năng học viên ra công khai khi chưa xử lý chặn
+1.2.</li>
+<li>Không ghi <code>ADMIN_PASSWORD</code>, <code>OWNER_EMAIL</code>,
+<code>RESEND_API_KEY</code> hay token Cloudflare vào tệp, tài liệu, ảnh
+chụp màn hình hay trò chuyện.</li>
+<li>Không chạy migration lên production trước khi staging đạt đủ mục
+9.</li>
+<li>Không xóa dữ liệu D1 hoặc R2 khi chưa được người phụ trách xác
+nhận.</li>
+<li>Không dùng chung D1 giữa staging và production.</li>
+<li>Không tự commit tệp cấu hình triển khai chứa ID tài nguyên.</li>
+</ul>
+<hr />
+<h2 id="14-liên-quan">14. Liên quan</h2>
+<ul>
+<li><code>HUONG_DAN_CHAY_TREN_MAC.html</code>: chạy trên máy Mac.</li>
+<li><code>HUONG_DAN_CHAY_TREN_WINDOWS.md</code>: chạy trên Windows.</li>
+<li><code>HUONG_DAN_VAN_HANH_VA_CHUYEN_GIAO.md</code>: vận hành,
+migration, quản lý tài khoản.</li>
+<li><code>KIEN_TRUC_VA_BAN_GIAO.md</code>: kiến trúc và các điểm còn
+mở.</li>
+</ul>
+</body>
+</html>
